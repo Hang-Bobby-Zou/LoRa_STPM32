@@ -27,7 +27,93 @@ Project File Date:  06/19/2020
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'D:\Software\Keil_v5\ARM\ARMCC\Bin'
 Build target 'LoRa-STPM32'
-"LoRa-STPM32\LoRa-STPM32.axf" - 0 Error(s), 0 Warning(s).
+compiling ext_flash.c...
+..\Src\ext_flash.c(161): warning:  #223-D: function "xSemaphoreCreateRecursiveMutex" declared implicitly
+  	xMutex = xSemaphoreCreateRecursiveMutex();
+..\Src\ext_flash.c(161): error:  #513: a value of type "int" cannot be assigned to an entity of type "SemaphoreHandle_t"
+  	xMutex = xSemaphoreCreateRecursiveMutex();
+..\Src\ext_flash.c(229): warning:  #223-D: function "INFO" declared implicitly
+  		INFO("Flash detected \"%s\", size is %lu bytes", ts_nor_id[i16_found].name, u32_ext_flash_size);
+..\Src\ext_flash.c(234): warning:  #223-D: function "INFO" declared implicitly
+  		INFO("Flash not recognized or not detected (id %02x %02x %02x)", rd_buf[0], rd_buf[1], rd_buf[2]);
+..\Src\ext_flash.c(266): warning:  #223-D: function "xSemaphoreTakeRecursive" declared implicitly
+  	if (xSemaphoreTakeRecursive(xMutex, 1000) == pdTRUE)
+..\Src\ext_flash.c(277): warning:  #223-D: function "xSemaphoreGiveRecursive" declared implicitly
+  		xSemaphoreGiveRecursive(xMutex);
+..\Src\ext_flash.c(284): warning:  #223-D: function "xSemaphoreTakeRecursive" declared implicitly
+  	if (xSemaphoreTakeRecursive(xMutex, 1000) == pdTRUE)
+..\Src\ext_flash.c(295): warning:  #223-D: function "xSemaphoreGiveRecursive" declared implicitly
+  		xSemaphoreGiveRecursive(xMutex);
+..\Src\ext_flash.c(302): warning:  #223-D: function "xSemaphoreTakeRecursive" declared implicitly
+  	if (xSemaphoreTakeRecursive(xMutex, 1000) == pdTRUE)
+..\Src\ext_flash.c(325): warning:  #223-D: function "xSemaphoreGiveRecursive" declared implicitly
+  		xSemaphoreGiveRecursive(xMutex);
+..\Src\ext_flash.c(344): warning:  #223-D: function "xSemaphoreTakeRecursive" declared implicitly
+  	if (xSemaphoreTakeRecursive(xMutex, 1000) == pdTRUE)
+..\Src\ext_flash.c(362): warning:  #223-D: function "xSemaphoreGiveRecursive" declared implicitly
+  		xSemaphoreGiveRecursive(xMutex);
+..\Src\ext_flash.c(381): warning:  #223-D: function "INFO" declared implicitly
+  	INFO("Switching Flash ON");
+..\Src\ext_flash.c(386): error:  #20: identifier "CMD_PWR_FLASH_GPIO_Port" is undefined
+  	HAL_GPIO_WritePin(CMD_PWR_FLASH_GPIO_Port, CMD_PWR_FLASH_Pin, GPIO_PIN_SET);
+..\Src\ext_flash.c(386): error:  #20: identifier "CMD_PWR_FLASH_Pin" is undefined
+  	HAL_GPIO_WritePin(CMD_PWR_FLASH_GPIO_Port, CMD_PWR_FLASH_Pin, GPIO_PIN_SET);
+..\Src\ext_flash.c(396): warning:  #223-D: function "INFO" declared implicitly
+  	INFO("Switching Flash OFF");
+..\Src\ext_flash.c(405): error:  #20: identifier "CMD_PWR_FLASH_GPIO_Port" is undefined
+  	HAL_GPIO_WritePin(CMD_PWR_FLASH_GPIO_Port, CMD_PWR_FLASH_Pin, GPIO_PIN_RESET);
+..\Src\ext_flash.c(405): error:  #20: identifier "CMD_PWR_FLASH_Pin" is undefined
+  	HAL_GPIO_WritePin(CMD_PWR_FLASH_GPIO_Port, CMD_PWR_FLASH_Pin, GPIO_PIN_RESET);
+..\Src\ext_flash.c(415): warning:  #223-D: function "INFO" declared implicitly
+  	INFO("Loading algo parameters...\n");
+..\Src\ext_flash.c(416): error:  #20: identifier "params_algo" is undefined
+  	ext_flash_read(FLASH_PARAMETERS_ADDR, (char *)&params_algo, sizeof(params_algo));
+..\Src\ext_flash.c(427): warning:  #223-D: function "INFO" declared implicitly
+  	INFO("Saving algo parameters...\n");
+..\Src\ext_flash.c(429): error:  #20: identifier "params_algo" is undefined
+  	ext_flash_write(FLASH_PARAMETERS_ADDR, (char *)&params_algo, sizeof(params_algo));
+..\Src\ext_flash.c(448): error:  #20: identifier "params_algo" is undefined
+  	if( (reset == true) || (params_algo.use_case == 0xFFFF) )
+..\Src\ext_flash.c(450): error:  #20: identifier "ALGO_ALIVE" is undefined
+  		params_algo.use_case = 	ALGO_ALIVE + ALGO_CHOC;
+..\Src\ext_flash.c(450): error:  #20: identifier "ALGO_CHOC" is undefined
+  		params_algo.use_case = 	ALGO_ALIVE + ALGO_CHOC;
+..\Src\ext_flash.c(453): error:  #20: identifier "AUTO_REFRESH" is undefined
+  		params_algo.alive.mode = AUTO_REFRESH; 			//to read from config file
+..\Src\ext_flash.c(492): error:  #20: identifier "THRESHOLD" is undefined
+  		params_algo.temperature.mode = AUTO_REFRESH + THRESHOLD;		//to read from config file
+..\Src\ext_flash.c(513): error:  #20: identifier "TILT_NO_ROTATION" is undefined
+  		params_algo.tilt.rotate_axes_around_y = TILT_NO_ROTATION;
+..\Src\ext_flash.c(559): error:  #20: identifier "SPI2_NSS_GPIO_Port" is undefined
+  	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+..\Src\ext_flash.c(559): error:  #20: identifier "SPI2_NSS_Pin" is undefined
+  	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+..\Src\ext_flash.c(562): error:  #20: identifier "hspi2" is undefined
+  	if(HAL_SPI_Transmit(&hspi2, (uint8_t *)wr_buf, wr_size, 5) != HAL_OK)
+..\Src\ext_flash.c(563): error:  #109: expression preceding parentheses of apparent call must have (pointer-to-) function type
+  		ERROR("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!");
+..\Src\ext_flash.c(566): error:  #20: identifier "hspi2" is undefined
+  	if(HAL_SPI_Receive(&hspi2, (uint8_t *)rd_buf, rd_size, 5) != HAL_OK)
+..\Src\ext_flash.c(567): warning:  #223-D: function "INFO" declared implicitly
+  		INFO("HAL_SPI_Receive NOTHING in flash_ext_wr_rd()!");	
+..\Src\ext_flash.c(577): error:  #20: identifier "SPI2_NSS_GPIO_Port" is undefined
+  	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+..\Src\ext_flash.c(577): error:  #20: identifier "SPI2_NSS_Pin" is undefined
+  	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+..\Src\ext_flash.c(580): error:  #20: identifier "hspi2" is undefined
+  	if(HAL_SPI_Transmit(&hspi2, (uint8_t *)wr_buf, wr_size, 5) != HAL_OK)
+..\Src\ext_flash.c(581): error:  #109: expression preceding parentheses of apparent call must have (pointer-to-) function type
+  		ERROR("HAL_SPI_Transmit ERROR in flash_ext_begin_wr()!");
+..\Src\ext_flash.c(588): error:  #20: identifier "hspi2" is undefined
+  	if(HAL_SPI_Transmit(&hspi2, (uint8_t *)wr_buf, wr_size, 5) != HAL_OK)
+..\Src\ext_flash.c(589): error:  #109: expression preceding parentheses of apparent call must have (pointer-to-) function type
+  		ERROR("HAL_SPI_Transmit ERROR in flash_ext_end_wr()!");
+..\Src\ext_flash.c(592): error:  #20: identifier "SPI2_NSS_GPIO_Port" is undefined
+  	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+..\Src\ext_flash.c(592): error:  #20: identifier "SPI2_NSS_Pin" is undefined
+  	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+..\Src\ext_flash.c: 16 warnings, 26 errors
+"LoRa-STPM32\LoRa-STPM32.axf" - 26 Error(s), 16 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -50,7 +136,8 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.2.0
-Build Time Elapsed:  00:00:00
+Target not created.
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>
