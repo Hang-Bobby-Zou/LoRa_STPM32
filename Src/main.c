@@ -98,6 +98,10 @@ int main(void)
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
 	
+		/* Initialize SPI1 */
+		HAL_SPI_MspInit(&hspi1);
+	
+	
 		/* Initialize UART3 for sending message*/ 
 		HAL_UART_MspInit(&huart3);
 
@@ -163,15 +167,6 @@ int main(void)
   }
   /* USER CODE END 3 */
 }
-
-
-
-
-
-
-
-
-
 
 /**
   * @brief System Clock Configuration

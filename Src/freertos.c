@@ -59,6 +59,7 @@ osThreadId SP1Handle;
 osThreadId USART1Handle;
 osThreadId USART3Handle;
 osThreadId USBHandle;
+osSemaphoreId xMutexHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -103,6 +104,11 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* definition and creation of xMutex */
+  osSemaphoreDef(xMutex);
+  xMutexHandle = osSemaphoreCreate(osSemaphore(xMutex), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
