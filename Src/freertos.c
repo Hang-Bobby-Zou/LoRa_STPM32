@@ -160,7 +160,16 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		osDelay(1);
+			SendBuffer[0] = 0x42;	// Ascii Table Charather : A
+			/* Start the transmission process */
+			/* While the UART in reception process, user can transmit data through "SendBuffer" buffer */
+			if(HAL_UART_Transmit_IT(&huart3, (uint8_t*)SendBuffer, sizeof(SendBuffer))!= HAL_OK)
+			{
+					Error_Handler();
+			}
+			while(huart3.gState == HAL_UART_STATE_BUSY_TX){
+			}
+		osDelay(95);
   }
   /* USER CODE END StartDefaultTask */
 }
