@@ -172,6 +172,8 @@ void ext_flash_power_off(void);
 /*"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""*/
 void vd_lib_flash_commands(char * s8p_Commande, int32_t s32_Param);
 
+
+
 int loading_parameters(char *params, bool check_new_value, uint32_t new_value);
 int saving_parameters(char *params, bool check_new_value, uint32_t new_value);
 void init_usecase_parameters(bool reset);

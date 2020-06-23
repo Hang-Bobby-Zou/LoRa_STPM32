@@ -27,6 +27,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
 #include "usart.h"
+#include "ext_flash.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,8 +52,13 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t aRxBuffer[RXBUFFERSIZE];
-uint8_t SendBuffer[1];
+uint8_t aRxBuffer;
+uint8_t SendBuffer;
+char	FlashWriteBuffer[1];
+char 	FlashReadBuffer[1];
+
+__IO ITStatus UartReady = RESET;
+uint8_t byte;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId IDLEHandle;
@@ -160,16 +167,19 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-			SendBuffer[0] = 0x42;	// Ascii Table Charather : A
-			/* Start the transmission process */
-			/* While the UART in reception process, user can transmit data through "SendBuffer" buffer */
-			if(HAL_UART_Transmit_IT(&huart3, (uint8_t*)SendBuffer, sizeof(SendBuffer))!= HAL_OK)
-			{
-					Error_Handler();
-			}
-			while(huart3.gState == HAL_UART_STATE_BUSY_TX){
-			}
-		osDelay(95);
+      //SendBuffer[0] = 0x42;	// Ascii Table Charather : B
+			///* Start the transmission process */
+			///* While the UART in reception process, user can transmit data through "SendBuffer" buffer */
+			//if(HAL_UART_Transmit_IT(&huart3, (uint8_t*)SendBuffer, sizeof(SendBuffer))!= HAL_OK)
+			//{
+			//		Error_Handler();
+			//}
+			//while(huart3.gState == HAL_UART_STATE_BUSY_TX){
+			//}
+			//vTaskDelay( pdMS_TO_TICKS( 1000 ) ); //Wait for ms before it turn itself into ready state again
+			
+			osDelay(1);
+
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -187,7 +197,8 @@ void defaultIDLE(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    //Do nothing
+		osDelay(1);
   }
   /* USER CODE END defaultIDLE */
 }
@@ -205,7 +216,28 @@ void StartSPI1(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+			/* EXT_FLASH Test*/
+			//uint32_t size[1];
+		
+			//FlashWriteBuffer[0] = 0x55;
+			//ext_flash_init();
+			//if (ext_flash_is_detected() == 0){
+			//	Error_Handler();
+			//}
+			
+			//size[0] = ext_flash_is_detected() + 65;
+			
+			//if(HAL_UART_Transmit_IT(&huart3, (uint8_t*)size, sizeof(size))!= HAL_OK)
+			//{
+			//		Error_Handler();
+			//}
+			
+			//while(huart3.gState == HAL_UART_STATE_BUSY_TX){
+			//}
+			
+			//vTaskDelay( pdMS_TO_TICKS( 3000 ) );
+			
+		osDelay(1);
   }
   /* USER CODE END StartSPI1 */
 }
@@ -223,7 +255,7 @@ void StartUSART1(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+		osDelay(1);
   }
   /* USER CODE END StartUSART1 */
 }
@@ -237,23 +269,30 @@ void StartUSART1(void const * argument)
 /* USER CODE END Header_StartUSART3 */
 void StartUSART3(void const * argument)
 {
-  /* USER CODE BEGIN StartUSART3 */
+  /* USER CODE BEGIN StartUSART3 */	
+	
+	//As UART3 has the hightest priority, it runs firsh and prints
+	
   /* Infinite loop */
   for(;;)
   {
-		  SendBuffer[0] = 0x41;	// Ascii Table Charather : A
 			/* Start the transmission process */
 			/* While the UART in reception process, user can transmit data through "SendBuffer" buffer */
-			if(HAL_UART_Transmit_IT(&huart3, (uint8_t*)SendBuffer, sizeof(SendBuffer))!= HAL_OK)
+			if(HAL_UART_Receive_IT(&huart3, &aRxBuffer, sizeof(&aRxBuffer)) != HAL_OK)
+			{
+				Error_Handler();
+			}
+			
+			if(HAL_UART_Transmit_IT(&huart3, &aRxBuffer, sizeof(&aRxBuffer))!= HAL_OK)
 			{
 					Error_Handler();
 			}
-			while(huart3.gState == HAL_UART_STATE_BUSY_TX){
-			}
-			// Parallel Computing prioirty still need to be verified
-			/*#### Verified ####*/
+
 			
-			
+			// //Here, using vTaskDealy, the task can be set to be ready every some ms.
+			// //Here, UART3 Transmission is ready every 3000ms (3s)
+			//vTaskDelay( pdMS_TO_TICKS( 1000));
+
 		osDelay(100); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
@@ -279,7 +318,22 @@ void StartUSB(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-     
+     /**
+  * @brief  Rx Transfer completed callback
+  * @param  UartHandle: UART handle
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
+{
+    if (UartHandle->Instance == USART3)
+  {
+    /* Transmit one byte with 100 ms timeout */
+    HAL_UART_Transmit(&huart3, &byte, 1, 100);
+
+    /* Receive one byte in interrupt mode */ 
+    HAL_UART_Receive_IT(&huart3, &byte, 1);
+  }
+}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

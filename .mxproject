@@ -12,3 +12,6 @@ SourceFiles=..\Src\main.c;..\Src\gpio.c;..\Src\freertos.c;..\Src\spi.c;..\Src\us
 HeaderPath=..\Drivers\STM32L4xx_HAL_Driver\Inc;..\Drivers\STM32L4xx_HAL_Driver\Inc\Legacy;..\Middlewares\Third_Party\FreeRTOS\Source\include;..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS;..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F;..\Drivers\CMSIS\Device\ST\STM32L4xx\Include;..\Drivers\CMSIS\Include;..\Inc;
 CDefines=USE_HAL_DRIVER;STM32L433xx;USE_HAL_DRIVER;USE_HAL_DRIVER;
 
+[]
+SourceFiles=;;
+
