@@ -133,7 +133,7 @@ int main(void)
 		while(huart3.gState == HAL_UART_STATE_BUSY_TX){
 		}
 		
-		myprintf("  ");
+		myprintf("  \n");
 		
 		
 		/*#### Verified ####*/
@@ -153,24 +153,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		//SendBuffer[0] = 0x1;
-		/* Start the transmission process */
-		/* While the UART in reception process, user can transmit data through "aTxBuffer" buffer */
-		//if(HAL_UART_Transmit_IT(&huart3, (uint8_t*)SendBuffer, sizeof(SendBuffer))!= HAL_OK)
-		//{
-		//		Error_Handler();
-		//}
-		
-		//while(huart3.gState == HAL_UART_STATE_BUSY_TX){
-
-		//}
-	
-		
-		/* Put UART peripheral in reception process */  
-		//if(HAL_UART_Receive_IT(&huart3, (uint8_t *)aRxBuffer, 10) != HAL_OK)
-		//{
-		//		Error_Handler();
-		//}
   }
   /* USER CODE END 3 */
 }
