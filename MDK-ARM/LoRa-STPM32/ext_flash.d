@@ -55,4 +55,6 @@ lora-stpm32\ext_flash.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_usb.h
 lora-stpm32\ext_flash.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd_ex.h
 lora-stpm32\ext_flash.o: ../Inc/ext_flash.h
 lora-stpm32\ext_flash.o: ../Inc/usart.h
+lora-stpm32\ext_flash.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+lora-stpm32\ext_flash.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 lora-stpm32\ext_flash.o: ../Inc/spi.h

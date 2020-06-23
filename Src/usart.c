@@ -21,7 +21,7 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "stdarg.h"
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -178,6 +178,35 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 } 
 
 /* USER CODE BEGIN 1 */
+#ifdef LOGLEVEL
+uint8_t HAL_USART_GET_FLAG(USART_TypeDef* usartx, uint32_t flag){
+		if ((usartx->ISR & flag) == flag)
+			return 	SET;
+		else 
+			return 	RESET;
+}
+
+void HAL_UART_SendBytes(USART_TypeDef* usartx, char * str, uint16_t count){
+		uint16_t i = 0;
+		for (i = 0; i < count; i++){
+			usartx->TDR = (uint8_t)(str[i]);
+			while(HAL_USART_GET_FLAG(usartx,UART_FLAG_TC) == RESET);
+		}
+}
+
+char string[512];
+void myprintf(char *fmt,...){
+	va_list ap;
+	
+	va_start(ap,fmt);
+	vsprintf(string,fmt,ap);
+	va_end(ap);
+	
+	
+	HAL_UART_SendBytes(huart3.Instance, string, strlen(string));
+}
+
+#endif
 
 /* USER CODE END 1 */
 

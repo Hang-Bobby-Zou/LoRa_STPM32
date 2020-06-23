@@ -86,6 +86,8 @@ do {												\
 
 #define FLASH_USART	USART3	//TO ADAPT WITH YOUR BOARD
 
+#define LOGLEVEL LOGINFO
+
 /*============================================================================*/
 /*                   TYPE DEFINITION                                          */
 /*============================================================================*/
@@ -184,16 +186,16 @@ uint32_t ext_flash_Get_Size(void)
 static void vd_ext_flash_reset(void)
 {
 	// NOT PRESENT ON MOVEE
-//	// wait 10µs from last deselect
-//	vd_drv_timer_delay_us(10);
-//
-//	// pulse of 10µs
-//	vd_drv_GPIO_Clear(GPIO_nRST_FLASH);
-//	vd_drv_timer_delay_us(10);
-//	vd_drv_GPIO_Set(GPIO_nRST_FLASH);
-//
-//	// reset recovery, wait 30µs
-//	vd_drv_timer_delay_us(30);
+	// wait 10µs from last deselect
+	//vd_drv_timer_delay_us(10);
+
+	// pulse of 10µs
+	//vd_drv_GPIO_Clear(GPIO_nRST_FLASH);
+	//vd_drv_timer_delay_us(10);
+	//vd_drv_GPIO_Set(GPIO_nRST_FLASH);
+
+	// reset recovery, wait 30µs
+	//vd_drv_timer_delay_us(30);
 }
 
 //==============================================================================

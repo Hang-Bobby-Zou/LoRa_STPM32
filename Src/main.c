@@ -98,11 +98,14 @@ int main(void)
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
 	
-		/* Initialize SPI1 */
+		/* Initialize SPI */
 		HAL_SPI_MspInit(&hspi1);
 	
-	
-		/* Initialize UART3 for sending message*/ 
+		/* Initialize USB */
+		HAL_PCD_MspInit(&hpcd_USB_FS);
+
+		/* Initialize UART for sending message*/ 
+		HAL_UART_MspInit(&huart1);
 		HAL_UART_MspInit(&huart3);
 
 		/* Configure DE & !RE pins */ 
@@ -129,6 +132,10 @@ int main(void)
 			}
 		while(huart3.gState == HAL_UART_STATE_BUSY_TX){
 		}
+		
+		myprintf("  ");
+		
+		
 		/*#### Verified ####*/
 		
   /* USER CODE END 2 */
@@ -273,7 +280,8 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-	
+	//while(1){
+	//}
   /* USER CODE END Error_Handler_Debug */
 }
 
