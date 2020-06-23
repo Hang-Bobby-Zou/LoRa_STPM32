@@ -29,6 +29,7 @@
 #include "usart.h"
 #include "ext_flash.h"
 #include "stdio.h"
+#include "ext_flash_tb.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -216,27 +217,22 @@ void StartSPI1(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-			/* EXT_FLASH Test*/
-			//uint32_t size[1];
+		/* EXT_FLASH Test*/
 		
-			//FlashWriteBuffer[0] = 0x55;
-			//ext_flash_init();
-			//if (ext_flash_is_detected() == 0){
-			//	Error_Handler();
-			//}
-			
-			//size[0] = ext_flash_is_detected() + 65;
-			
-			//if(HAL_UART_Transmit_IT(&huart3, (uint8_t*)size, sizeof(size))!= HAL_OK)
-			//{
-			//		Error_Handler();
-			//}
-			
-			//while(huart3.gState == HAL_UART_STATE_BUSY_TX){
-			//}
-			
-			//vTaskDelay( pdMS_TO_TICKS( 3000 ) );
-			
+		// Initialize external flash
+		ext_flash_init();
+		ext_flash_power_on();
+		
+		if (ext_flash_tb() == false){
+				Error_Handler();
+		}
+		
+		
+		
+		
+		vTaskDelay( pdMS_TO_TICKS( 3000 ) );
+		
+		
 		osDelay(1);
   }
   /* USER CODE END StartSPI1 */
@@ -269,7 +265,7 @@ void StartUSART1(void const * argument)
 /* USER CODE END Header_StartUSART3 */
 void StartUSART3(void const * argument)
 {
-  /* USER CODE BEGIN StartUSART3 */	
+  /* USER CODE BEGIN StartUSART3 */
 	
 	//As UART3 has the hightest priority, it runs firsh and prints
 	
@@ -278,22 +274,22 @@ void StartUSART3(void const * argument)
   {
 			/* Start the transmission process */
 			/* While the UART in reception process, user can transmit data through "SendBuffer" buffer */
-			if(HAL_UART_Receive_IT(&huart3, &aRxBuffer, sizeof(&aRxBuffer)) != HAL_OK)
-			{
-				Error_Handler();
-			}
+			//if(HAL_UART_Receive_IT(&huart3, &aRxBuffer, sizeof(&aRxBuffer)) != HAL_OK)
+			//{
+			//	Error_Handler();
+			//}
 			
-			if(HAL_UART_Transmit_IT(&huart3, &aRxBuffer, sizeof(&aRxBuffer))!= HAL_OK)
-			{
-					Error_Handler();
-			}
+			//if(HAL_UART_Transmit_IT(&huart3, &aRxBuffer, sizeof(&aRxBuffer))!= HAL_OK)
+			//{
+			//		Error_Handler();
+			//}
 
 			
 			// //Here, using vTaskDealy, the task can be set to be ready every some ms.
 			// //Here, UART3 Transmission is ready every 3000ms (3s)
 			//vTaskDelay( pdMS_TO_TICKS( 1000));
 
-		osDelay(100); //This delay is in ms
+		osDelay(1); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
 }
@@ -318,7 +314,7 @@ void StartUSB(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-     /**
+/**
   * @brief  Rx Transfer completed callback
   * @param  UartHandle: UART handle
   * @retval None

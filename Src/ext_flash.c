@@ -4,6 +4,7 @@
  * \file ext_flash.c
  * \copyright 
  * \author Matthew wang
+ * \adapted by Bobby in purpose of using STM32L433 with LoRa board
  * \brief External SPI flash driver source code.
  */
 /*============================================================================*/
@@ -26,6 +27,7 @@
 #include "ext_flash.h"
 #include "usart.h"
 #include "spi.h"
+#include "ext_flash_tb.h"
 
 /*============================================================================*/
 /*                   MACRO DEFINITION                                         */
@@ -69,6 +71,36 @@
 #define MX_PAGE_SIZE	256U
 
 /******************************************************************************/
+/*					External Flash Memory Organization											
+					|-------------------------------------|
+					| Block | Sector |    Address Range   |
+					|-------------------------------------|
+					|	  		|  511   |  1FF000h | 1FFFFFh |
+					|	 31   |   :		 |     :    |    :    |
+					|	  		|  496   |  1F0000h | 1F0FFFh |
+					|-------------------------------------|
+					|	  		|  495   |  1EF000h | 1EFFFFh |
+					|	 30   |   :		 |     :    |    :    |
+					|	  		|  480   |  1E0000h | 1E0FFFh |
+					|-------------------------------------|
+					|   :   |   :    |     :    |    :    |
+					|   :   |   :    |     :    |    :    |
+					|-------------------------------------|
+					|	  		|   15   |  00F000h | 00FFFFh |
+					|	      |   :		 |     :    |    :    |
+					|	  		|   3    |  003000h | 003FFFh |
+					|	  0		|   2    |  002000h | 002FFFh |
+					|	  		|   1    |  001000h | 001FFFh |
+					|	  		|   0    |  000000h | 000FFFh |
+					|-------------------------------------|
+					// Block Size  	: 65536 bytes
+					// Sector Size 	:	4096 bytes
+					
+					
+*/
+/******************************************************************************/
+
+/******************************************************************************/
 /** \brief Prepare the external Flash for a write or erase operation
  ******************************************************************************/
 #define PrepareWrite()								\
@@ -84,23 +116,21 @@ do {												\
 #define MANUFACTURER_MICRON     0x20
 #define MANUFACTURER_MXIC     	0xC2
 
-#define FLASH_USART	USART3	//TO ADAPT WITH YOUR BOARD
-
+// Configure info name "LOGELEVEL"
 #define LOGLEVEL LOGINFO
 
 /*============================================================================*/
 /*                   TYPE DEFINITION                                          */
 /*============================================================================*/
-
 /******************************************************************************/
 /** \brief A NOR flash definition by JEDEC ID
+		Used to id flash part number
  ******************************************************************************/
 typedef struct {
 	uint8_t		u8_jedec_id[JEDEC_ID_LEN];
 	uint32_t	u32_nb_sectors_64k;
 	char 		*name;
 } s_Def_flash_nor;
-
 
 /*============================================================================*/
 /*                   PUBLIC VARIABLES DEFINITION                              */
@@ -109,7 +139,6 @@ typedef struct {
 /*============================================================================*/
 /*                   STATIC FUNCTIONS DECLARATIONS                            */
 /*============================================================================*/
-
 /******************************************************************************/
 /** \brief Internal read/write common code of any external Flash access
  *
@@ -144,7 +173,6 @@ static int32_t ext_flash_read_id(void);
 //static void vd_lib_flash_dump(char *s8p_Commande, int32_t s32_Param);
 //static void vd_lib_flash_erase_sector(char *s8p_Commande, int32_t s32_Param);
 
-
 /*============================================================================*/
 /*                   STATIC VARIABLES DECLARATIONS                            */
 /*============================================================================*/
@@ -158,12 +186,16 @@ static SemaphoreHandle_t xMutex;
 /*============================================================================*/
 
 //==============================================================================
+//	External Flash Initialization
+//==============================================================================
 void ext_flash_init(void)
 {
 	xMutex = xSemaphoreCreateRecursiveMutex();
 	assert_param(xMutex);
 }
 
+//==============================================================================
+//	External Flash Deinitializaiton
 //==============================================================================
 void ext_flash_deinit(void)
 {
@@ -177,27 +209,34 @@ void ext_flash_deinit(void)
 }
 
 //==============================================================================
+//	Get External Flash size
+//==============================================================================
 uint32_t ext_flash_Get_Size(void)
 {
 	return(u32_ext_flash_size);
 }
 
 //==============================================================================
+//	Reset External Flash
+//==============================================================================
 static void vd_ext_flash_reset(void)
 {
-	// NOT PRESENT ON MOVEE
 	// wait 10µs from last deselect
-	//vd_drv_timer_delay_us(10);
+	vTaskDelay(pdMS_TO_TICKS( 10 ));
 
 	// pulse of 10µs
-	//vd_drv_GPIO_Clear(GPIO_nRST_FLASH);
-	//vd_drv_timer_delay_us(10);
-	//vd_drv_GPIO_Set(GPIO_nRST_FLASH);
+	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_SET);
+	vTaskDelay(pdMS_TO_TICKS( 10 ));
 
+	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);
+	
 	// reset recovery, wait 30µs
-	//vd_drv_timer_delay_us(30);
+	vTaskDelay(pdMS_TO_TICKS( 30 ));
 }
 
+
+//==============================================================================
+//	Read ID and Size of External Flash
 //==============================================================================
 static int32_t ext_flash_read_id(void)
 {
@@ -214,8 +253,9 @@ static int32_t ext_flash_read_id(void)
 	// Read buffer
 	char rd_buf[JEDEC_ID_LEN];
 
-	// Read JEDEC Identification
+	// Read JEDEC Identification, Comman : MX_CMD_RDID
 	flash_ext_wr_rd(MX_CMD_RDID, 1, rd_buf, sizeof(rd_buf));
+	
 	int16_t i16_found= -1;
 	for(uint16_t i=0U; i<ARRAY_SIZE(ts_nor_id); i++)
 	{
@@ -229,21 +269,25 @@ static int32_t ext_flash_read_id(void)
 	{
 		u32_ext_flash_size= ts_nor_id[i16_found].u32_nb_sectors_64k << 16;
 		//INFO("Flash detected \"%s\", size is %lu bytes", ts_nor_id[i16_found].name, u32_ext_flash_size);
+		myprintf("Flash detected \"%s\", size is %lu bytes\n", ts_nor_id[i16_found].name, u32_ext_flash_size);
 	}
 	else
 	{
 		u32_ext_flash_size = 0;
 		//INFO("Flash not recognized or not detected (id %02x %02x %02x)", rd_buf[0], rd_buf[1], rd_buf[2]);
+		myprintf("Flash not recognized or not detected (id %02x %02x %02x)\n", rd_buf[0], rd_buf[1], rd_buf[2]);
 	}
 
 	return(u32_ext_flash_size ? 1 : 0);
 }
 
 //==============================================================================
+//	Detect External Flash
+//==============================================================================
 #define	EXT_FLASH_NB_RESET	2	//<! max number of reset before giving up
 int32_t ext_flash_is_detected(void)
 {
-	if (ext_flash_is_enable == false)
+	if (ext_flash_is_enable == false)		//If flash is not enabled, enable it
 		ext_flash_power_on();
 
 	int32_t s32_cpt = 0;
@@ -257,11 +301,13 @@ int32_t ext_flash_is_detected(void)
 		s32_ret = ext_flash_read_id();
 
 		s32_cpt++;
-	} while ((s32_ret == 0) && (s32_cpt < EXT_FLASH_NB_RESET));
+	} while ((s32_ret == 0) && (s32_cpt < EXT_FLASH_NB_RESET));		//Try 2 times before quit
 
 	return(s32_ret);
 }
 
+//==============================================================================
+//	Erase Sector of External Flash
 //==============================================================================
 void ext_flash_erase_sector(uint32_t FLASH_Sector)
 {
@@ -281,6 +327,8 @@ void ext_flash_erase_sector(uint32_t FLASH_Sector)
 }
 
 //==============================================================================
+//	Erase Blcok of External Flash
+//==============================================================================
 void ext_flash_erase_block(uint32_t FLASH_Block)
 {
 	if (xSemaphoreTakeRecursive(xMutex, 1000) == pdTRUE)
@@ -298,6 +346,8 @@ void ext_flash_erase_block(uint32_t FLASH_Block)
 	}
 }
 
+//==============================================================================
+//	Write to specific address
 //==============================================================================
 void ext_flash_write(uint32_t address, const char *data, uint32_t nb_byte)
 {
@@ -329,6 +379,8 @@ void ext_flash_write(uint32_t address, const char *data, uint32_t nb_byte)
 }
 
 //==============================================================================
+//	Wait for write or erase done
+//==============================================================================
 void ext_flash_last_write_or_erase_done(void)
 {
 	if (ext_flash_is_enable == false)
@@ -340,6 +392,8 @@ void ext_flash_last_write_or_erase_done(void)
 	} while ((rd_buf[0] & 0x1U) != 0x00U);    // WIP=0
 }
 
+//==============================================================================
+//	Read from specific address
 //==============================================================================
 void ext_flash_read(uint32_t address, char *data, uint32_t nb_byte)
 {
@@ -366,11 +420,15 @@ void ext_flash_read(uint32_t address, char *data, uint32_t nb_byte)
 }
 
 //==============================================================================
+//	Turn External Flash into deep powerdown mode, saves 20mA
+//==============================================================================
 void ext_flash_deep_powerdown(void)
 {
 	flash_ext_wr_rd(MX_CMD_DP, 1, NULL, 0);
 }
 
+//==============================================================================
+//	Wake External Flash from deep powerdown mode
 //==============================================================================
 void ext_flash_release_from_deep_powerdown(void)
 {
@@ -378,37 +436,41 @@ void ext_flash_release_from_deep_powerdown(void)
 }
 
 //==============================================================================
+//	Switch on power of External Flash (reduntant)
+//==============================================================================
 void ext_flash_power_on(void)
 {
-//	INFO("Switching Flash ON");
-	//Initialize the Flash SPI of the MCU
-	//MX_SPI2_Init();
+  //INFO("Switching Flash ON");
+	myprintf("Switching Flash ON");
 
-	//Enabling VDD_FLASH
-//	HAL_GPIO_WritePin(CMD_PWR_FLASH_GPIO_Port, CMD_PWR_FLASH_Pin, GPIO_PIN_SET);
-
+	//HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);		// Pull down to enable
+	
+	// Wait for 10 ticks
 	vTaskDelay(10);
 
 	ext_flash_is_enable = true;
 }
 
 //==============================================================================
+//	Switch off power of External Flash (reduntant)
+//==============================================================================
 void ext_flash_power_off(void)
 {
-//	INFO("Switching Flash OFF");
-
+	//INFO("Switching Flash OFF");
+	myprintf("Switching Flash OFF");
+	
 	//Be sure that flash has finished to write data
 	ext_flash_last_write_or_erase_done();
 
-	//Deinit SPI
-	//MX_SPI2_DeInit();
 
 	//Switching off VDD_FLASH
-//	HAL_GPIO_WritePin(CMD_PWR_FLASH_GPIO_Port, CMD_PWR_FLASH_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_SET);		// Pull us to disable
 
 	ext_flash_is_enable = false;
 }
+//==============================================================================
 
+//==============================================================================
 int loading_parameters(char *params, bool check_new_value, uint32_t new_value)
 {
 	(void)(params);
@@ -421,6 +483,9 @@ int loading_parameters(char *params, bool check_new_value, uint32_t new_value)
 	return 0;
 }
 
+//==============================================================================
+
+//==============================================================================
 int saving_parameters(char *params, bool check_new_value, uint32_t new_value)
 {
 	(void)(params);
@@ -550,32 +615,44 @@ void init_usecase_parameters(bool reset)
 //		params_algo.sensor.nb_excess = 3;				//should be already set to 0
 //	}
 }
+
+
+
+
+
+
 /*============================================================================*/
 /*                   STATIC FUNCTIONS DEFINTIONS                              */
 /*============================================================================*/
 
 //==============================================================================
+//						External Flash read and write all in one
+//==============================================================================
 static void flash_ext_wr_rd(const char *wr_buf, uint16_t wr_size, char *rd_buf, uint16_t rd_size)
 {
-	// Enable Flash, Hardware NSS output signal
-	//HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(CS_FLASH_GPIO_Port, CS_FLASH_Pin, GPIO_PIN_RESET);
+	// Enable Flash, Hardware NSS output signal	
+	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);
+	// Wait for 10 ms
+	vTaskDelay(pdMS_TO_TICKS( 10 ));
 	
 	// Transmit data
 	if(HAL_SPI_Transmit(&hspi1, (uint8_t *)wr_buf, wr_size, 5) != HAL_OK){
 		//ERROR("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!");
+		myprintf("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!\n");
 	}
 
 	// Read data
 	if(HAL_SPI_Receive(&hspi1, (uint8_t *)rd_buf, rd_size, 5) != HAL_OK){
-		//INFO("HAL_SPI_Receive NOTHING in flash_ext_wr_rd()!");	
+		//INFO("HAL_SPI_Receive NOTHING in flash_ext_wr_rd()!");
+		myprintf("\nHAL_SPI_Receive NOTHING in flash_ext_wr_rd()!\n");
 	}
 
 	// Disable Flash, Hardware NSS output signal
-	//HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(CS_FLASH_GPIO_Port, CS_FLASH_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_SET);
 }
 
+//==============================================================================
+//						External Flash read begin
 //==============================================================================
 static void flash_ext_begin_wr(const char *wr_buf, int32_t wr_size)
 {
@@ -583,19 +660,24 @@ static void flash_ext_begin_wr(const char *wr_buf, int32_t wr_size)
 	//HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(CS_FLASH_GPIO_Port, CS_FLASH_Pin, GPIO_PIN_RESET);
 
+	
 	// Transmit data
 	if(HAL_SPI_Transmit(&hspi1, (uint8_t *)wr_buf, wr_size, 5) != HAL_OK){
 		//ERROR("HAL_SPI_Transmit ERROR in flash_ext_begin_wr()!");
+		myprintf("HAL_SPI_Transmit ERROR in flash_ext_begin_wr()!");
 	}
 		
 }
 
+//==============================================================================
+//						External Flash read write
 //==============================================================================
 static void flash_ext_end_wr(const char *wr_buf, int32_t wr_size)
 {
 	// Transmit data
 	if(HAL_SPI_Transmit(&hspi1, (uint8_t *)wr_buf, wr_size, 5) != HAL_OK){
 		//ERROR("HAL_SPI_Transmit ERROR in flash_ext_end_wr()!");
+		myprintf("HAL_SPI_Transmit ERROR in flash_ext_end_wr()!");
 	}
 		
 
@@ -603,6 +685,8 @@ static void flash_ext_end_wr(const char *wr_buf, int32_t wr_size)
 	//HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(CS_FLASH_GPIO_Port, CS_FLASH_Pin, GPIO_PIN_SET);
 }
+
+//==============================================================================
 
 //==============================================================================
 void vd_lib_flash_commands(char * s8p_Commande, int32_t s32_Param)
@@ -617,6 +701,8 @@ void vd_lib_flash_commands(char * s8p_Commande, int32_t s32_Param)
 //
 //	vd_lib_Debug_ParseCmd(s_lib_FlashCmd, (sizeof(s_lib_FlashCmd)/sizeof(s_def_DebugCmd)), (uint8_t*)s8p_Commande);
 }
+
+//==============================================================================
 
 //==============================================================================
 //static void vd_lib_flash_status(char *s8p_Commande, int32_t s32_Param)
