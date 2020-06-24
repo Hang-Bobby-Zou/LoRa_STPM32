@@ -4,6 +4,7 @@ lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\string.
 lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 lora-stpm32\ext_flash_tb.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
 lora-stpm32\ext_flash_tb.o: ../Inc/FreeRTOSConfig.h
 lora-stpm32\ext_flash_tb.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
@@ -55,7 +56,6 @@ lora-stpm32\ext_flash_tb.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_usb
 lora-stpm32\ext_flash_tb.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd_ex.h
 lora-stpm32\ext_flash_tb.o: ../Inc/ext_flash.h
 lora-stpm32\ext_flash_tb.o: ../Inc/usart.h
-lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 lora-stpm32\ext_flash_tb.o: ../Inc/spi.h
 lora-stpm32\ext_flash_tb.o: ../Inc/ext_flash_tb.h

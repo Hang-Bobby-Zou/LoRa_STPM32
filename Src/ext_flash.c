@@ -443,7 +443,7 @@ void ext_flash_power_on(void)
   //INFO("Switching Flash ON");
 	myprintf("Switching Flash ON");
 
-	//HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);		// Pull down to enable
+	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);		// Pull down to enable
 	
 	// Wait for 10 ticks
 	vTaskDelay(10);

@@ -67,6 +67,7 @@ osThreadId SP1Handle;
 osThreadId USART1Handle;
 osThreadId USART3Handle;
 osThreadId USBHandle;
+osThreadId SPI2Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -79,6 +80,7 @@ void StartSPI1(void const * argument);
 void StartUSART1(void const * argument);
 void StartUSART3(void const * argument);
 void StartUSB(void const * argument);
+void StartSPI2(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -134,7 +136,7 @@ void MX_FREERTOS_Init(void) {
   IDLEHandle = osThreadCreate(osThread(IDLE), NULL);
 
   /* definition and creation of SP1 */
-  osThreadDef(SP1, StartSPI1, osPriorityBelowNormal, 0, 128);
+  osThreadDef(SP1, StartSPI1, osPriorityBelowNormal, 0, 1024);
   SP1Handle = osThreadCreate(osThread(SP1), NULL);
 
   /* definition and creation of USART1 */
@@ -148,6 +150,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of USB */
   osThreadDef(USB, StartUSB, osPriorityBelowNormal, 0, 128);
   USBHandle = osThreadCreate(osThread(USB), NULL);
+
+  /* definition and creation of SPI2 */
+  osThreadDef(SPI2, StartSPI2, osPriorityNormal, 0, 128);
+  SPI2Handle = osThreadCreate(osThread(SPI2), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -206,7 +212,7 @@ void defaultIDLE(void const * argument)
 
 /* USER CODE BEGIN Header_StartSPI1 */
 /**
-* @brief Function implementing the SP1 thread.
+* @brief Function implementing the SP1 thread. For External Flash
 * @param argument: Not used
 * @retval None
 */
@@ -217,7 +223,6 @@ void StartSPI1(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		/* EXT_FLASH Test*/
 		
 		// Initialize external flash
 		ext_flash_init();
@@ -227,11 +232,7 @@ void StartSPI1(void const * argument)
 				Error_Handler();
 		}
 		
-		
-		
-		
 		vTaskDelay( pdMS_TO_TICKS( 3000 ) );
-		
 		
 		osDelay(1);
   }
@@ -310,6 +311,24 @@ void StartUSB(void const * argument)
     osDelay(1);
   }
   /* USER CODE END StartUSB */
+}
+
+/* USER CODE BEGIN Header_StartSPI2 */
+/**
+* @brief Function implementing the SPI2 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartSPI2 */
+void StartSPI2(void const * argument)
+{
+  /* USER CODE BEGIN StartSPI2 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartSPI2 */
 }
 
 /* Private application code --------------------------------------------------*/
