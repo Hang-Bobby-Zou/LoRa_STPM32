@@ -46,6 +46,7 @@
 #include <stdint.h>		// To include uintXX_t type
 #include <stdbool.h>	// To include the bool type
 #include <stdio.h>
+#include <time.h>
 
 /*============================================================================*/
 /*                   INCLUDE FILES                                            */
@@ -60,21 +61,30 @@
 #include "spi.h"
 #include "ext_flash_tb.h"
 
-#define TestDataSize 	128
-#define SectorSize		4096
-#define BlockSize			65536
+#define ReadWriteSize 1024	//In bytes
+#define SectorNum			512		//In numbers
+#define BlockNum			31		//In numbers
+#define TestSize			3			//Defined in Sectors, change this to change the number of sectors to be tested, max 512
 
-bool Randomize(char str[],uint32_t num);
+//Function prototypes
+bool Randomize(char str[],uint32_t num,uint32_t param);
+bool ReadWrite(uint32_t address);
+bool EraseSector(uint32_t address);
+void WriteSector(uint32_t address);
+bool EraseBlock(uint32_t address);
 
 /**
   * @brief  Test bench for external flash
+	* @intval	NONE
   * @retval bool
   */
 bool ext_flash_tb(void){
 		
-		char WriteData			[128];
-		char ReadData				[128];
-		char RandomString 	[128];
+		uint32_t AddressMap[SectorNum] = {0};
+		for (int i = 0; i < SectorNum; i++){
+				AddressMap[i] = i * 4096; 	//i * 0x001000
+		}
+		
 /*======================================================================*/
 /*		Detection Test																										*/
 /*======================================================================*/
@@ -87,97 +97,155 @@ bool ext_flash_tb(void){
 /*======================================================================*/
 /*		ReadWrite Test																										*/
 /*======================================================================*/
+		for (int i = 0; i < TestSize; i++){
+			if (ReadWrite(AddressMap[i]) != true)
+				return false;
+			
+		HAL_Delay(1);
+		}
 		
-		Randomize(RandomString,128);
-		strcpy(WriteData,RandomString);
-		
-		ext_flash_write(0x00,WriteData,sizeof(WriteData));
-		ext_flash_last_write_or_erase_done();
 
-		ext_flash_read(0x00, ReadData,128);
-		
-		if (memcmp(WriteData, ReadData, sizeof(WriteData)) == 1){
+/*======================================================================*/
+/*		Erase sector Test																									*/
+/*======================================================================*/
+		for (int i = 0; i < TestSize; i++){
+			if (EraseSector(AddressMap[i]) != true)
 				return false;
+			
+		HAL_Delay(1);
+		}
+
+/*======================================================================*/
+/*		Erase block Test																									*/
+/*======================================================================*/
+		for (int i = 0; i< TestSize; i++){
+				WriteSector(AddressMap[i]);
 		}
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		/*======================================================================*/
-		/*		Erase sector Test																									*/
-		/*======================================================================*/
-		ext_flash_write(0x00,WriteData,sizeof(WriteData));
-		ext_flash_last_write_or_erase_done();
-		
-		ext_flash_read(0x00, ReadData,128);
-		
-		ext_flash_erase_sector(0);
-		ext_flash_last_write_or_erase_done();
-		
-		ext_flash_read(0x00, ReadData,128);
-		if (memcmp("          ", ReadData, sizeof(WriteData)) == 1){
-				return false;
+		for (int i = 0; i< TestSize; i += 16){
+				if (EraseBlock(AddressMap[i]) != true)
+					return false;
+				
+		HAL_Delay(1);
 		}
 		
-		/*======================================================================*/
-		/*		Erase block Test																									*/
-		/*======================================================================*/
-		ext_flash_write(0x00,WriteData,sizeof(WriteData));
-		ext_flash_last_write_or_erase_done();
+
+/*======================================================================*/
+/*		Finish Judge																											*/
+/*======================================================================*/
 		
-		ext_flash_read(0x00, ReadData,128);
-		
-		ext_flash_erase_block(0);
-		ext_flash_last_write_or_erase_done();
-		
-		ext_flash_read(0x00, ReadData,128);
-		if (memcmp("          ", ReadData, sizeof(WriteData)) == 1){
-				return false;
-		}
-		
-		
-		//If all test passes
+		//If all test passes, return true
 		return true;
 		
 }
 
-bool Randomize(char str[],uint32_t num){
-		if (strlen(str) > num){
+
+/**
+  * @brief  Erase the whole block of data starting sector address
+	*					and validate itself
+	* @intval	Sector Address
+  * @retval If successful, return true, else return false
+  */
+bool EraseBlock(uint32_t address){
+		char ReadData 			[ReadWriteSize];
+		char EmptyData			[ReadWriteSize] = {0};
+		
+		for (int i = 0; i < ReadWriteSize; i++){
+				EmptyData[i] = 0xFF;
+		}
+		
+		ext_flash_erase_block(address);
+		ext_flash_last_write_or_erase_done();
+		
+		for (int i = 0; i < 0x010000; i += 4096){
+				ext_flash_read(address + i, ReadData,ReadWriteSize);
+			
+				if (memcmp(EmptyData, ReadData, ReadWriteSize) != 0){
+				return false;
+				}
+		}
+}
+
+
+/**
+  * @brief  Erase the whole block of sector starting sector address
+	*					and validate itself
+	* @intval	Sector Address
+  * @retval If successful, return true, else return false
+  */
+bool EraseSector(uint32_t address){
+		char ReadData 			[ReadWriteSize];
+		char EmptyData			[ReadWriteSize] = {0};
+		
+		for (int i = 0; i < ReadWriteSize; i++){
+				EmptyData[i] = 0xFF;
+		}
+	
+		ext_flash_erase_sector(address);
+		ext_flash_last_write_or_erase_done();
+		
+		ext_flash_read(address, ReadData,ReadWriteSize);
+		
+		if (memcmp(EmptyData, ReadData, ReadWriteSize) != 0){
 				return false;
 		}
 		
+		return true;
+}
+
+/**
+  * @brief  Do a sector erase, write and read sequence
+	*					and validate itself
+	* @intval	Sector Address
+  * @retval If successful, return true, else return false
+  */
+bool ReadWrite(uint32_t address){
+		char ReadData				[ReadWriteSize];
+		char RandomString 	[ReadWriteSize];
+	
+		Randomize(RandomString,ReadWriteSize,0);
+				
+		ext_flash_erase_sector(address);
+		ext_flash_last_write_or_erase_done();			// Wait for erase to be done
+		//ext_flash_read(address, ReadData,ReadWriteSize);		// Read from address
+				
+		ext_flash_write(address,RandomString,ReadWriteSize);
+		ext_flash_last_write_or_erase_done();			// Wait for write to be done
+				
+		ext_flash_read(address, ReadData,ReadWriteSize);		// Read from address
+				
+		if (memcmp(RandomString, ReadData,ReadWriteSize) != 0){
+				return false;
+		}
+		return true;
+}
+
+/**
+  * @brief  Write to a specific sector
+	* @intval	Sector Address
+  * @retval NONE
+  */
+void WriteSector(uint32_t address){
+		char RandomString 	[ReadWriteSize];
+	
+		Randomize(RandomString,ReadWriteSize,0);
+				
+		ext_flash_erase_sector(address);
+		ext_flash_last_write_or_erase_done();			// Wait for erase to be done
+		//ext_flash_read(address, ReadData,ReadWriteSize);		// Read from address
+				
+		ext_flash_write(address,RandomString,ReadWriteSize);
+		ext_flash_last_write_or_erase_done();			// Wait for write to be done
+}
+
+
+/**
+  * @brief  Randomize a string
+	* @intval	String pointer, number of elements and randomize variable param
+  * @retval If successful, return true, else return false
+  */
+bool Randomize(char str[],uint32_t num, uint32_t param){
+		srand((unsigned)param);
 		
 		for (int i = 0; i < num; i++){
 				str[i] = (rand()% 122 + 48);
