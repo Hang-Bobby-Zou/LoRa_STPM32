@@ -96,20 +96,40 @@ int main(void)
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_USB_PCD_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-	
+		
+		/*	---- Connetion Table ----
+				SPI1 	- External Flash				Verified
+				SPI2 	- LoRa									Under Development
+				UART1 - STPM32								Under Development
+				UART3 - Serial Out Terminal		Verified
+				USB		- USB										NULL
+		*/
+		
 		/* Initialize SPI */
 		HAL_SPI_MspInit(&hspi1);
-	
+		HAL_SPI_MspInit(&hspi2);
+		/*
+			|--SPI2 - LoRa Control--|
+			|-----------------------|
+			|   TX/RX   | VC1 | VC2 |
+			|-----------|-----------|
+			|Transceiver|  L  |  H  |
+			|Receiver   |  H  |  L  |
+			|-----------------------|
+			 Truth Table
+		*/
+		
 		/* Initialize USB */
 		HAL_PCD_MspInit(&hpcd_USB_FS);
-
+		
 		/* Initialize UART for sending message*/ 
-		HAL_UART_MspInit(&huart1);
-		HAL_UART_MspInit(&huart3);
-
-		/* Configure DE & !RE pins */ 
-		/* 	GPIO_PIN_SET 		:= set pin high	== 1
+		HAL_UART_MspInit(&huart1);		//UART1 - Connect STPM32
+		HAL_UART_MspInit(&huart3);		//UART3 - Connect Serial Out Terminal
+		
+		/*  Configure DE & !RE pins for UART3  */ 
+		/*	GPIO_PIN_SET 		:= set pin high	== 1
 				GPIO_PIN_RESET 	:= set pin low  == 0 
 				##------- DE -- Tx	!RE -- Rx -----##
 				|-----------------------------------|
@@ -134,9 +154,6 @@ int main(void)
 		}
 		
 		myprintf("  \n");
-		
-		
-		/*#### Verified ####*/
 		
   /* USER CODE END 2 */
 
