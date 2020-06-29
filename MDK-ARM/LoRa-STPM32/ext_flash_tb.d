@@ -5,7 +5,6 @@ lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.
 lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
-lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\time.h
 lora-stpm32\ext_flash_tb.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
 lora-stpm32\ext_flash_tb.o: ../Inc/FreeRTOSConfig.h
 lora-stpm32\ext_flash_tb.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h

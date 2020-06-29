@@ -30,6 +30,7 @@
 /* USER CODE BEGIN Includes */
 #include "ext_flash.h"
 #include "ext_flash_tb.h"
+#include "STPM32.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -156,7 +157,13 @@ int main(void)
 		
 		myprintf("  \n");
 		
-		// Initialize external flash and TEST if flash if okay
+		
+		//Initialize STPM32
+		STPM32_Init();
+		
+		
+		
+		// Initialize external flash and TEST if flash is okay
 		ext_flash_init();
 		ext_flash_power_on();
 		

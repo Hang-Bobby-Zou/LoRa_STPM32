@@ -64,3 +64,4 @@ lora-stpm32\main.o: ../Inc/ext_flash.h
 lora-stpm32\main.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 lora-stpm32\main.o: ../Inc/ext_flash_tb.h
 lora-stpm32\main.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+lora-stpm32\main.o: ../Inc/STPM32.h

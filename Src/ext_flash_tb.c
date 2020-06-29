@@ -46,7 +46,6 @@
 #include <stdint.h>		// To include uintXX_t type
 #include <stdbool.h>	// To include the bool type
 #include <stdio.h>
-#include <time.h>
 
 /*============================================================================*/
 /*                   INCLUDE FILES                                            */
@@ -164,6 +163,7 @@ bool EraseBlock(uint32_t address){
 				return false;
 				}
 		}
+		return true;
 }
 
 
