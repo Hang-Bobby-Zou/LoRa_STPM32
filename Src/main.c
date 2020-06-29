@@ -28,7 +28,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ext_flash.h"
+#include "ext_flash_tb.h"
+#include "STPM32.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,7 +102,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 		
 		/*	---- Connetion Table ----
-				SPI1 	- External Flash				Verified
+				SPI1 	- External Flash				Verified, Flash test is called from main.c
 				SPI2 	- LoRa									Under Development
 				UART1 - STPM32								Under Development
 				UART3 - Serial Out Terminal		Verified
@@ -155,6 +157,22 @@ int main(void)
 		
 		myprintf("  \n");
 		
+		
+		//Initialize STPM32
+		STPM32_Init();
+		
+		
+		
+		// Initialize external flash and TEST if flash is okay
+		ext_flash_init();
+		ext_flash_power_on();
+		
+		if (ext_flash_tb() == false){
+				Error_Handler();
+		}
+		
+		
+		myprintf("Starting FreeRTOC System...");
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

@@ -222,16 +222,20 @@ uint32_t ext_flash_Get_Size(void)
 static void vd_ext_flash_reset(void)
 {
 	// wait 10µs from last deselect
-	vTaskDelay(pdMS_TO_TICKS( 10 ));
-
+	//vTaskDelay(pdMS_TO_TICKS( 10 ));
+	HAL_Delay(1);
+	
 	// pulse of 10µs
 	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_SET);
-	vTaskDelay(pdMS_TO_TICKS( 10 ));
-
+	//vTaskDelay(pdMS_TO_TICKS( 10 ));
+	HAL_Delay(1);
+	
+	
 	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);
 	
 	// reset recovery, wait 30µs
-	vTaskDelay(pdMS_TO_TICKS( 30 ));
+	//vTaskDelay(pdMS_TO_TICKS( 30 ));
+	HAL_Delay(3);
 }
 
 
@@ -446,7 +450,8 @@ void ext_flash_power_on(void)
 	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);		// Pull down to enable
 	
 	// Wait for 10 ticks
-	vTaskDelay(10);
+	//vTaskDelay(10);
+	HAL_Delay(1);
 
 	ext_flash_is_enable = true;
 }
@@ -633,7 +638,8 @@ static void flash_ext_wr_rd(const char *wr_buf, uint16_t wr_size, char *rd_buf, 
 	// Enable Flash, Hardware NSS output signal	
 	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);
 	// Wait for 10 ms
-	vTaskDelay(pdMS_TO_TICKS( 10 ));
+	//vTaskDelay(pdMS_TO_TICKS( 10 ));
+	HAL_Delay(1);
 	
 	// Transmit data
 	if(HAL_SPI_Transmit(&hspi1, (uint8_t *)wr_buf, wr_size, 5) != HAL_OK){

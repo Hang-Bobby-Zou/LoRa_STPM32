@@ -136,7 +136,7 @@ void MX_FREERTOS_Init(void) {
   IDLEHandle = osThreadCreate(osThread(IDLE), NULL);
 
   /* definition and creation of SP1 */
-  osThreadDef(SP1, StartSPI1, osPriorityBelowNormal, 0, 1024);
+  osThreadDef(SP1, StartSPI1, osPriorityBelowNormal, 0, 4096);
   SP1Handle = osThreadCreate(osThread(SP1), NULL);
 
   /* definition and creation of USART1 */
@@ -222,17 +222,10 @@ void StartSPI1(void const * argument)
   /* USER CODE BEGIN StartSPI1 */
   /* Infinite loop */
   for(;;)
-  {
+  {	
+		//vTaskDelay( pdMS_TO_TICKS( 3000 ) );
 		
-		// Initialize external flash
-		ext_flash_init();
-		ext_flash_power_on();
-		
-		if (ext_flash_tb() == false){
-				Error_Handler();
-		}
-		
-		vTaskDelay( pdMS_TO_TICKS( 3000 ) );
+		//Error_Handler();
 		
 		osDelay(1);
   }
