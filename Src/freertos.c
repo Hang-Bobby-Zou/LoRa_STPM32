@@ -40,10 +40,6 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define RXBUFFERSIZE 8
-#define TXBUFFERSIZE 8
-
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,13 +49,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t aRxBuffer;
-uint8_t SendBuffer;
-char	FlashWriteBuffer[1];
-char 	FlashReadBuffer[1];
 
-__IO ITStatus UartReady = RESET;
-uint8_t byte;
+uint8_t aRxBuffer[20];
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId IDLEHandle;
@@ -68,10 +59,11 @@ osThreadId USART1Handle;
 osThreadId USART3Handle;
 osThreadId USBHandle;
 osThreadId SPI2Handle;
+osSemaphoreId myBinarySem01Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-   
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -113,6 +105,11 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* definition and creation of myBinarySem01 */
+  osSemaphoreDef(myBinarySem01);
+  myBinarySem01Handle = osSemaphoreCreate(osSemaphore(myBinarySem01), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -173,20 +170,16 @@ void StartDefaultTask(void const * argument)
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
-  {
-      //SendBuffer[0] = 0x42;	// Ascii Table Charather : B
-			///* Start the transmission process */
-			///* While the UART in reception process, user can transmit data through "SendBuffer" buffer */
-			//if(HAL_UART_Transmit_IT(&huart3, (uint8_t*)SendBuffer, sizeof(SendBuffer))!= HAL_OK)
-			//{
-			//		Error_Handler();
-			//}
-			//while(huart3.gState == HAL_UART_STATE_BUSY_TX){
-			//}
-			//vTaskDelay( pdMS_TO_TICKS( 1000 ) ); //Wait for ms before it turn itself into ready state again
-			
-			osDelay(1);
+  {	
 
+		__HAL_UART_FLUSH_DRREGISTER(&huart3);
+		
+		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_RESET);	
+		
+    HAL_UART_Receive_IT(&huart3, (uint8_t *)aRxBuffer, 8);
+
+		osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -223,10 +216,6 @@ void StartSPI1(void const * argument)
   /* Infinite loop */
   for(;;)
   {	
-		//vTaskDelay( pdMS_TO_TICKS( 3000 ) );
-		
-		//Error_Handler();
-		
 		osDelay(1);
   }
   /* USER CODE END StartSPI1 */
@@ -260,29 +249,9 @@ void StartUSART1(void const * argument)
 void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
-	
-	//As UART3 has the hightest priority, it runs firsh and prints
-	
   /* Infinite loop */
   for(;;)
   {
-			/* Start the transmission process */
-			/* While the UART in reception process, user can transmit data through "SendBuffer" buffer */
-			//if(HAL_UART_Receive_IT(&huart3, &aRxBuffer, sizeof(&aRxBuffer)) != HAL_OK)
-			//{
-			//	Error_Handler();
-			//}
-			
-			//if(HAL_UART_Transmit_IT(&huart3, &aRxBuffer, sizeof(&aRxBuffer))!= HAL_OK)
-			//{
-			//		Error_Handler();
-			//}
-
-			
-			// //Here, using vTaskDealy, the task can be set to be ready every some ms.
-			// //Here, UART3 Transmission is ready every 3000ms (3s)
-			//vTaskDelay( pdMS_TO_TICKS( 1000));
-
 		osDelay(1); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
@@ -327,20 +296,26 @@ void StartSPI2(void const * argument)
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 /**
-  * @brief  Rx Transfer completed callback
-  * @param  UartHandle: UART handle
+  * @brief Rx Transfer completed callbacks
+  * @param huart: uart handle
   * @retval None
   */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if (UartHandle->Instance == USART3)
-  {
-    /* Transmit one byte with 100 ms timeout */
-    HAL_UART_Transmit(&huart3, &byte, 1, 100);
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(huart);
+   
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_UART_RxCpltCallback can be implemented in the user file
+   */
+	
+	HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_SET);	
+	HAL_UART_Transmit(&huart3, (uint8_t *)aRxBuffer, 8,0xFFFF);
+	myprintf("\r\n");
+	HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_RESET);	
 
-    /* Receive one byte in interrupt mode */ 
-    HAL_UART_Receive_IT(&huart3, &byte, 1);
-  }
 }
 /* USER CODE END Application */
 

@@ -22,6 +22,36 @@
 
 /* USER CODE BEGIN 0 */
 #include "stdarg.h"
+/********************************************************************************/
+#include "stdio.h"
+
+//#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)	
+#if 1
+#pragma import(__use_no_semihosting)             
+              
+struct __FILE 
+{ 
+	int handle; 
+}; 
+
+FILE __stdout;       
+   
+void _sys_exit(int x) 
+{ 
+	x = x; 
+} 
+
+int fputc(int ch, FILE *f)
+{ 	
+	while((USART3->ISR&0X40)==0);
+	USART3->TDR = (uint8_t) ch;      
+	return ch;
+}
+#endif 
+/********************************************************************************/
+
+extern uint8_t receive_buff[255];
+
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -63,7 +93,7 @@ void MX_USART3_UART_Init(void)
   huart3.Init.OverSampling = UART_OVERSAMPLING_16;
   huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_RS485Ex_Init(&huart3, UART_DE_POLARITY_HIGH, 0, 0) != HAL_OK)
+  if (HAL_UART_Init(&huart3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -94,9 +124,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* USART1 interrupt Init */
-    HAL_NVIC_SetPriority(USART1_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspInit 1 */
 
   /* USER CODE END USART1_MspInit 1 */
@@ -111,11 +138,10 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
   
     __HAL_RCC_GPIOB_CLK_ENABLE();
     /**USART3 GPIO Configuration    
-    PB1     ------> USART3_DE
     PB10     ------> USART3_TX
     PB11     ------> USART3_RX 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_10|GPIO_PIN_11;
+    GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -148,8 +174,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     */
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_10);
 
-    /* USART1 interrupt Deinit */
-    HAL_NVIC_DisableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspDeInit 1 */
 
   /* USER CODE END USART1_MspDeInit 1 */
@@ -163,11 +187,10 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     __HAL_RCC_USART3_CLK_DISABLE();
   
     /**USART3 GPIO Configuration    
-    PB1     ------> USART3_DE
     PB10     ------> USART3_TX
     PB11     ------> USART3_RX 
     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_1|GPIO_PIN_10|GPIO_PIN_11);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10|GPIO_PIN_11);
 
     /* USART3 interrupt Deinit */
     HAL_NVIC_DisableIRQ(USART3_IRQn);
@@ -207,6 +230,7 @@ void myprintf(char *fmt,...){
 }
 
 #endif
+
 
 /* USER CODE END 1 */
 

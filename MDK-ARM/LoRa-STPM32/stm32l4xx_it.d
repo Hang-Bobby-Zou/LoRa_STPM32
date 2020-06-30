@@ -49,3 +49,7 @@ lora-stpm32\stm32l4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/
 lora-stpm32\stm32l4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
 lora-stpm32\stm32l4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 lora-stpm32\stm32l4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+lora-stpm32\stm32l4xx_it.o: ../Inc/usart.h
+lora-stpm32\stm32l4xx_it.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+lora-stpm32\stm32l4xx_it.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+lora-stpm32\stm32l4xx_it.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
