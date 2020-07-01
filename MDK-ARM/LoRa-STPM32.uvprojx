@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32L433xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                       ../Drivers/STM32L4xx_HAL_Driver/Inc;                       ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;                       ../Drivers/CMSIS/Device/ST/STM32L4xx/Include;                       ../Drivers/CMSIS/Include;                ../Middlewares/Third_Party/FreeRTOS/Source/include;                ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;                ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F</IncludePath>
+              <IncludePath>../Inc;                            ../Drivers/STM32L4xx_HAL_Driver/Inc;                            ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;                            ../Drivers/CMSIS/Device/ST/STM32L4xx/Include;                            ../Drivers/CMSIS/Include;                     ../Middlewares/Third_Party/FreeRTOS/Source/include;                     ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;                     ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -403,6 +403,11 @@
               <FilePath>..\Src\ext_flash_tb.c</FilePath>
             </File>
             <File>
+              <FileName>STPM32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\STPM32.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/main.c</FilePath>
@@ -411,6 +416,11 @@
               <FileName>gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/crc.c</FilePath>
             </File>
             <File>
               <FileName>freertos.c</FileName>
@@ -447,16 +457,21 @@
               <FileType>1</FileType>
               <FilePath>../Src/stm32l4xx_hal_timebase_tim.c</FilePath>
             </File>
-            <File>
-              <FileName>STPM32.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\STPM32.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Drivers/STM32L4xx_HAL_Driver</GroupName>
           <Files>
+            <File>
+              <FileName>stm32l4xx_hal_crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_crc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32l4xx_hal_crc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_crc_ex.c</FilePath>
+            </File>
             <File>
               <FileName>stm32l4xx_hal.c</FileName>
               <FileType>1</FileType>

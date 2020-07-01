@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "crc.h"
 #include "spi.h"
 #include "usart.h"
 #include "usb.h"
@@ -51,7 +52,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t InitMessage[] = "Test";
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -63,7 +64,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//__IO ITStatus UartReady = RESET;
+
 /* USER CODE END 0 */
 
 /**
@@ -99,6 +100,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_PCD_Init();
   MX_SPI2_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
 		
 		/*	---- Connetion Table ----
@@ -128,8 +130,9 @@ int main(void)
 		
 		/* Initialize UART for sending message*/ 
 		HAL_UART_MspInit(&huart1);		//UART1 - Connect STPM32
+		HAL_CRC_MspInit(&hcrc);				//Initialize CRC
 		HAL_UART_MspInit(&huart3);		//UART3 - Connect Serial Out Terminal
-		
+
 		/*  Configure DE & !RE pins for UART3  */ 
 		/*	GPIO_PIN_SET 		:= set pin high	== 1
 				GPIO_PIN_RESET 	:= set pin low  == 0 
@@ -144,10 +147,10 @@ int main(void)
 				|-----------------------------------|
 		*/
 		// Here set UART3 to be in S2 mode, both Rx & Tx is on
-		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_SET);			
+		USART3_PINSET_TX();
 		
 		// Sending InitMessage = "Test"
+		char InitMessage[] = "Test\r\n";
 		if (HAL_UART_Transmit_IT(&huart3, (uint8_t*)InitMessage, sizeof(InitMessage))!= HAL_OK)
 			{
 					Error_Handler();
@@ -155,24 +158,26 @@ int main(void)
 		while(huart3.gState == HAL_UART_STATE_BUSY_TX){
 		}
 		
-		myprintf("  \n");
+		USART3_PINSET_RX();
 		
 		
 		//Initialize STPM32
-		STPM32_Init();
+		//STPM32_Init();
 		
 		
 		
 		// Initialize external flash and TEST if flash is okay
-		ext_flash_init();
-		ext_flash_power_on();
+		//ext_flash_init();
+		//ext_flash_power_on();
 		
-		if (ext_flash_tb() == false){
-				Error_Handler();
-		}
+		//if (ext_flash_tb() == false){
+		//		Error_Handler();
+		//}
 		
 		
-		myprintf("Starting FreeRTOC System...");
+		myprintf("Starting FreeRTOC System...\r\n");
+		
+		
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -285,7 +290,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
+	
   /* USER CODE END Callback 1 */
 }
 

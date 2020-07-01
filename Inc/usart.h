@@ -36,6 +36,15 @@ extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN Private defines */
+#define  BUFFER_SIZE  (255)
+
+void USART3_PINSET_S1(void);
+void USART3_PINSET_S2(void);
+void USART3_PINSET_S3(void);
+void USART3_PINSET_S4(void);
+void USART3_PINSET_RX(void);
+void USART3_PINSET_TX(void);
+
 #define LOGLEVEL LOGINFO
 
 enum log_levels{

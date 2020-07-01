@@ -23,6 +23,8 @@ lora-stpm32\stm32l4xx_it.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gp
 lora-stpm32\stm32l4xx_it.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h
 lora-stpm32\stm32l4xx_it.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma_ex.h
 lora-stpm32\stm32l4xx_it.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h
+lora-stpm32\stm32l4xx_it.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_crc.h
+lora-stpm32\stm32l4xx_it.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_crc_ex.h
 lora-stpm32\stm32l4xx_it.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h
 lora-stpm32\stm32l4xx_it.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h
 lora-stpm32\stm32l4xx_it.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h
@@ -49,3 +51,7 @@ lora-stpm32\stm32l4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/
 lora-stpm32\stm32l4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
 lora-stpm32\stm32l4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 lora-stpm32\stm32l4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+lora-stpm32\stm32l4xx_it.o: ../Inc/usart.h
+lora-stpm32\stm32l4xx_it.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+lora-stpm32\stm32l4xx_it.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+lora-stpm32\stm32l4xx_it.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
