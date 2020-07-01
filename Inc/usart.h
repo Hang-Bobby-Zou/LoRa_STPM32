@@ -37,20 +37,13 @@ extern UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN Private defines */
 #define  BUFFER_SIZE  (255)
-void USAR_UART_IDLECallback(UART_HandleTypeDef *huart);
-void USER_UART_IRQHandler(UART_HandleTypeDef *huart);
 
-#define UART_BUF_SIZE 1
-extern  uint8_t UTART_BUF[UART_BUF_SIZE];
-
-#define REC_LENGTH 1
-#define MAX_REC_LENGTH 2048
-
-extern uint8_t RxBuffer[MAX_REC_LENGTH];
-extern uint8_t RxFlag;
-extern uint16_t RxCounter;
-extern uint8_t RxTemp[REC_LENGTH];
-
+void USART3_PINSET_S1(void);
+void USART3_PINSET_S2(void);
+void USART3_PINSET_S3(void);
+void USART3_PINSET_S4(void);
+void USART3_PINSET_RX(void);
+void USART3_PINSET_TX(void);
 
 #define LOGLEVEL LOGINFO
 

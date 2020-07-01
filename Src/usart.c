@@ -22,33 +22,6 @@
 
 /* USER CODE BEGIN 0 */
 #include "stdarg.h"
-/********************************************************************************/
-#include "stdio.h"
-
-//#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)	
-#if 1
-#pragma import(__use_no_semihosting)             
-              
-struct __FILE 
-{ 
-	int handle; 
-}; 
-
-FILE __stdout;       
-   
-void _sys_exit(int x) 
-{ 
-	x = x; 
-} 
-
-int fputc(int ch, FILE *f)
-{ 	
-	while((USART3->ISR&0X40)==0);
-	USART3->TDR = (uint8_t) ch;      
-	return ch;
-}
-#endif 
-/********************************************************************************/
 
 extern uint8_t receive_buff[255];
 
@@ -231,6 +204,35 @@ void myprintf(char *fmt,...){
 
 #endif
 
+void USART3_PINSET_S1(void){
+		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_RESET);
+}
+
+void USART3_PINSET_S2(void){
+		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_SET);
+}
+
+void USART3_PINSET_S3(void){
+		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_RESET);
+}
+
+void USART3_PINSET_S4(void){
+		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_SET);
+}
+
+void USART3_PINSET_RX(void){
+		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_RESET);
+}
+
+void USART3_PINSET_TX(void){
+		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_SET);
+}
 
 /* USER CODE END 1 */
 

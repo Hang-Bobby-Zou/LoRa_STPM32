@@ -27,7 +27,12 @@
 #include "usart.h"
 #include "STPM32.h"
 
-
+//CRC calc defines
+#define u8 unsigned char
+#define CRC_8 (0x07)
+#define STPM3x_FRAME_LEN (5)
+static char CRC_u8Checksum;
+	
 //SYN timing defines, all Min.
 //#define t_ltch			20 	//ns, Time between de-selection and latch
 //#define t_lpw				4 	//us, Latch pulse width
@@ -44,7 +49,8 @@
 //Register Address Map
 #define DSP_CR3			0x04
 
-
+static u8 CalcCRC8(u8 *pBuf);
+static void Crc8Calc (u8 u8Data);
 
 bool SendMessage(uint32_t ReadAddress, uint8_t* ReceiveMessage ,uint32_t SendAddress, uint8_t* SendMessage);
 
@@ -107,17 +113,6 @@ bool STPM32_Init(void) {
 		// Till here all hardware reset is done
 		
 		
-		
-		// //Software reset
-		// uint8_t SW_Reset_Message [2] = {0};
-			
-		// SW_Reset_Message[0] = 0x00;
-		// SW_Reset_Message[1] = 0x10;
-		// //= 001004E0		Writing the reset bit to perform a software reset
-		// if (SendMessage(SW_Reset_Message,DSP_CR3) != true){
-		// 	Error_Handler();
-		// }
-		
 		//Configure DSP_CR3, read address 0x04 (Row2), write 0xABCD to 0x05 
 		uint8_t SentMsg [2] = {0};
 		uint8_t ReadMsg [4] = {0};
@@ -137,33 +132,47 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
 		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
 	*/
+	uint8_t Buffer[5];
 	
-		
-	// //SendMessage[0] = 0xFF;
-	// if (HAL_UART_Transmit_IT(&huart1, (uint8_t*)SendMessage, sizeof(SendMessage))!= HAL_OK)
-	// {
-	// 	Error_Handler();
-	// }
+	Buffer[0] = ReadAddress;
+	Buffer[1] = SendAddress;
+	Buffer[2] = SendMessage[0];
+	Buffer[3] = SendMessage[1];
 	
-	// //SendMessage[0] = Address;
-	// if (HAL_UART_Transmit_IT(&huart1, (uint8_t*)SendMessage, sizeof(SendMessage))!= HAL_OK)
-	// {
-	// 	Error_Handler();
-	// }
+	HAL_UART_Transmit_IT(&huart1, Buffer, 4);
 	
-	// //SendMessage[0] = Message[0];
-	// if (HAL_UART_Transmit_IT(&huart1, (uint8_t*)SendMessage, sizeof(SendMessage))!= HAL_OK)
-	// {
-	// 	Error_Handler();
-	// }
 	
-	// //SendMessage[0] = Message[1];
-	// if (HAL_UART_Transmit_IT(&huart1, (uint8_t*)SendMessage, sizeof(SendMessage))!= HAL_OK)
-	// {
-	// 	Error_Handler();
-	// }
+	//TX_Frame_buff[4] = CalcCRC8(TX_Frame_buff);
 	
 	return true;
 	
 }
 
+static u8 CalcCRC8(u8 *pBuf)
+{
+	u8 i;
+	CRC_u8Checksum = 0x00;
+	for (i=0; i<STPM3x_FRAME_LEN-1; i++)
+	{
+	Crc8Calc(pBuf[i]);
+	}
+	return CRC_u8Checksum;
+}
+
+static void Crc8Calc (u8 u8Data)
+{
+	u8 loc_u8Idx;
+	u8 loc_u8Temp;
+	loc_u8Idx=0;
+	while(loc_u8Idx<8)
+	{
+		loc_u8Temp = u8Data^CRC_u8Checksum;
+		CRC_u8Checksum<<=1;
+		if(loc_u8Temp&0x80)
+		{
+		CRC_u8Checksum^=CRC_8;
+		}
+		u8Data<<=1;
+		loc_u8Idx++;
+	}
+}

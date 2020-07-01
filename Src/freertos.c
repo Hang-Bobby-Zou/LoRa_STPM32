@@ -49,7 +49,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
 uint8_t aRxBuffer[20];
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -170,15 +169,7 @@ void StartDefaultTask(void const * argument)
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
-  {	
-
-		__HAL_UART_FLUSH_DRREGISTER(&huart3);
-		
-		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_RESET);	
-		
-    HAL_UART_Receive_IT(&huart3, (uint8_t *)aRxBuffer, 8);
-
+  {
 		osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
@@ -234,6 +225,19 @@ void StartUSART1(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+		__HAL_UART_FLUSH_DRREGISTER(&huart3);
+		
+		USART3_PINSET_RX();
+		
+    HAL_UART_Receive_IT(&huart3, (uint8_t *)aRxBuffer, 8);
+	
+		//USART3_PINSET_TX();
+		//HAL_UART_Transmit(&huart3, (uint8_t *)aRxBuffer, 8,0xFFFF);
+ 		//myprintf("\r\n");
+		
+		//USART3_PINSET_RX();
+		
+		
 		osDelay(1);
   }
   /* USER CODE END StartUSART1 */
@@ -295,28 +299,30 @@ void StartSPI2(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-/**
-  * @brief Rx Transfer completed callbacks
-  * @param huart: uart handle
-  * @retval None
-  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-   
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the HAL_UART_RxCpltCallback can be implemented in the user file
-   */
+// /**
+//   * @brief Rx Transfer completed callbacks
+//   * @param huart: uart handle
+//   * @retval None
+//   */
+// void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+// {
+//   /* Prevent unused argument(s) compilation warning */
+//   UNUSED(huart);
 	
-	HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_SET);	
-	HAL_UART_Transmit(&huart3, (uint8_t *)aRxBuffer, 8,0xFFFF);
-	myprintf("\r\n");
-	HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_RESET);	
-
-}
+// 	if (USART3 == huart1.Instance){
+// 		USART3_PINSET_RX();
+// 		HAL_UART_Transmit(&huart3, (uint8_t *)aRxBuffer, 8,0xFFFF);
+// 		myprintf("\r\n");
+	
+// 		USART3_PINSET_TX();
+// 	}
+	
+// 	if (USART1 == huart1.Instance){
+// 		USART3_PINSET_RX();
+// 		HAL_UART_Transmit(&huart3, (uint8_t *)UART1_Buffer, 8,0xFFFF);
+// 		USART3_PINSET_TX();
+// 	}
+// }
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

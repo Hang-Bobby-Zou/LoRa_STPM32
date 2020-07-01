@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "crc.h"
 #include "spi.h"
 #include "usart.h"
 #include "usb.h"
@@ -51,8 +52,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-  
-/* Buffer used for reception */
 
 /* USER CODE END PV */
 
@@ -65,7 +64,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//__IO ITStatus UartReady = RESET;
+
 /* USER CODE END 0 */
 
 /**
@@ -101,6 +100,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_PCD_Init();
   MX_SPI2_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
 		
 		/*	---- Connetion Table ----
@@ -130,6 +130,7 @@ int main(void)
 		
 		/* Initialize UART for sending message*/ 
 		HAL_UART_MspInit(&huart1);		//UART1 - Connect STPM32
+		HAL_CRC_MspInit(&hcrc);				//Initialize CRC
 		HAL_UART_MspInit(&huart3);		//UART3 - Connect Serial Out Terminal
 
 		/*  Configure DE & !RE pins for UART3  */ 
@@ -146,8 +147,7 @@ int main(void)
 				|-----------------------------------|
 		*/
 		// Here set UART3 to be in S2 mode, both Rx & Tx is on
-		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_SET);			
+		USART3_PINSET_TX();
 		
 		// Sending InitMessage = "Test"
 		char InitMessage[] = "Test\r\n";
@@ -158,6 +158,7 @@ int main(void)
 		while(huart3.gState == HAL_UART_STATE_BUSY_TX){
 		}
 		
+		USART3_PINSET_RX();
 		
 		
 		//Initialize STPM32
