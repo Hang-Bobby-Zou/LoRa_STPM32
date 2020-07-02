@@ -100,6 +100,12 @@ void Error_Handler(void);
 #define CMD_PWR_LORA_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 static uint8_t UART1_Buffer[2];
+
+static int RxFlag3 = 0;
+static int TxFlag3 = 0;
+
+static int RxFlag1 = 0;
+static int TxFlag1 = 0;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

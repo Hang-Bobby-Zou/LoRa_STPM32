@@ -52,8 +52,6 @@ static char CRC_u8Checksum;
 static u8 CalcCRC8(u8 *pBuf);
 static void Crc8Calc (u8 u8Data);
 
-bool SendMessage(uint32_t ReadAddress, uint8_t* ReceiveMessage ,uint32_t SendAddress, uint8_t* SendMessage);
-
 bool STPM32_Init(void) {
 		// Initializing STPM32
 		/* Sequence: 	0. Before initializing
@@ -120,9 +118,9 @@ bool STPM32_Init(void) {
 		SentMsg[0] = 0xCD;
 		SentMsg[1] = 0xAB;
 		
-		if (SendMessage(0x04,ReadMsg,0x05,SentMsg) != true){
-			Error_Handler();
-		}
+		//if (SendMessage(0x04,ReadMsg,0x05,SentMsg) != true){
+		//	Error_Handler();
+		//}
 
 		return true;
 }
@@ -132,21 +130,60 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
 		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
 	*/
-	uint8_t Buffer[5];
+	uint8_t Buffer[5] = {0};
 	
 	Buffer[0] = ReadAddress;
 	Buffer[1] = SendAddress;
 	Buffer[2] = SendMessage[0];
 	Buffer[3] = SendMessage[1];
 	
-	HAL_UART_Transmit_IT(&huart1, Buffer, 4);
+	//Testing buffer "ABCD"
+	//Buffer[0] = 0x41;
+	//Buffer[1] = 0x42;
+	//Buffer[2] = 0x43;
+	//Buffer[3] = 0x44;
+	Buffer[4] = CalcCRC8(Buffer);
 	
+	HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, sizeof(Buffer),0xFFFF);
+	//while(huart1.gState != HAL_UART_STATE_READY);
 	
-	//TX_Frame_buff[4] = CalcCRC8(TX_Frame_buff);
+	HAL_UART_Receive(&huart1, (uint8_t*) ReadMessage, sizeof(ReadMessage),0xFFFF);
+	
+	//USART3_PINSET_TX();
+	//HAL_UART_Transmit(&huart3, (uint8_t *)ReadMessage, 4,0xFFFF);
+	//while(huart3.gState != HAL_UART_STATE_READY);
+	//myprintf("\r\n");
+	//USART3_PINSET_RX();
+	 
 	
 	return true;
 	
 }
+
+bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
+	/* 
+		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
+		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
+	*/
+	uint8_t Buffer[5] = {0};
+	
+	Buffer[0] = ReadAddress;
+	Buffer[1] = 0xFF;
+	Buffer[2] = 0xFF;
+	Buffer[3] = 0xFF;
+	Buffer[4] = CalcCRC8(Buffer);
+	
+	//HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, sizeof(Buffer),0xFFFF);
+	HAL_UART_Transmit_IT(&huart3, (uint8_t*) Buffer, sizeof(Buffer));	
+	HAL_UART_Receive_IT(&huart3, (uint8_t*) ReadMessage, sizeof(ReadMessage));
+	
+	
+	
+	
+	
+	return true;
+}
+
 
 static u8 CalcCRC8(u8 *pBuf)
 {
@@ -176,3 +213,4 @@ static void Crc8Calc (u8 u8Data)
 		loc_u8Idx++;
 	}
 }
+
