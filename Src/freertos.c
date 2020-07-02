@@ -30,6 +30,7 @@
 #include "ext_flash.h"
 #include "stdio.h"
 #include "ext_flash_tb.h"
+#include "STPM32.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,6 +51,8 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 uint8_t aRxBuffer[20];
+uint8_t ReadBuffer[5] = {0};
+
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId IDLEHandle;
@@ -225,20 +228,23 @@ void StartUSART1(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		__HAL_UART_FLUSH_DRREGISTER(&huart3);
+		ReadMsgOnly(0x04,ReadBuffer);
 		
-		USART3_PINSET_RX();
+		if (TxFlag1 == 1){
+			TxFlag1 = 0;
+			__HAL_UART_FLUSH_DRREGISTER(&huart1);
+		}
 		
-    HAL_UART_Receive_IT(&huart3, (uint8_t *)aRxBuffer, 8);
-	
-		//USART3_PINSET_TX();
-		//HAL_UART_Transmit(&huart3, (uint8_t *)aRxBuffer, 8,0xFFFF);
- 		//myprintf("\r\n");
+
+		if (RxFlag1 == 1){
+			RxFlag1 = 0;
+			
+			USART3_PINSET_TX();
+			myprintf("Received! ReadBuffer: %d | %d | %d | %d | %d  \r\n",ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
+			USART3_PINSET_RX();
+		}
 		
-		//USART3_PINSET_RX();
-		
-		
-		osDelay(1);
+		osDelay(100);
   }
   /* USER CODE END StartUSART1 */
 }
@@ -256,6 +262,22 @@ void StartUSART3(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+		//__HAL_UART_FLUSH_DRREGISTER(&huart3);
+		
+		//USART3_PINSET_RX();
+		
+    //HAL_UART_Receive_IT(&huart3, (uint8_t *)aRxBuffer, 8);
+		//while(huart1.gState != HAL_UART_STATE_READY);
+		
+		//if (RxFlag3 == 1){
+		//	RxFlag3 = 0;
+			
+		//	USART3_PINSET_TX();
+		//	HAL_UART_Transmit(&huart3, (uint8_t *)aRxBuffer, 8,0xFFFF);
+		//	myprintf("\r\n");
+		//	USART3_PINSET_RX();
+		//}
+		
 		osDelay(1); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
@@ -299,30 +321,44 @@ void StartSPI2(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-// /**
-//   * @brief Rx Transfer completed callbacks
-//   * @param huart: uart handle
-//   * @retval None
-//   */
-// void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-// {
-//   /* Prevent unused argument(s) compilation warning */
-//   UNUSED(huart);
+/**
+  * @brief Rx Transfer completed callbacks
+  * @param huart: uart handle
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(huart);
 	
-// 	if (USART3 == huart1.Instance){
-// 		USART3_PINSET_RX();
-// 		HAL_UART_Transmit(&huart3, (uint8_t *)aRxBuffer, 8,0xFFFF);
-// 		myprintf("\r\n");
+	if (huart3.Instance == USART3){
+		RxFlag3 = 1;
+	}
 	
-// 		USART3_PINSET_TX();
-// 	}
+	if (huart1.Instance == USART1){
+		RxFlag1 = 1;
+	}
+}
+
+/**
+  * @brief Tx Transfer completed callbacks
+  * @param huart: uart handle
+  * @retval None
+  */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(huart);
 	
-// 	if (USART1 == huart1.Instance){
-// 		USART3_PINSET_RX();
-// 		HAL_UART_Transmit(&huart3, (uint8_t *)UART1_Buffer, 8,0xFFFF);
-// 		USART3_PINSET_TX();
-// 	}
-// }
+	if (huart1.Instance == USART1){
+		TxFlag1 = 1;
+	}
+	
+	if (huart3.Instance == USART1){
+		TxFlag3 = 1;
+	}
+}
+
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

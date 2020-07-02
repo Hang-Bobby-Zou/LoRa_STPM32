@@ -146,7 +146,7 @@ int main(void)
 				|  1   |   0   |  1   |  0      1   | S4
 				|-----------------------------------|
 		*/
-		// Here set UART3 to be in S2 mode, both Rx & Tx is on
+		// Here set UART3 to be in S4 mode, Tx is on
 		USART3_PINSET_TX();
 		
 		// Sending InitMessage = "Test"
@@ -174,9 +174,10 @@ int main(void)
 		//		Error_Handler();
 		//}
 		
-		
+		USART3_PINSET_TX();
 		myprintf("Starting FreeRTOC System...\r\n");
-		
+		myprintf("\r\n");
+		USART3_PINSET_RX();
 		
   /* USER CODE END 2 */
 
