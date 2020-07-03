@@ -229,38 +229,20 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
-		ReadBuffer[0] = 0;
-		ReadBuffer[1] = 0;
-		ReadBuffer[2] = 0;
-		ReadBuffer[3] = 0;
-		ReadBuffer[4] = 0;
+		ReadMsgOnly(0x02,ReadBuffer);
 		
-		ReadMsgOnly(0x06,ReadBuffer);
-		
-		///if (TxFlag1 == 1){
+		if (TxFlag1 == 1){
 			//This exceutes when a Transmission is complete
-		//	TxFlag1 = 0;
-		//	TxCalled1 = 0;
-			//__HAL_UART_FLUSH_DRREGISTER(&huart1);
-		//}
-		uint8_t SendBuffer[5] = {0};
+			TxFlag1 = 0;
+		}
 
 		if (RxFlag1 == 1){
 			//This exceutes when a Receive is complete
-			//SendBuffer[0] = ReadBuffer[0];
-			//SendBuffer[1] = ReadBuffer[1];
-			//SendBuffer[2] = ReadBuffer[2];
-			//SendBuffer[3] = ReadBuffer[3];
-			//SendBuffer[4] = ReadBuffer[4];
-			
 			
 			RxFlag1 = 0;
 			
 			USART3_PINSET_TX();
-			//myprintf("Received! ReadBuffer: %x | %x | %x | %x | %x  \r\n",ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
-			//HAL_UART_Transmit(&huart3, (uint8_t *)ReadBuffer, 10,0xFFFF);
-			//myprintf("Received");
-			
+			myprintf("Received! ReadBuffer: %x | %x | %x | %x | %x  \r\n",ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
 			USART3_PINSET_RX();
 			
 		}

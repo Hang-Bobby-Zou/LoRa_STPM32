@@ -49,6 +49,7 @@ static char CRC_u8Checksum;
 //Register Address Map
 #define DSP_CR3			0x04
 
+//Function decleration
 static u8 CalcCRC8(u8 *pBuf);
 static void Crc8Calc (u8 u8Data);
 void FRAME_for_UART_mode(u8 *pBuf);
@@ -76,6 +77,7 @@ bool STPM32_Init(void) {
 															3. Writing auto-latch bit (S/W Auto Latch in DSP_CR3)
 		*/
 		//First set everything low.
+		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_SET);				// EN	Low
 		
 		HAL_Delay(3000);
 		
@@ -85,12 +87,12 @@ bool STPM32_Init(void) {
 		
 		HAL_Delay(100);
 		//Then set SYNC and SCS to high before EN starts
-		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);	// SYNC High
-		HAL_GPIO_WritePin(CTRL_SCS_GPIO_Port,CTRL_SCS_Pin,GPIO_PIN_SET);			// SCS High
+		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);		// SYNC High
+		HAL_GPIO_WritePin(CTRL_SCS_GPIO_Port,CTRL_SCS_Pin,GPIO_PIN_SET);				// SCS High
 		
 		HAL_Delay(100);
 		//EN reset
-		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_SET);			// EN High
+		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_SET);				// EN High
 		
 		
 		/*SCS signal is used to reset communication peripheral and SYN signal is used to reset the DSP. 
@@ -98,7 +100,6 @@ bool STPM32_Init(void) {
 			
 		//Startup reset
 		HAL_Delay(t_startup);
-		
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_RESET);
 		HAL_Delay(t_rpw/2);
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);
@@ -125,9 +126,8 @@ bool STPM32_Init(void) {
 		SentMsg[0] = 0xCD;
 		SentMsg[1] = 0xAB;
 		
-		//if (SendMessage(0x04,ReadMsg,0x05,SentMsg) != true){
-		//	Error_Handler();
-		//}
+		SendMessage(0x04,ReadMsg,0x05,SentMsg);
+
 		
 		USART3_PINSET_TX();
 		myprintf("INIT done\r\n");
@@ -141,6 +141,7 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
 	*/
 	uint8_t Buffer[5] = {0};
+	uint8_t CRCBuffer[5] = {0};
 	
 	Buffer[0] = ReadAddress;
 	Buffer[1] = SendAddress;
@@ -154,18 +155,21 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 	//Buffer[3] = 0x44;
 	//Buffer[4] = CalcCRC8(Buffer);
 	
-	FRAME_for_UART_mode(Buffer);
+	CRCBuffer[0] = byteReverse(Buffer[0]);
+	CRCBuffer[1] = byteReverse(Buffer[1]);
+	CRCBuffer[2] = byteReverse(Buffer[2]);
+	CRCBuffer[3] = byteReverse(Buffer[3]);
+	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
 	
-	HAL_UART_Transmit_IT(&huart1, (uint8_t*)Buffer, 10);
-	//while(huart1.gState != HAL_UART_STATE_READY);
 	
-	//HAL_UART_Receive(&huart1, (uint8_t*) ReadMessage, 10,0xFFFF);
+	HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, 5,0xFFFF);
+		
 	
-	//USART3_PINSET_TX();
-	//	HAL_UART_Transmit(&huart3, (uint8_t *)ReadMessage, 10,0xFFFF);
-	//	while(huart3.gState != HAL_UART_STATE_READY);
-	//	myprintf("\r\n");
-	//USART3_PINSET_RX();
+	USART3_PINSET_TX();
+	//myprintf("ReadMessage: %x | %x | %x | %x | %x  \r\n",ReadMessage[0], ReadMessage[1], ReadMessage[2], ReadMessage[3], ReadMessage[4]);
+	myprintf("Init DONE");
+	myprintf("\r\n");
+	USART3_PINSET_RX();
 	 
 	
 	return true;
@@ -184,8 +188,6 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	Buffer[1] = 0xFF;
 	Buffer[2] = 0xFF;
 	Buffer[3] = 0xFF;
-	//Buffer[4] = CalcCRC8(Buffer);
-	
 	//Buffer[0] = 0x04;
 	//Buffer[1] = 0xFF;
 	//Buffer[2] = 0xFF;
@@ -197,21 +199,17 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	CRCBuffer[3] = byteReverse(Buffer[3]);
 	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
 	
-	//FRAME_for_UART_mode(Buffer);
-	
-	//Buffer[4] = byteReverse(Buffer[4]);
 	
 	
 	//HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, sizeof(Buffer),0xFFFF);
 	//if (TxCalled1 == 0){
 	
-		HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 10,0xFFFF);
+		HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
 		//TxCalled1 = 1;
-	
 	//	}
 	
 	//if (RxFlag1 == 0){
-		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 10);
+		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
 		//RxFlag1 = 1;
 	//}
 	
@@ -220,9 +218,9 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 
 
 
-
-
-
+/*===================================================================== */
+/*					CRC Calc 																										*/
+/*===================================================================== */
 
 static u8 CalcCRC8(u8 *pBuf)
 {
