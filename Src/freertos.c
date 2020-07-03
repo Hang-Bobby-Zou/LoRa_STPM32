@@ -52,6 +52,10 @@
 /* USER CODE BEGIN Variables */
 uint8_t aRxBuffer[20];
 uint8_t ReadBuffer[5] = {0};
+uint8_t RxBuffer[5] = {0};
+uint8_t i[1] = {0};
+UBaseType_t USART1_Priority;
+UBaseType_t USART3_Priority;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -59,7 +63,6 @@ osThreadId IDLEHandle;
 osThreadId SP1Handle;
 osThreadId USART1Handle;
 osThreadId USART3Handle;
-osThreadId USBHandle;
 osThreadId SPI2Handle;
 osSemaphoreId myBinarySem01Handle;
 
@@ -73,7 +76,6 @@ void defaultIDLE(void const * argument);
 void StartSPI1(void const * argument);
 void StartUSART1(void const * argument);
 void StartUSART3(void const * argument);
-void StartUSB(void const * argument);
 void StartSPI2(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -139,19 +141,15 @@ void MX_FREERTOS_Init(void) {
   SP1Handle = osThreadCreate(osThread(SP1), NULL);
 
   /* definition and creation of USART1 */
-  osThreadDef(USART1, StartUSART1, osPriorityBelowNormal, 0, 128);
+  osThreadDef(USART1, StartUSART1, osPriorityNormal, 0, 128);
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
-  osThreadDef(USART3, StartUSART3, osPriorityNormal, 0, 128);
+  osThreadDef(USART3, StartUSART3, osPriorityBelowNormal, 0, 128);
   USART3Handle = osThreadCreate(osThread(USART3), NULL);
 
-  /* definition and creation of USB */
-  osThreadDef(USB, StartUSB, osPriorityBelowNormal, 0, 128);
-  USBHandle = osThreadCreate(osThread(USB), NULL);
-
   /* definition and creation of SPI2 */
-  osThreadDef(SPI2, StartSPI2, osPriorityNormal, 0, 128);
+  osThreadDef(SPI2, StartSPI2, osPriorityHigh, 0, 128);
   SPI2Handle = osThreadCreate(osThread(SPI2), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -225,45 +223,33 @@ void StartSPI1(void const * argument)
 void StartUSART1(void const * argument)
 {
   /* USER CODE BEGIN StartUSART1 */
-  
+  USART1_Priority = uxTaskPriorityGet( NULL );
 	/* Infinite loop */
   for(;;)
-  {
-		ReadBuffer[0] = 0;
-		ReadBuffer[1] = 0;
-		ReadBuffer[2] = 0;
-		ReadBuffer[3] = 0;
-		ReadBuffer[4] = 0;
+  {		
+	  if (i[0] > 0x28){
+			i[0] = 0x00;
+		} 
 		
-		ReadMsgOnly(0x06,ReadBuffer);
-		
-		///if (TxFlag1 == 1){
-			//This exceutes when a Transmission is complete
-		//	TxFlag1 = 0;
-		//	TxCalled1 = 0;
-			//__HAL_UART_FLUSH_DRREGISTER(&huart1);
-		//}
-		uint8_t SendBuffer[5] = {0};
+		ReadMsgOnly(i[0],ReadBuffer);
 
 		if (RxFlag1 == 1){
-			//This exceutes when a Receive is complete
-			//SendBuffer[0] = ReadBuffer[0];
-			//SendBuffer[1] = ReadBuffer[1];
-			//SendBuffer[2] = ReadBuffer[2];
-			//SendBuffer[3] = ReadBuffer[3];
-			//SendBuffer[4] = ReadBuffer[4];
+		 	//This exceutes when a Receive is complete
+			RxBuffer [0] = ReadBuffer[0];
+		 	RxBuffer [1] = ReadBuffer[1];
+		 	RxBuffer [2] = ReadBuffer[2];
+		 	RxBuffer [3] = ReadBuffer[3];
+		 	RxBuffer [4] = ReadBuffer[4];
 			
+		 	i[0] += 0x02;
 			
-			RxFlag1 = 0;
+		 	RxFlag1 = 0;
 			
-			USART3_PINSET_TX();
-			//myprintf("Received! ReadBuffer: %x | %x | %x | %x | %x  \r\n",ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
-			//HAL_UART_Transmit(&huart3, (uint8_t *)ReadBuffer, 10,0xFFFF);
-			//myprintf("Received");
-			
-			USART3_PINSET_RX();
-			
+		 	USART3_PINSET_TX();
+		 	myprintf("Received! Read Address: %x | ReadBuffer: %x | %x | %x | %x | %x  \r\n",i,ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
+		 	USART3_PINSET_RX();
 		}
+		
 		osDelay(1);
   }
   /* USER CODE END StartUSART1 */
@@ -279,46 +265,28 @@ void StartUSART1(void const * argument)
 void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
-  /* Infinite loop */
+  USART3_Priority = uxTaskPriorityGet( NULL );
+	/* Infinite loop */
   for(;;)
-  {
-		//__HAL_UART_FLUSH_DRREGISTER(&huart3);
+  {		
 		
-		//USART3_PINSET_RX();
-		
-    //HAL_UART_Receive_IT(&huart3, (uint8_t *)aRxBuffer, 8);
-		//while(huart1.gState != HAL_UART_STATE_READY);
-		
+		//HAL_UART_Receive_IT(&huart3, aRxBuffer, 8);
+
+			
 		//if (RxFlag3 == 1){
 		//	RxFlag3 = 0;
 			
 		//	USART3_PINSET_TX();
-		//	HAL_UART_Transmit(&huart3, (uint8_t *)aRxBuffer, 8,0xFFFF);
-		//	myprintf("\r\n");
+		//	HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
 		//	USART3_PINSET_RX();
+			
 		//}
+
+		//vTaskPrioritySet( USART3Handle, ( USART1_Priority - 2 ) );
 		
 		osDelay(1); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
-}
-
-/* USER CODE BEGIN Header_StartUSB */
-/**
-* @brief Function implementing the USB thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartUSB */
-void StartUSB(void const * argument)
-{
-  /* USER CODE BEGIN StartUSB */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartUSB */
 }
 
 /* USER CODE BEGIN Header_StartSPI2 */
@@ -341,6 +309,14 @@ void StartSPI2(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+
+
+
+
+
+
+
+
 /**
   * @brief Rx Transfer completed callbacks
   * @param huart: uart handle
@@ -358,7 +334,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if (huart3.Instance == USART3){
 		RxFlag3 = 1;
 	}
-	
 }
 
 /**
@@ -371,6 +346,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
   /* Prevent unused argument(s) compilation warning */
   UNUSED(huart);
 	
+	/*
 	if (huart1.Instance == USART1){
 		TxFlag1 = 1;
 	}
@@ -378,6 +354,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	if (huart3.Instance == USART1){
 		TxFlag3 = 1;
 	}
+	*/
 }
 
 /* USER CODE END Application */

@@ -21,7 +21,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "crc.h"
 #include "spi.h"
 #include "usart.h"
 #include "usb.h"
@@ -100,7 +99,6 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_PCD_Init();
   MX_SPI2_Init();
-  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
 		
 		/*	---- Connetion Table ----
@@ -147,15 +145,6 @@ int main(void)
 		*/
 		// Here set UART3 to be in S4 mode, Tx is on
 		USART3_PINSET_TX();
-		
-		// Sending InitMessage = "Test"
-		//char InitMessage[] = "Test\r\n";
-		//if (HAL_UART_Transmit_IT(&huart3, (uint8_t*)InitMessage, sizeof(InitMessage))!= HAL_OK)
-		//	{
-		//			Error_Handler();
-		//	}
-		//while(huart3.gState == HAL_UART_STATE_BUSY_TX){
-		//}
 		myprintf("Test\r\n");
 		USART3_PINSET_RX();
 		

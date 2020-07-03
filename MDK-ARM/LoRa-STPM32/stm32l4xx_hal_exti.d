@@ -22,8 +22,6 @@ lora-stpm32\stm32l4xx_hal_exti.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_
 lora-stpm32\stm32l4xx_hal_exti.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h
 lora-stpm32\stm32l4xx_hal_exti.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma_ex.h
 lora-stpm32\stm32l4xx_hal_exti.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h
-lora-stpm32\stm32l4xx_hal_exti.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_crc.h
-lora-stpm32\stm32l4xx_hal_exti.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_crc_ex.h
 lora-stpm32\stm32l4xx_hal_exti.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h
 lora-stpm32\stm32l4xx_hal_exti.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h
 lora-stpm32\stm32l4xx_hal_exti.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h
