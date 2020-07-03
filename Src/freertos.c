@@ -225,26 +225,46 @@ void StartSPI1(void const * argument)
 void StartUSART1(void const * argument)
 {
   /* USER CODE BEGIN StartUSART1 */
-  /* Infinite loop */
+  
+	/* Infinite loop */
   for(;;)
   {
-		ReadMsgOnly(0x04,ReadBuffer);
+		ReadBuffer[0] = 0;
+		ReadBuffer[1] = 0;
+		ReadBuffer[2] = 0;
+		ReadBuffer[3] = 0;
+		ReadBuffer[4] = 0;
 		
-		if (TxFlag1 == 1){
-			TxFlag1 = 0;
-			__HAL_UART_FLUSH_DRREGISTER(&huart1);
-		}
+		ReadMsgOnly(0x06,ReadBuffer);
 		
+		///if (TxFlag1 == 1){
+			//This exceutes when a Transmission is complete
+		//	TxFlag1 = 0;
+		//	TxCalled1 = 0;
+			//__HAL_UART_FLUSH_DRREGISTER(&huart1);
+		//}
+		uint8_t SendBuffer[5] = {0};
 
 		if (RxFlag1 == 1){
+			//This exceutes when a Receive is complete
+			//SendBuffer[0] = ReadBuffer[0];
+			//SendBuffer[1] = ReadBuffer[1];
+			//SendBuffer[2] = ReadBuffer[2];
+			//SendBuffer[3] = ReadBuffer[3];
+			//SendBuffer[4] = ReadBuffer[4];
+			
+			
 			RxFlag1 = 0;
 			
 			USART3_PINSET_TX();
-			myprintf("Received! ReadBuffer: %d | %d | %d | %d | %d  \r\n",ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
+			//myprintf("Received! ReadBuffer: %x | %x | %x | %x | %x  \r\n",ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
+			//HAL_UART_Transmit(&huart3, (uint8_t *)ReadBuffer, 10,0xFFFF);
+			//myprintf("Received");
+			
 			USART3_PINSET_RX();
+			
 		}
-		
-		osDelay(100);
+		osDelay(1);
   }
   /* USER CODE END StartUSART1 */
 }
@@ -331,13 +351,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   /* Prevent unused argument(s) compilation warning */
   UNUSED(huart);
 	
+	if (huart1.Instance == USART1){
+		RxFlag1 = 1;
+	}
+	
 	if (huart3.Instance == USART3){
 		RxFlag3 = 1;
 	}
 	
-	if (huart1.Instance == USART1){
-		RxFlag1 = 1;
-	}
 }
 
 /**
