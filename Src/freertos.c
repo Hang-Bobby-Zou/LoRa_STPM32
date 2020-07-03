@@ -52,6 +52,8 @@
 /* USER CODE BEGIN Variables */
 uint8_t aRxBuffer[20];
 uint8_t ReadBuffer[5] = {0};
+uint8_t i = 0;
+
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -139,7 +141,7 @@ void MX_FREERTOS_Init(void) {
   SP1Handle = osThreadCreate(osThread(SP1), NULL);
 
   /* definition and creation of USART1 */
-  osThreadDef(USART1, StartUSART1, osPriorityBelowNormal, 0, 128);
+  osThreadDef(USART1, StartUSART1, osPriorityNormal, 0, 128);
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
@@ -229,11 +231,16 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
-		ReadMsgOnly(0x02,ReadBuffer);
+		if (i > 0x28){
+			i = 0x00;
+		} 
+		
+		ReadMsgOnly(i,ReadBuffer);
 		
 		if (TxFlag1 == 1){
 			//This exceutes when a Transmission is complete
 			TxFlag1 = 0;
+			i += 0x02;
 		}
 
 		if (RxFlag1 == 1){
@@ -242,10 +249,15 @@ void StartUSART1(void const * argument)
 			RxFlag1 = 0;
 			
 			USART3_PINSET_TX();
-			myprintf("Received! ReadBuffer: %x | %x | %x | %x | %x  \r\n",ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
+			myprintf("Received! Read Address: %x | ReadBuffer: %x | %x | %x | %x | %x  \r\n",i,ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
 			USART3_PINSET_RX();
 			
 		}
+		
+		
+		
+		
+		
 		osDelay(1);
   }
   /* USER CODE END StartUSART1 */
@@ -268,13 +280,13 @@ void StartUSART3(void const * argument)
 		
 		//USART3_PINSET_RX();
 		
-    //HAL_UART_Receive_IT(&huart3, (uint8_t *)aRxBuffer, 8);
-		//while(huart1.gState != HAL_UART_STATE_READY);
+		//HAL_UART_Receive_IT(&huart3, (uint8_t *)aRxBuffer, 8);
 		
 		//if (RxFlag3 == 1){
 		//	RxFlag3 = 0;
-			
+		//	
 		//	USART3_PINSET_TX();
+		//	myprintf("USART3: ");
 		//	HAL_UART_Transmit(&huart3, (uint8_t *)aRxBuffer, 8,0xFFFF);
 		//	myprintf("\r\n");
 		//	USART3_PINSET_RX();

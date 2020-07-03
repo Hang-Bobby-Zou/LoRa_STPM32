@@ -167,7 +167,7 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 	
 	USART3_PINSET_TX();
 	//myprintf("ReadMessage: %x | %x | %x | %x | %x  \r\n",ReadMessage[0], ReadMessage[1], ReadMessage[2], ReadMessage[3], ReadMessage[4]);
-	myprintf("Init DONE");
+	myprintf("Init register configured");
 	myprintf("\r\n");
 	USART3_PINSET_RX();
 	 

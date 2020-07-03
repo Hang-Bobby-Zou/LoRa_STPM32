@@ -3,7 +3,7 @@
 <title>Static Call Graph - [LoRa-STPM32\LoRa-STPM32.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image LoRa-STPM32\LoRa-STPM32.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Jul 03 09:28:21 2020
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Jul 03 10:02:23 2020
 <BR><P>
 <H3>Maximum Stack Usage =        376 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -876,6 +876,7 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = HAL_UART_Receive_IT
 </UL>
 <BR>[Called By]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ReadMsgOnly
+<LI><a href="#[59]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartUSART3
 </UL>
 
 <P><STRONG><a name="[ce]"></a>HAL_UART_RxCpltCallback</STRONG> (Thumb, 34 bytes, Stack size 0 bytes, freertos.o(i.HAL_UART_RxCpltCallback))
@@ -899,6 +900,7 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendMessage
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ReadMsgOnly
+<LI><a href="#[59]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartUSART3
 </UL>
 
 <P><STRONG><a name="[cd]"></a>HAL_UART_TxCpltCallback</STRONG> (Thumb, 34 bytes, Stack size 0 bytes, freertos.o(i.HAL_UART_TxCpltCallback))
@@ -1050,7 +1052,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(.constdata)
 </UL>
-<P><STRONG><a name="[58]"></a>StartUSART1</STRONG> (Thumb, 82 bytes, Stack size 16 bytes, freertos.o(i.StartUSART1))
+<P><STRONG><a name="[58]"></a>StartUSART1</STRONG> (Thumb, 116 bytes, Stack size 16 bytes, freertos.o(i.StartUSART1))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = StartUSART1 &rArr; ReadMsgOnly &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART3_PINSET_TX
@@ -1061,10 +1063,15 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(.constdata)
 </UL>
-<P><STRONG><a name="[59]"></a>StartUSART3</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, freertos.o(i.StartUSART3))
+<P><STRONG><a name="[59]"></a>StartUSART3</STRONG> (Thumb, 72 bytes, Stack size 0 bytes, freertos.o(i.StartUSART3))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = StartUSART3 &rArr; osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
+<BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART3_PINSET_TX
+<LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART3_PINSET_RX
+<LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
+<LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Receive_IT
+<LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
+<LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(.constdata)
 </UL>
@@ -1168,6 +1175,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendMessage
 <LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;STPM32_Init
+<LI><a href="#[59]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartUSART3
 <LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartUSART1
 </UL>
 
@@ -1179,6 +1187,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendMessage
 <LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;STPM32_Init
+<LI><a href="#[59]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartUSART3
 <LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartUSART1
 </UL>
 
@@ -1279,6 +1288,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendMessage
 <LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;STPM32_Init
+<LI><a href="#[59]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartUSART3
 <LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartUSART1
 </UL>
 
