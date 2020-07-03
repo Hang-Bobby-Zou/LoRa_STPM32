@@ -23,8 +23,6 @@ lora-stpm32\main.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h
 lora-stpm32\main.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h
 lora-stpm32\main.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma_ex.h
 lora-stpm32\main.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h
-lora-stpm32\main.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_crc.h
-lora-stpm32\main.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_crc_ex.h
 lora-stpm32\main.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h
 lora-stpm32\main.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h
 lora-stpm32\main.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h
@@ -55,7 +53,6 @@ lora-stpm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
 lora-stpm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 lora-stpm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 lora-stpm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
-lora-stpm32\main.o: ../Inc/crc.h
 lora-stpm32\main.o: ../Inc/spi.h
 lora-stpm32\main.o: ../Inc/usart.h
 lora-stpm32\main.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

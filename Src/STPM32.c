@@ -161,9 +161,14 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 	CRCBuffer[3] = byteReverse(Buffer[3]);
 	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
 	
+	//if (RxFlag1 == 0){
+		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
+	//}
 	
 	HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, 5,0xFFFF);
-		
+	
+	HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
+	
 	
 	USART3_PINSET_TX();
 	//myprintf("ReadMessage: %x | %x | %x | %x | %x  \r\n",ReadMessage[0], ReadMessage[1], ReadMessage[2], ReadMessage[3], ReadMessage[4]);
@@ -200,18 +205,13 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
 	
 	
-	
-	//HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, sizeof(Buffer),0xFFFF);
-	//if (TxCalled1 == 0){
-	
 		HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
-		//TxCalled1 = 1;
-	//	}
+
 	
-	//if (RxFlag1 == 0){
+	if (RxFlag1 == 0){
 		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
-		//RxFlag1 = 1;
-	//}
+		//RxCalled1 =1;
+	}
 	
 	return true;
 }
