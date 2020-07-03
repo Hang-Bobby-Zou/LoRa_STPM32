@@ -51,6 +51,8 @@ static char CRC_u8Checksum;
 
 static u8 CalcCRC8(u8 *pBuf);
 static void Crc8Calc (u8 u8Data);
+void FRAME_for_UART_mode(u8 *pBuf);
+static u8 byteReverse(u8 n);
 
 bool STPM32_Init(void) {
 		// Initializing STPM32
@@ -74,14 +76,19 @@ bool STPM32_Init(void) {
 															3. Writing auto-latch bit (S/W Auto Latch in DSP_CR3)
 		*/
 		//First set everything low.
-		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_RESET);		// EN	Low
-		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);	// SYNC Low
-		HAL_GPIO_WritePin(CTRL_SCS_GPIO_Port, CTRL_SCS_Pin, GPIO_PIN_SET);		// SCS Low
 		
+		HAL_Delay(3000);
+		
+		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_RESET);			// EN	Low
+		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_RESET);	// SYNC Low
+		HAL_GPIO_WritePin(CTRL_SCS_GPIO_Port, CTRL_SCS_Pin, GPIO_PIN_RESET);		// SCS Low
+		
+		HAL_Delay(100);
 		//Then set SYNC and SCS to high before EN starts
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);	// SYNC High
 		HAL_GPIO_WritePin(CTRL_SCS_GPIO_Port,CTRL_SCS_Pin,GPIO_PIN_SET);			// SCS High
 		
+		HAL_Delay(100);
 		//EN reset
 		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_SET);			// EN High
 		
@@ -93,27 +100,27 @@ bool STPM32_Init(void) {
 		HAL_Delay(t_startup);
 		
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_RESET);
-		HAL_Delay(t_rpw);
+		HAL_Delay(t_rpw/2);
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);
-		HAL_Delay(t_rpw);
+		HAL_Delay(t_rpw/2);
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_RESET);
-		HAL_Delay(t_rpw);
+		HAL_Delay(t_rpw/2);
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);
-		HAL_Delay(t_rpw);
+		HAL_Delay(t_rpw/2);
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_RESET);
-		HAL_Delay(t_rpw);
+		HAL_Delay(t_rpw/2);
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);
 		
 		HAL_Delay(t_scs);
 		HAL_GPIO_WritePin(CTRL_SCS_GPIO_Port, CTRL_SCS_Pin, GPIO_PIN_RESET);
-		HAL_Delay(t_rpw);
+		HAL_Delay(t_rpw/2);
 		HAL_GPIO_WritePin(CTRL_SCS_GPIO_Port, CTRL_SCS_Pin, GPIO_PIN_SET);
 		// Till here all hardware reset is done
 		
 		
 		//Configure DSP_CR3, read address 0x04 (Row2), write 0xABCD to 0x05 
 		uint8_t SentMsg [2] = {0};
-		uint8_t ReadMsg [4] = {0};
+		uint8_t ReadMsg [5] = {0};
 		
 		SentMsg[0] = 0xCD;
 		SentMsg[1] = 0xAB;
@@ -121,7 +128,10 @@ bool STPM32_Init(void) {
 		//if (SendMessage(0x04,ReadMsg,0x05,SentMsg) != true){
 		//	Error_Handler();
 		//}
-
+		
+		USART3_PINSET_TX();
+		myprintf("INIT done\r\n");
+		USART3_PINSET_RX();
 		return true;
 }
 
@@ -142,17 +152,19 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 	//Buffer[1] = 0x42;
 	//Buffer[2] = 0x43;
 	//Buffer[3] = 0x44;
-	Buffer[4] = CalcCRC8(Buffer);
+	//Buffer[4] = CalcCRC8(Buffer);
 	
-	HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, sizeof(Buffer),0xFFFF);
+	FRAME_for_UART_mode(Buffer);
+	
+	HAL_UART_Transmit_IT(&huart1, (uint8_t*)Buffer, 10);
 	//while(huart1.gState != HAL_UART_STATE_READY);
 	
-	HAL_UART_Receive(&huart1, (uint8_t*) ReadMessage, sizeof(ReadMessage),0xFFFF);
+	//HAL_UART_Receive(&huart1, (uint8_t*) ReadMessage, 10,0xFFFF);
 	
 	//USART3_PINSET_TX();
-	//HAL_UART_Transmit(&huart3, (uint8_t *)ReadMessage, 4,0xFFFF);
-	//while(huart3.gState != HAL_UART_STATE_READY);
-	//myprintf("\r\n");
+	//	HAL_UART_Transmit(&huart3, (uint8_t *)ReadMessage, 10,0xFFFF);
+	//	while(huart3.gState != HAL_UART_STATE_READY);
+	//	myprintf("\r\n");
 	//USART3_PINSET_RX();
 	 
 	
@@ -166,23 +178,50 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
 	*/
 	uint8_t Buffer[5] = {0};
+	uint8_t CRCBuffer[5] = {0};
 	
 	Buffer[0] = ReadAddress;
 	Buffer[1] = 0xFF;
 	Buffer[2] = 0xFF;
 	Buffer[3] = 0xFF;
-	Buffer[4] = CalcCRC8(Buffer);
+	//Buffer[4] = CalcCRC8(Buffer);
+	
+	//Buffer[0] = 0x04;
+	//Buffer[1] = 0xFF;
+	//Buffer[2] = 0xFF;
+	//Buffer[3] = 0xFF;
+	
+	CRCBuffer[0] = byteReverse(Buffer[0]);
+	CRCBuffer[1] = byteReverse(Buffer[1]);
+	CRCBuffer[2] = byteReverse(Buffer[2]);
+	CRCBuffer[3] = byteReverse(Buffer[3]);
+	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
+	
+	//FRAME_for_UART_mode(Buffer);
+	
+	//Buffer[4] = byteReverse(Buffer[4]);
+	
 	
 	//HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, sizeof(Buffer),0xFFFF);
-	HAL_UART_Transmit_IT(&huart3, (uint8_t*) Buffer, sizeof(Buffer));	
-	HAL_UART_Receive_IT(&huart3, (uint8_t*) ReadMessage, sizeof(ReadMessage));
+	//if (TxCalled1 == 0){
 	
+		HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 10,0xFFFF);
+		//TxCalled1 = 1;
 	
+	//	}
 	
-	
+	//if (RxFlag1 == 0){
+		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 10);
+		//RxFlag1 = 1;
+	//}
 	
 	return true;
 }
+
+
+
+
+
 
 
 static u8 CalcCRC8(u8 *pBuf)
@@ -214,3 +253,21 @@ static void Crc8Calc (u8 u8Data)
 	}
 }
 
+void FRAME_for_UART_mode(u8 *pBuf)
+{
+u8 temp[4],x,CRC_on_reversed_buf;
+for (x=0;x<(STPM3x_FRAME_LEN-1);x++)
+{
+temp[x] = byteReverse(pBuf[x]);
+}
+CRC_on_reversed_buf = CalcCRC8(temp);
+pBuf[4] = byteReverse(CRC_on_reversed_buf);
+}
+
+static u8 byteReverse(u8 n)
+{
+n = ((n >> 1) & 0x55) | ((n << 1) & 0xaa);
+n = ((n >> 2) & 0x33) | ((n << 2) & 0xcc);
+n = ((n >> 4) & 0x0F) | ((n << 4) & 0xF0);
+return n;
+}

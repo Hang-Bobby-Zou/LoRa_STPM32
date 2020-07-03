@@ -106,6 +106,10 @@ static int TxFlag3 = 0;
 
 static int RxFlag1 = 0;
 static int TxFlag1 = 0;
+
+static int RxCalled1 = 0;
+static int TxCalled1 = 0;
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

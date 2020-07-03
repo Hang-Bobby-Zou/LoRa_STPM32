@@ -130,7 +130,6 @@ int main(void)
 		
 		/* Initialize UART for sending message*/ 
 		HAL_UART_MspInit(&huart1);		//UART1 - Connect STPM32
-		HAL_CRC_MspInit(&hcrc);				//Initialize CRC
 		HAL_UART_MspInit(&huart3);		//UART3 - Connect Serial Out Terminal
 
 		/*  Configure DE & !RE pins for UART3  */ 
@@ -150,19 +149,19 @@ int main(void)
 		USART3_PINSET_TX();
 		
 		// Sending InitMessage = "Test"
-		char InitMessage[] = "Test\r\n";
-		if (HAL_UART_Transmit_IT(&huart3, (uint8_t*)InitMessage, sizeof(InitMessage))!= HAL_OK)
-			{
-					Error_Handler();
-			}
-		while(huart3.gState == HAL_UART_STATE_BUSY_TX){
-		}
-		
+		//char InitMessage[] = "Test\r\n";
+		//if (HAL_UART_Transmit_IT(&huart3, (uint8_t*)InitMessage, sizeof(InitMessage))!= HAL_OK)
+		//	{
+		//			Error_Handler();
+		//	}
+		//while(huart3.gState == HAL_UART_STATE_BUSY_TX){
+		//}
+		myprintf("Test\r\n");
 		USART3_PINSET_RX();
 		
 		
 		//Initialize STPM32
-		//STPM32_Init();
+		STPM32_Init();
 		
 		
 		
