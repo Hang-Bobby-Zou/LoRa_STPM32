@@ -27,10 +27,12 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
 #include "usart.h"
+#include "spi.h"
 #include "ext_flash.h"
 #include "stdio.h"
 #include "ext_flash_tb.h"
 #include "STPM32.h"
+#include "STPM32_AddressMap.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,10 +61,10 @@ UBaseType_t USART3_Priority;
 UBaseType_t SPI1_Priority;
 UBaseType_t SPI2_Priority;
 
-uint32_t flash_pointer = 0;
-uint32_t flash_sector_pointer = 0;
-uint8_t flash_buffer[4096] = {0};
-int flash_count = 0;
+uint32_t 	flash_pointer = 0;
+uint32_t 	flash_sector_pointer = 0;
+uint8_t 	flash_buffer[4096] = {0};
+uint32_t 	flash_count = 0;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -210,53 +212,44 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-	  //This is for testing, let the program repeatedly read from STPM32
-		if (i[0] > 0x28){
-			i[0] = 0x00;
-		}
+	  // //This is for testing, let the program repeatedly read from STPM32
+		// if (i[0] > 0x28){
+		// 	i[0] = 0x00;
+		// }
 		
-		if (RxFlag1 == 1){
-		 	//***This exceutes when a Receive is complete***
-			// Get the info before been overwritten
-			
-			// Save read data to ext_flash
-			if (flash_count > 4096){
-				if (flash_sector_pointer == 512)
-					flash_sector_pointer = 0;
-				
-				ext_flash_write(flash_sector_pointer, (char*) flash_buffer, 4096);
-				ext_flash_last_write_or_erase_done();
-				flash_sector_pointer ++;
-				flash_count = 0;
-			}
-			
-			flash_buffer[0] 						= 0xFF;
-			flash_buffer[1] 						= i[0];
-			flash_buffer[2] 						= 0xFF;
-			flash_buffer[flash_count+3] = RxBuffer[0];
-			flash_buffer[flash_count+4] = RxBuffer[1];
-			flash_buffer[flash_count+5] = RxBuffer[2];
-			flash_buffer[flash_count+6] = RxBuffer[3];
-			flash_buffer[flash_count+7] = RxBuffer[4];
-			
-			flash_count += 0x08;
+		// if (USART1_RxFlag == 1){
+		//  	//***This exceutes when a Receive is complete***
+		// 	// Get the info before been overwritten
 			
 			
 			
+		// 	//***Note: Somehow, CRC byte always comes one cycle late, but normally we ignore it.
+		// 	USART3_PINSET_TX();
+		//  	myprintf("Received! Read Address: %x | ReadBuffer: %x | %x | %x | %x | %x  \r\n",i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+		//  	USART3_PINSET_RX();
 			
-			//***Note: Somehow, CRC byte always comes one cycle late, but normally we ignore it.
-			USART3_PINSET_TX();
-		 	myprintf("Received! Read Address: %x | ReadBuffer: %x | %x | %x | %x | %x  \r\n",i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
-		 	USART3_PINSET_RX();
-			
-			// Increment the read register by 2 and clear the flag to wait for the next operation.
-			i[0] += 0x02;
-			RxFlag1 = 0;
-		}
-		
+		// 	// Increment the read register by 2 and clear the flag to wait for the next operation.
+		// 	i[0] += 0x02;
+		// 	USART1_RxFlag = 0;
+		// }
 		
 		// Calls read message only and get the buffer as soon as it returns
-		ReadMsgOnly(i[0],ReadBuffer);
+		// ReadMsgOnly(i[0],ReadBuffer);
+		
+		if (USART1_RxFlag == 1){
+			USART3_PINSET_TX();
+			myprintf("Active Energy : %x | %x | %x | %x | %x  \r\n", RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+			USART3_PINSET_RX();
+			
+			USART1_RxFlag = 0;
+		}
+		
+		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_RESET);
+		HAL_Delay(1/2);
+		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);
+		
+		ReadMsgOnly(0x8A,ReadBuffer);
+		
 		RxBuffer[0] = ReadBuffer[0];
 		RxBuffer[1] = ReadBuffer[1];
 		RxBuffer[2] = ReadBuffer[2];
@@ -264,7 +257,7 @@ void StartUSART1(void const * argument)
 		RxBuffer[4] = ReadBuffer[4];
 		
 		
-		vTaskDelay(pdMS_TO_TICKS( 3000 ));
+		vTaskDelay(pdMS_TO_TICKS( 1000 ));
 		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));
 		osDelay(1);
   }
@@ -287,15 +280,15 @@ void StartUSART3(void const * argument)
   {		
 		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 8);
 
-		 if (RxFlag3 == 1){
-		 	vTaskSuspend(USART1Handle);
-		 	RxFlag3 = 0;
+		 if (USART3_RxFlag == 1){
+		 	//vTaskSuspend(USART1Handle);
+		 	USART3_RxFlag = 0;
 			
 		 	USART3_PINSET_TX();
 		 	HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
 		 	USART3_PINSET_RX();
 			
-		 	vTaskResume(USART1Handle);
+		 	//vTaskResume(USART1Handle);
 		 }
 
 		osDelay(1); //This delay is in ms
@@ -336,17 +329,16 @@ void StartSPI2(void const * argument)
   * @param huart: uart handle
   * @retval None
   */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(huart);
 	
 	if (huart == &huart1){
-		RxFlag1 = 1;
+		USART1_RxFlag = 1;
 	}
 	
 	if (huart == &huart3){
-		RxFlag3 = 1;
+		USART3_RxFlag = 1;
 	}
 }
 
@@ -355,20 +347,56 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   * @param huart: uart handle
   * @retval None
   */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(huart);
 	
 	if (huart == &huart1){
-		TxFlag1 = 1;
+		USART1_TxFlag = 1;
 	}
 	
 	if (huart == &huart3){
-		TxFlag3 = 1;
+		USART3_TxFlag = 1;
 	}
 	
 }
+
+/**
+  * @brief Tx Transfer completed callbacks
+  * @param hspi: spi handle
+  * @retval None
+  */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
+	/* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+	
+	if (hspi == &hspi1){
+		SPI1_TxFlag = 1;
+	}
+	
+	if (hspi == &hspi2){
+		SPI2_TxFlag = 1;
+	}
+}
+
+/**
+  * @brief Tx Rransfer completed callbacks
+  * @param hspi: spi handle
+  * @retval None
+  */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
+	/* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+	
+	if (hspi == &hspi1){
+		SPI1_RxFlag = 1;
+	}
+	
+	if (hspi == &hspi2){
+		SPI2_RxFlag = 1;
+	}
+}
+
 
 /* USER CODE END Application */
 

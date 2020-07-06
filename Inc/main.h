@@ -101,17 +101,17 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 static uint8_t UART1_Buffer[2];
 
-static int RxFlag1 = 0;
-static int TxFlag1 = 0;
+static int USART1_RxFlag = 0;
+static int USART1_TxFlag = 0;
 
-static int RxFlag3 = 0;
-static int TxFlag3 = 0;
+static int USART3_RxFlag = 0;
+static int USART3_TxFlag = 0;
 
-static int RxCalled1 = 0;
-static int TxCalled1 = 0;
+static int SPI1_RxFlag = 0;
+static int SPI1_TxFlag = 0;
 
-static int RxCalled3 = 0;
-static int TxCalled3 = 0;
+static int SPI2_RxFlag = 0;
+static int SPI2_TxFlag = 0;
 
 /* USER CODE END Private defines */
 

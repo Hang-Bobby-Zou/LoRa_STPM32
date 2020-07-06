@@ -56,4 +56,5 @@ lora-stpm32\lora.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_usb.h
 lora-stpm32\lora.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd_ex.h
 lora-stpm32\lora.o: ../Inc/usart.h
 lora-stpm32\lora.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+lora-stpm32\lora.o: ../Inc/spi.h
 lora-stpm32\lora.o: ../Inc/LoRa.h

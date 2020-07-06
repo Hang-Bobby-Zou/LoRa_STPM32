@@ -63,13 +63,13 @@ bool STPM32_Init(void) {
 									3. Wait for t_startup time or PowrOK signal 
 									4. Three SYN low signal of time t_rpw
 		
-									8. Configure all parameters (not a lot)
-									9. Communicate:
+									5. Configure all parameters (not a lot)
+									6. Communicate:
 											8.1 Tx: Read Address, Write Address, LS Data[7:0], MS Data[15:8], CRC Byte 
 											8.2 Rx: Data[7:0], Data[15:8], Data[23:16], Data[31:24], CRC Byte
 											8.2 Dummy read address 0xFF increments by one the internal read pointer
 											8.4 Dummy write address 0xFF specifies that no writing is requested
-									10. Other: 
+									7. Other: 
 											BREAK frame: if received, a break flag is set and the whole packet reception aborts
 											IDLE frame: the receiver can recognize an IDLE frame
 											LATCH: 	1. One SYN pulse with SCS set to high. 
@@ -155,7 +155,7 @@ bool SendMsgOnly (uint32_t SendAddress, uint8_t* SendMessage){
 	CRCBuffer[3] = byteReverse(Buffer[3]);
 	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
 	
-	if (RxFlag1 == 0){
+	if (USART1_RxFlag == 0){
 		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
 	}
 	
@@ -187,12 +187,13 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	CRCBuffer[3] = byteReverse(Buffer[3]);
 	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
 	
-	if (RxFlag1 == 0){
+	if (USART1_RxFlag == 0){
 		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
+		
 	}
 	
 	HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
-
+	
 	return true;
 }
 
@@ -238,6 +239,56 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 	
 	return true;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*===================================================================== */
 /*					CRC Calc 																										*/

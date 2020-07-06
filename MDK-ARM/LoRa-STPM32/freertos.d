@@ -57,8 +57,10 @@ lora-stpm32\freertos.o: ../Inc/usart.h
 lora-stpm32\freertos.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 lora-stpm32\freertos.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 lora-stpm32\freertos.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+lora-stpm32\freertos.o: ../Inc/spi.h
 lora-stpm32\freertos.o: ../Inc/ext_flash.h
 lora-stpm32\freertos.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 lora-stpm32\freertos.o: ../Inc/ext_flash_tb.h
 lora-stpm32\freertos.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 lora-stpm32\freertos.o: ../Inc/STPM32.h
+lora-stpm32\freertos.o: ../Inc/STPM32_AddressMap.h

@@ -155,7 +155,6 @@ int main(void)
 			Error_Handler();
 	
 		
-		
 		//Initialize LoRa
 		//if (LoRa_Init() != true)
 		//	Error_Handler();
@@ -169,10 +168,12 @@ int main(void)
 		//		Error_Handler();
 		//}
 		
-		for (int i = 0; i < 32; i++){
-			ext_flash_erase_sector(i);
-			ext_flash_last_write_or_erase_done();
-		}
+		//for (int i = 0; i < 32; i++){
+		//	ext_flash_erase_sector(i);
+		//	ext_flash_last_write_or_erase_done();
+		//}
+		
+		
 		
 		USART3_PINSET_TX();
 		myprintf("Starting FreeRTOC System...\r\n");
