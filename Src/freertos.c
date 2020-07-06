@@ -27,10 +27,12 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
 #include "usart.h"
+#include "spi.h"
 #include "ext_flash.h"
 #include "stdio.h"
 #include "ext_flash_tb.h"
 #include "STPM32.h"
+#include "STPM32_AddressMap.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,11 +58,17 @@ uint8_t RxBuffer[5] = {0};
 uint8_t i[1] = {0};
 UBaseType_t USART1_Priority;
 UBaseType_t USART3_Priority;
+UBaseType_t SPI1_Priority;
+UBaseType_t SPI2_Priority;
+
+uint32_t 	flash_pointer = 0;
+uint32_t 	flash_sector_pointer = 0;
+uint8_t 	flash_buffer[4096] = {0};
+uint32_t 	flash_count = 0;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId IDLEHandle;
-osThreadId SP1Handle;
 osThreadId USART1Handle;
 osThreadId USART3Handle;
 osThreadId SPI2Handle;
@@ -73,7 +81,6 @@ osSemaphoreId myBinarySem01Handle;
 
 void StartDefaultTask(void const * argument);
 void defaultIDLE(void const * argument);
-void StartSPI1(void const * argument);
 void StartUSART1(void const * argument);
 void StartUSART3(void const * argument);
 void StartSPI2(void const * argument);
@@ -136,10 +143,6 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(IDLE, defaultIDLE, osPriorityIdle, 0, 128);
   IDLEHandle = osThreadCreate(osThread(IDLE), NULL);
 
-  /* definition and creation of SP1 */
-  osThreadDef(SP1, StartSPI1, osPriorityBelowNormal, 0, 4096);
-  SP1Handle = osThreadCreate(osThread(SP1), NULL);
-
   /* definition and creation of USART1 */
   osThreadDef(USART1, StartUSART1, osPriorityNormal, 0, 128);
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
@@ -195,24 +198,6 @@ void defaultIDLE(void const * argument)
   /* USER CODE END defaultIDLE */
 }
 
-/* USER CODE BEGIN Header_StartSPI1 */
-/**
-* @brief Function implementing the SP1 thread. For External Flash
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartSPI1 */
-void StartSPI1(void const * argument)
-{
-  /* USER CODE BEGIN StartSPI1 */
-  /* Infinite loop */
-  for(;;)
-  {	
-		osDelay(1);
-  }
-  /* USER CODE END StartSPI1 */
-}
-
 /* USER CODE BEGIN Header_StartUSART1 */
 /**
 * @brief Function implementing the USART1 thread.
@@ -227,29 +212,53 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-	  if (i[0] > 0x28){
-			i[0] = 0x00;
-		} 
+	  // //This is for testing, let the program repeatedly read from STPM32
+		// if (i[0] > 0x28){
+		// 	i[0] = 0x00;
+		// }
 		
-		ReadMsgOnly(i[0],ReadBuffer);
-
-		if (RxFlag1 == 1){
-		 	//This exceutes when a Receive is complete
-			RxBuffer [0] = ReadBuffer[0];
-		 	RxBuffer [1] = ReadBuffer[1];
-		 	RxBuffer [2] = ReadBuffer[2];
-		 	RxBuffer [3] = ReadBuffer[3];
-		 	RxBuffer [4] = ReadBuffer[4];
+		// if (USART1_RxFlag == 1){
+		//  	//***This exceutes when a Receive is complete***
+		// 	// Get the info before been overwritten
 			
-		 	i[0] += 0x02;
 			
-		 	RxFlag1 = 0;
 			
-		 	USART3_PINSET_TX();
-		 	myprintf("Received! Read Address: %x | ReadBuffer: %x | %x | %x | %x | %x  \r\n",i,ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
-		 	USART3_PINSET_RX();
+		// 	//***Note: Somehow, CRC byte always comes one cycle late, but normally we ignore it.
+		// 	USART3_PINSET_TX();
+		//  	myprintf("Received! Read Address: %x | ReadBuffer: %x | %x | %x | %x | %x  \r\n",i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+		//  	USART3_PINSET_RX();
+			
+		// 	// Increment the read register by 2 and clear the flag to wait for the next operation.
+		// 	i[0] += 0x02;
+		// 	USART1_RxFlag = 0;
+		// }
+		
+		// Calls read message only and get the buffer as soon as it returns
+		// ReadMsgOnly(i[0],ReadBuffer);
+		
+		if (USART1_RxFlag == 1){
+			USART3_PINSET_TX();
+			myprintf("Active Energy : %x | %x | %x | %x | %x  \r\n", RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+			USART3_PINSET_RX();
+			
+			USART1_RxFlag = 0;
 		}
 		
+		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_RESET);
+		HAL_Delay(1/2);
+		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);
+		
+		ReadMsgOnly(0x8A,ReadBuffer);
+		
+		RxBuffer[0] = ReadBuffer[0];
+		RxBuffer[1] = ReadBuffer[1];
+		RxBuffer[2] = ReadBuffer[2];
+		RxBuffer[3] = ReadBuffer[3];
+		RxBuffer[4] = ReadBuffer[4];
+		
+		
+		vTaskDelay(pdMS_TO_TICKS( 1000 ));
+		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));
 		osDelay(1);
   }
   /* USER CODE END StartUSART1 */
@@ -269,21 +278,19 @@ void StartUSART3(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-		
-		//HAL_UART_Receive_IT(&huart3, aRxBuffer, 8);
+		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 8);
 
+		 if (USART3_RxFlag == 1){
+		 	//vTaskSuspend(USART1Handle);
+		 	USART3_RxFlag = 0;
 			
-		//if (RxFlag3 == 1){
-		//	RxFlag3 = 0;
+		 	USART3_PINSET_TX();
+		 	HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
+		 	USART3_PINSET_RX();
 			
-		//	USART3_PINSET_TX();
-		//	HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
-		//	USART3_PINSET_RX();
-			
-		//}
+		 	//vTaskResume(USART1Handle);
+		 }
 
-		//vTaskPrioritySet( USART3Handle, ( USART1_Priority - 2 ) );
-		
 		osDelay(1); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
@@ -299,7 +306,8 @@ void StartUSART3(void const * argument)
 void StartSPI2(void const * argument)
 {
   /* USER CODE BEGIN StartSPI2 */
-  /* Infinite loop */
+  SPI2_Priority = uxTaskPriorityGet( NULL );
+	/* Infinite loop */
   for(;;)
   {
     osDelay(1);
@@ -316,23 +324,21 @@ void StartSPI2(void const * argument)
 
 
 
-
 /**
   * @brief Rx Transfer completed callbacks
   * @param huart: uart handle
   * @retval None
   */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(huart);
 	
-	if (huart1.Instance == USART1){
-		RxFlag1 = 1;
+	if (huart == &huart1){
+		USART1_RxFlag = 1;
 	}
 	
-	if (huart3.Instance == USART3){
-		RxFlag3 = 1;
+	if (huart == &huart3){
+		USART3_RxFlag = 1;
 	}
 }
 
@@ -341,21 +347,56 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   * @param huart: uart handle
   * @retval None
   */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(huart);
 	
-	/*
-	if (huart1.Instance == USART1){
-		TxFlag1 = 1;
+	if (huart == &huart1){
+		USART1_TxFlag = 1;
 	}
 	
-	if (huart3.Instance == USART1){
-		TxFlag3 = 1;
+	if (huart == &huart3){
+		USART3_TxFlag = 1;
 	}
-	*/
+	
 }
+
+/**
+  * @brief Tx Transfer completed callbacks
+  * @param hspi: spi handle
+  * @retval None
+  */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
+	/* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+	
+	if (hspi == &hspi1){
+		SPI1_TxFlag = 1;
+	}
+	
+	if (hspi == &hspi2){
+		SPI2_TxFlag = 1;
+	}
+}
+
+/**
+  * @brief Tx Rransfer completed callbacks
+  * @param hspi: spi handle
+  * @retval None
+  */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
+	/* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+	
+	if (hspi == &hspi1){
+		SPI1_RxFlag = 1;
+	}
+	
+	if (hspi == &hspi2){
+		SPI2_RxFlag = 1;
+	}
+}
+
 
 /* USER CODE END Application */
 
