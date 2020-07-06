@@ -31,6 +31,7 @@
 #include "ext_flash.h"
 #include "ext_flash_tb.h"
 #include "STPM32.h"
+#include "LoRa.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -150,17 +151,28 @@ int main(void)
 		
 		
 		//Initialize STPM32
-		STPM32_Init();
+		if (STPM32_Init() != true)
+			Error_Handler();
+	
 		
 		
+		//Initialize LoRa
+		//if (LoRa_Init() != true)
+		//	Error_Handler();
 		
-		// Initialize external flash and TEST if flash is okay
+		
+		/* Initialize external flash and TEST if flash is okay */
 		//ext_flash_init();
 		//ext_flash_power_on();
 		
 		//if (ext_flash_tb() == false){
 		//		Error_Handler();
 		//}
+		
+		for (int i = 0; i < 32; i++){
+			ext_flash_erase_sector(i);
+			ext_flash_last_write_or_erase_done();
+		}
 		
 		USART3_PINSET_TX();
 		myprintf("Starting FreeRTOC System...\r\n");

@@ -116,23 +116,84 @@ bool STPM32_Init(void) {
 		HAL_GPIO_WritePin(CTRL_SCS_GPIO_Port, CTRL_SCS_Pin, GPIO_PIN_RESET);
 		HAL_Delay(t_rpw/2);
 		HAL_GPIO_WritePin(CTRL_SCS_GPIO_Port, CTRL_SCS_Pin, GPIO_PIN_SET);
-		// Till here all hardware reset is done
+		// All hardware reset is done
 		
 		
 		//Configure DSP_CR3, read address 0x04 (Row2), write 0xABCD to 0x05 
 		uint8_t SentMsg [2] = {0};
-		uint8_t ReadMsg [5] = {0};
 		
-		SentMsg[0] = 0xCD;
-		SentMsg[1] = 0xAB;
+		SentMsg[0] = 0xAB;
+		SentMsg[1] = 0xCD;
 		
-		SendMessage(0x04,ReadMsg,0x05,SentMsg);
+		for (int i = 0; i < 2; i++){
+			SendMsgOnly (0x05, SentMsg);
+		}
 
-		
 		USART3_PINSET_TX();
 		myprintf("INIT done\r\n");
 		USART3_PINSET_RX();
 		return true;
+}
+
+bool SendMsgOnly (uint32_t SendAddress, uint8_t* SendMessage){
+	/* 
+		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
+		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
+	*/
+	uint8_t ReadMessage[5] = {0};
+	uint8_t Buffer[5] = {0};
+	uint8_t CRCBuffer[5] = {0};
+	
+	Buffer[0] = 0x00; //This will automatically increment read pointer by 1
+	Buffer[1] = SendAddress;
+	Buffer[2] = SendMessage[1];
+	Buffer[3] = SendMessage[0];
+	
+	CRCBuffer[0] = byteReverse(Buffer[0]);
+	CRCBuffer[1] = byteReverse(Buffer[1]);
+	CRCBuffer[2] = byteReverse(Buffer[2]);
+	CRCBuffer[3] = byteReverse(Buffer[3]);
+	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
+	
+	if (RxFlag1 == 0){
+		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
+	}
+	
+	HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
+
+	return true;
+}
+
+bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
+	/* 
+		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
+		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
+	*/
+	uint8_t Buffer[5] = {0};
+	uint8_t CRCBuffer[5] = {0};
+	
+	Buffer[0] = ReadAddress;
+	Buffer[1] = 0xFF;
+	Buffer[2] = 0xFF;
+	Buffer[3] = 0xFF;
+	//Buffer[0] = 0x04;
+	//Buffer[1] = 0xFF;
+	//Buffer[2] = 0xFF;
+	//Buffer[3] = 0xFF;
+	
+	CRCBuffer[0] = byteReverse(Buffer[0]);
+	CRCBuffer[1] = byteReverse(Buffer[1]);
+	CRCBuffer[2] = byteReverse(Buffer[2]);
+	CRCBuffer[3] = byteReverse(Buffer[3]);
+	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
+	
+	if (RxFlag1 == 0){
+		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
+	}
+	
+	HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
+
+	return true;
 }
 
 bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddress, uint8_t* SendMessage) {
@@ -161,13 +222,11 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 	CRCBuffer[3] = byteReverse(Buffer[3]);
 	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
 	
-	//if (RxFlag1 == 0){
-		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
-	//}
+	HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
 	
 	HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, 5,0xFFFF);
 	
-	HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
+	//HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
 	
 	
 	USART3_PINSET_TX();
@@ -178,45 +237,7 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 	 
 	
 	return true;
-	
 }
-
-bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
-	/* 
-		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
-		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
-	*/
-	uint8_t Buffer[5] = {0};
-	uint8_t CRCBuffer[5] = {0};
-	
-	Buffer[0] = ReadAddress;
-	Buffer[1] = 0xFF;
-	Buffer[2] = 0xFF;
-	Buffer[3] = 0xFF;
-	//Buffer[0] = 0x04;
-	//Buffer[1] = 0xFF;
-	//Buffer[2] = 0xFF;
-	//Buffer[3] = 0xFF;
-	
-	CRCBuffer[0] = byteReverse(Buffer[0]);
-	CRCBuffer[1] = byteReverse(Buffer[1]);
-	CRCBuffer[2] = byteReverse(Buffer[2]);
-	CRCBuffer[3] = byteReverse(Buffer[3]);
-	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
-	
-	
-		HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
-
-	
-	if (RxFlag1 == 0){
-		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
-		//RxCalled1 =1;
-	}
-	
-	return true;
-}
-
-
 
 /*===================================================================== */
 /*					CRC Calc 																										*/

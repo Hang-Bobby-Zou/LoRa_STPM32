@@ -56,11 +56,17 @@ uint8_t RxBuffer[5] = {0};
 uint8_t i[1] = {0};
 UBaseType_t USART1_Priority;
 UBaseType_t USART3_Priority;
+UBaseType_t SPI1_Priority;
+UBaseType_t SPI2_Priority;
+
+uint32_t flash_pointer = 0;
+uint32_t flash_sector_pointer = 0;
+uint8_t flash_buffer[4096] = {0};
+int flash_count = 0;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId IDLEHandle;
-osThreadId SP1Handle;
 osThreadId USART1Handle;
 osThreadId USART3Handle;
 osThreadId SPI2Handle;
@@ -73,7 +79,6 @@ osSemaphoreId myBinarySem01Handle;
 
 void StartDefaultTask(void const * argument);
 void defaultIDLE(void const * argument);
-void StartSPI1(void const * argument);
 void StartUSART1(void const * argument);
 void StartUSART3(void const * argument);
 void StartSPI2(void const * argument);
@@ -136,10 +141,6 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(IDLE, defaultIDLE, osPriorityIdle, 0, 128);
   IDLEHandle = osThreadCreate(osThread(IDLE), NULL);
 
-  /* definition and creation of SP1 */
-  osThreadDef(SP1, StartSPI1, osPriorityBelowNormal, 0, 4096);
-  SP1Handle = osThreadCreate(osThread(SP1), NULL);
-
   /* definition and creation of USART1 */
   osThreadDef(USART1, StartUSART1, osPriorityNormal, 0, 128);
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
@@ -195,24 +196,6 @@ void defaultIDLE(void const * argument)
   /* USER CODE END defaultIDLE */
 }
 
-/* USER CODE BEGIN Header_StartSPI1 */
-/**
-* @brief Function implementing the SP1 thread. For External Flash
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartSPI1 */
-void StartSPI1(void const * argument)
-{
-  /* USER CODE BEGIN StartSPI1 */
-  /* Infinite loop */
-  for(;;)
-  {	
-		osDelay(1);
-  }
-  /* USER CODE END StartSPI1 */
-}
-
 /* USER CODE BEGIN Header_StartUSART1 */
 /**
 * @brief Function implementing the USART1 thread.
@@ -227,29 +210,59 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-	  if (i[0] > 0x28){
+	  //This is for testing, let the program repeatedly read from STPM32
+		if (i[0] > 0x28){
 			i[0] = 0x00;
-		} 
-		
-		ReadMsgOnly(i[0],ReadBuffer);
-
-		if (RxFlag1 == 1){
-		 	//This exceutes when a Receive is complete
-			RxBuffer [0] = ReadBuffer[0];
-		 	RxBuffer [1] = ReadBuffer[1];
-		 	RxBuffer [2] = ReadBuffer[2];
-		 	RxBuffer [3] = ReadBuffer[3];
-		 	RxBuffer [4] = ReadBuffer[4];
-			
-		 	i[0] += 0x02;
-			
-		 	RxFlag1 = 0;
-			
-		 	USART3_PINSET_TX();
-		 	myprintf("Received! Read Address: %x | ReadBuffer: %x | %x | %x | %x | %x  \r\n",i,ReadBuffer[0], ReadBuffer[1], ReadBuffer[2], ReadBuffer[3], ReadBuffer[4]);
-		 	USART3_PINSET_RX();
 		}
 		
+		if (RxFlag1 == 1){
+		 	//***This exceutes when a Receive is complete***
+			// Get the info before been overwritten
+			
+			// Save read data to ext_flash
+			if (flash_count > 4095){
+				if (flash_sector_pointer == 512)
+					flash_sector_pointer = 0;
+				
+				ext_flash_write(flash_sector_pointer, (char*) flash_buffer, 4096);
+				ext_flash_last_write_or_erase_done();
+				flash_sector_pointer ++;
+				flash_count = 0;
+			}
+			
+			flash_buffer[flash_count+0] = RxBuffer[0];
+			flash_buffer[flash_count+1] = RxBuffer[1];
+			flash_buffer[flash_count+2] = RxBuffer[2];
+			flash_buffer[flash_count+3] = RxBuffer[3];
+			flash_buffer[flash_count+4] = RxBuffer[4];
+			
+			flash_count += 0x05;
+			
+			
+			
+			
+			//***Note: Somehow, CRC byte always comes one cycle late, but normally we ignore it.
+			USART3_PINSET_TX();
+		 	myprintf("Received! Read Address: %x | ReadBuffer: %x | %x | %x | %x | %x  \r\n",i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+		 	USART3_PINSET_RX();
+			
+			// Increment the read register by 2 and clear the flag to wait for the next operation.
+			i[0] += 0x02;
+			RxFlag1 = 0;
+		}
+		
+		
+		// Calls read message only and get the buffer as soon as it returns
+		ReadMsgOnly(i[0],ReadBuffer);
+		RxBuffer[0] = ReadBuffer[0];
+		RxBuffer[1] = ReadBuffer[1];
+		RxBuffer[2] = ReadBuffer[2];
+		RxBuffer[3] = ReadBuffer[3];
+		RxBuffer[4] = ReadBuffer[4];
+		
+		
+		vTaskDelay(pdMS_TO_TICKS( 3000 ));
+		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));
 		osDelay(1);
   }
   /* USER CODE END StartUSART1 */
@@ -269,21 +282,19 @@ void StartUSART3(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-		
-		//HAL_UART_Receive_IT(&huart3, aRxBuffer, 8);
+		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 8);
 
+		 if (RxFlag3 == 1){
+		 	vTaskSuspend(USART1Handle);
+		 	RxFlag3 = 0;
 			
-		//if (RxFlag3 == 1){
-		//	RxFlag3 = 0;
+		 	USART3_PINSET_TX();
+		 	HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
+		 	USART3_PINSET_RX();
 			
-		//	USART3_PINSET_TX();
-		//	HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
-		//	USART3_PINSET_RX();
-			
-		//}
+		 	vTaskResume(USART1Handle);
+		 }
 
-		//vTaskPrioritySet( USART3Handle, ( USART1_Priority - 2 ) );
-		
 		osDelay(1); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
@@ -299,7 +310,8 @@ void StartUSART3(void const * argument)
 void StartSPI2(void const * argument)
 {
   /* USER CODE BEGIN StartSPI2 */
-  /* Infinite loop */
+  SPI2_Priority = uxTaskPriorityGet( NULL );
+	/* Infinite loop */
   for(;;)
   {
     osDelay(1);
@@ -309,7 +321,6 @@ void StartSPI2(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
 
 
 
@@ -327,11 +338,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   /* Prevent unused argument(s) compilation warning */
   UNUSED(huart);
 	
-	if (huart1.Instance == USART1){
+	if (huart == &huart1){
 		RxFlag1 = 1;
 	}
 	
-	if (huart3.Instance == USART3){
+	if (huart == &huart3){
 		RxFlag3 = 1;
 	}
 }
@@ -346,15 +357,14 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
   /* Prevent unused argument(s) compilation warning */
   UNUSED(huart);
 	
-	/*
-	if (huart1.Instance == USART1){
+	if (huart == &huart1){
 		TxFlag1 = 1;
 	}
 	
-	if (huart3.Instance == USART1){
+	if (huart == &huart3){
 		TxFlag3 = 1;
 	}
-	*/
+	
 }
 
 /* USER CODE END Application */

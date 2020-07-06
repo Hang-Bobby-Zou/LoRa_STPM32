@@ -13,6 +13,7 @@
 "lora-stpm32\stm32l4xx_hal_msp.o"
 "lora-stpm32\stm32l4xx_hal_timebase_tim.o"
 "lora-stpm32\redundantcode.o"
+"lora-stpm32\lora.o"
 "lora-stpm32\stm32l4xx_hal.o"
 "lora-stpm32\stm32l4xx_hal_i2c.o"
 "lora-stpm32\stm32l4xx_hal_i2c_ex.o"
