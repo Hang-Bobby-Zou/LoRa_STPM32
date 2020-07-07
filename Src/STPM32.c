@@ -26,13 +26,16 @@
 #include "main.h"
 #include "usart.h"
 #include "STPM32.h"
+#include "STPM32_AddressMap.h"
 
 //CRC calc defines
 #define u8 unsigned char
 #define CRC_8 (0x07)
 #define STPM3x_FRAME_LEN (5)
 static char CRC_u8Checksum;
-	
+
+
+
 //SYN timing defines, all Min.
 //#define t_ltch			20 	//ns, Time between de-selection and latch
 //#define t_lpw				4 	//us, Latch pulse width
@@ -44,10 +47,6 @@ static char CRC_u8Checksum;
 #define t_startup 	35	//ms, Time between power on and reset
 #define t_rpw				1		//ms, Reset pulse width
 #define t_scs				1		//ms, Delay from SYN to SCS
-
-
-//Register Address Map
-#define DSP_CR3			0x04
 
 //Function decleration
 static u8 CalcCRC8(u8 *pBuf);
@@ -122,11 +121,11 @@ bool STPM32_Init(void) {
 		//Configure DSP_CR3, read address 0x04 (Row2), write 0xABCD to 0x05 
 		uint8_t SentMsg [2] = {0};
 		
-		SentMsg[0] = 0xAB;
-		SentMsg[1] = 0xCD;
+		SentMsg[0] = 0x03;
+		SentMsg[1] = 0x80;
 		
 		for (int i = 0; i < 2; i++){
-			SendMsgOnly (0x05, SentMsg);
+			SendMsgOnly (dsp_cr3 + 0x01, SentMsg);
 		}
 
 		USART3_PINSET_TX();
@@ -134,6 +133,65 @@ bool STPM32_Init(void) {
 		USART3_PINSET_RX();
 		return true;
 }
+
+
+
+bool Read_Reg(uint32_t ReadAddress, uint8_t* ReturnBuffer){
+	
+	uint8_t ReadBuffer[5] = {0};	
+	
+	while(1){
+		if (USART1_RxFlag == 1){
+			ReturnBuffer[0] = ReadBuffer[0];
+			ReturnBuffer[1] = ReadBuffer[1];
+			ReturnBuffer[2] = ReadBuffer[2];
+			ReturnBuffer[3] = ReadBuffer[3];
+			ReturnBuffer[4] = ReadBuffer[4];
+			
+			USART3_PINSET_TX();
+			myprintf("Address: %x \r\nData: %x | %x | %x | %x | %x  \r\n",ReadAddress , ReturnBuffer[0], ReturnBuffer[1], ReturnBuffer[2], ReturnBuffer[3], ReturnBuffer[4]);
+			USART3_PINSET_RX();
+			
+			USART1_RxFlag = 0;
+			return true;
+		}
+
+		ReadMsgOnly(ReadAddress,ReadBuffer);
+		
+		
+	}
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 bool SendMsgOnly (uint32_t SendAddress, uint8_t* SendMessage){
 	/* 
@@ -176,10 +234,6 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	Buffer[1] = 0xFF;
 	Buffer[2] = 0xFF;
 	Buffer[3] = 0xFF;
-	//Buffer[0] = 0x04;
-	//Buffer[1] = 0xFF;
-	//Buffer[2] = 0xFF;
-	//Buffer[3] = 0xFF;
 	
 	CRCBuffer[0] = byteReverse(Buffer[0]);
 	CRCBuffer[1] = byteReverse(Buffer[1]);
@@ -189,7 +243,6 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	
 	if (USART1_RxFlag == 0){
 		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
-		
 	}
 	
 	HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
@@ -209,14 +262,7 @@ bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddres
 	Buffer[1] = SendAddress;
 	Buffer[2] = SendMessage[0];
 	Buffer[3] = SendMessage[1];
-	
-	//Testing buffer "ABCD"
-	//Buffer[0] = 0x41;
-	//Buffer[1] = 0x42;
-	//Buffer[2] = 0x43;
-	//Buffer[3] = 0x44;
-	//Buffer[4] = CalcCRC8(Buffer);
-	
+		
 	CRCBuffer[0] = byteReverse(Buffer[0]);
 	CRCBuffer[1] = byteReverse(Buffer[1]);
 	CRCBuffer[2] = byteReverse(Buffer[2]);

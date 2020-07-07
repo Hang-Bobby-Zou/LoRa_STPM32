@@ -11,3 +11,4 @@ bool STPM32_Init(void);
 bool SendMessage(uint32_t ReadAddress, uint8_t* ReceiveMessage ,uint32_t SendAddress, uint8_t* SendMessage);
 bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage);
 bool SendMsgOnly (uint32_t SendAddress, uint8_t* SendMessage);
+bool Read_Reg(uint32_t ReadAddress, uint8_t* ReturnBuffer);

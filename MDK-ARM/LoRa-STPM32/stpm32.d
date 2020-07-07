@@ -57,3 +57,4 @@ lora-stpm32\stpm32.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd_ex.h
 lora-stpm32\stpm32.o: ../Inc/usart.h
 lora-stpm32\stpm32.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 lora-stpm32\stpm32.o: ../Inc/STPM32.h
+lora-stpm32\stpm32.o: ../Inc/STPM32_AddressMap.h

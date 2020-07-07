@@ -52,19 +52,36 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t aRxBuffer[20];
+
 uint8_t ReadBuffer[5] = {0};
 uint8_t RxBuffer[5] = {0};
-uint8_t i[1] = {0};
+uint8_t i[1] = {0x48};
+
+uint8_t CH1_RMS									[5] = {0};
+uint8_t PH1_Active_Energy				[5] = {0};
+uint8_t PH1_Fundamental_Energy	[5] = {0};
+uint8_t PH1_Reactive_Energy			[5] = {0};
+uint8_t PH1_Apparent_Energy			[5] = {0};
+		
+uint8_t PH1_Active_Power				[5] = {0};
+uint8_t PH1_Fundamental_Power		[5] = {0};
+uint8_t PH1_Reactive_Power			[5] = {0};
+uint8_t	PH1_Apparent_RMS_Power	[5] = {0};
+
+uint8_t Total_Active_Energy			[5] = {0};
+uint8_t Total_Fundamental_Energy[5] = {0};
+uint8_t Total_Reactive_Energy		[5] = {0};
+uint8_t Total_Apparent_Energy		[5] = {0};
+
 UBaseType_t USART1_Priority;
 UBaseType_t USART3_Priority;
 UBaseType_t SPI1_Priority;
 UBaseType_t SPI2_Priority;
 
-uint32_t 	flash_pointer = 0;
-uint32_t 	flash_sector_pointer = 0;
-uint8_t 	flash_buffer[4096] = {0};
-uint32_t 	flash_count = 0;
+//uint32_t 	flash_pointer = 0;
+//uint32_t 	flash_sector_pointer = 0;
+//uint8_t 	flash_buffer[4096] = {0};
+//uint32_t 	flash_count = 0;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -76,7 +93,7 @@ osSemaphoreId myBinarySem01Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+void uint8_cpy(uint8_t* dest, uint8_t* src, uint8_t size);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -212,52 +229,59 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-	  // //This is for testing, let the program repeatedly read from STPM32
-		// if (i[0] > 0x28){
-		// 	i[0] = 0x00;
-		// }
-		
-		// if (USART1_RxFlag == 1){
-		//  	//***This exceutes when a Receive is complete***
-		// 	// Get the info before been overwritten
-			
-			
-			
-		// 	//***Note: Somehow, CRC byte always comes one cycle late, but normally we ignore it.
-		// 	USART3_PINSET_TX();
-		//  	myprintf("Received! Read Address: %x | ReadBuffer: %x | %x | %x | %x | %x  \r\n",i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
-		//  	USART3_PINSET_RX();
-			
-		// 	// Increment the read register by 2 and clear the flag to wait for the next operation.
-		// 	i[0] += 0x02;
-		// 	USART1_RxFlag = 0;
-		// }
-		
-		// Calls read message only and get the buffer as soon as it returns
-		// ReadMsgOnly(i[0],ReadBuffer);
-		
-		if (USART1_RxFlag == 1){
-			USART3_PINSET_TX();
-			myprintf("Active Energy : %x | %x | %x | %x | %x  \r\n", RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
-			USART3_PINSET_RX();
-			
-			USART1_RxFlag = 0;
+	
+		if (i[0] > 0x8A){
+			i[0] = 0x48;
 		}
 		
-		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_RESET);
-		HAL_Delay(1/2);
-		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_SET);
+		if (USART1_RxFlag == 1){
+			RxBuffer[0] = ReadBuffer[0];
+			RxBuffer[1] = ReadBuffer[1];
+			RxBuffer[2] = ReadBuffer[2];
+			RxBuffer[3] = ReadBuffer[3];
+			RxBuffer[4] = ReadBuffer[4];
+			
+			if (i[0] == dsp_reg14){
+				uint8_cpy(CH1_RMS,RxBuffer,5);
+			} else if (i[0] == ph1_reg1){
+				uint8_cpy(PH1_Active_Energy, RxBuffer, 5);
+			} else if (i[0] == ph1_reg2){
+				uint8_cpy(PH1_Fundamental_Energy, RxBuffer, 5);
+			} else if (i[0] == ph1_reg3){
+				uint8_cpy(PH1_Reactive_Energy, RxBuffer, 5);
+			} else if (i[0] == ph1_reg4){
+				uint8_cpy(PH1_Apparent_Energy, RxBuffer,5 );
+			} else if (i[0] == ph1_reg5){
+				uint8_cpy(PH1_Active_Power, RxBuffer, 5);
+			} else if (i[0] == ph1_reg6){
+				uint8_cpy(PH1_Fundamental_Power, RxBuffer, 5);
+			} else if (i[0] == ph1_reg7){
+				uint8_cpy(PH1_Reactive_Power, RxBuffer, 5);
+			} else if (i[0] == ph1_reg8){
+				uint8_cpy(PH1_Apparent_RMS_Power, RxBuffer, 5);
+			} else if (i[0] == tot_reg1){
+				uint8_cpy(Total_Active_Energy, RxBuffer, 5);
+			} else if (i[0] == tot_reg2){
+				uint8_cpy(Total_Fundamental_Energy, RxBuffer, 5);
+			} else if (i[0] == tot_reg3){
+				uint8_cpy(Total_Reactive_Energy, RxBuffer, 5);
+			} else if (i[0] == tot_reg4){
+				uint8_cpy(Total_Apparent_Energy, RxBuffer, 5);
+			}
+			
+			USART3_PINSET_TX();
+			myprintf("Address : %x \r\nData: %x | %x | %x | %x | %x \r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+			USART3_PINSET_RX();
+			
+			
+			USART1_RxFlag = 0;
+			i[0] += 2;
+			
+			vTaskDelay(pdMS_TO_TICKS( 1000 ));
+		}
 		
-		ReadMsgOnly(0x8A,ReadBuffer);
+		ReadMsgOnly(i[0],ReadBuffer);
 		
-		RxBuffer[0] = ReadBuffer[0];
-		RxBuffer[1] = ReadBuffer[1];
-		RxBuffer[2] = ReadBuffer[2];
-		RxBuffer[3] = ReadBuffer[3];
-		RxBuffer[4] = ReadBuffer[4];
-		
-		
-		vTaskDelay(pdMS_TO_TICKS( 1000 ));
 		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));
 		osDelay(1);
   }
@@ -275,19 +299,66 @@ void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
   USART3_Priority = uxTaskPriorityGet( NULL );
+	uint8_t aRxBuffer[8];
 	/* Infinite loop */
   for(;;)
   {		
-		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 8);
+		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 1);
 
 		 if (USART3_RxFlag == 1){
 		 	//vTaskSuspend(USART1Handle);
-		 	USART3_RxFlag = 0;
 			
-		 	USART3_PINSET_TX();
-		 	HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
-		 	USART3_PINSET_RX();
+			USART3_PINSET_TX();
+			if (aRxBuffer[0] == dsp_reg14){
+				myprintf("Reading: CH1_RMS\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
+			} else if (aRxBuffer[0] == ph1_reg1){
+				myprintf("Reading: PH1_Active_Energy\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Energy[0],PH1_Active_Energy[1],PH1_Active_Energy[2],PH1_Active_Energy[3],PH1_Active_Energy[4]);
+			} else if (aRxBuffer[0] == ph1_reg2){
+				myprintf("Reading: PH1_Fundamental_Energy\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
+			} else if (aRxBuffer[0] == ph1_reg3){
+				myprintf("Reading: PH1_Reactive_Energy\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
+			} else if (aRxBuffer[0] == ph1_reg4){
+				myprintf("Reading: PH1_Apparent_Energy\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
+			} else if (aRxBuffer[0] == ph1_reg5){
+				myprintf("Reading: PH1_Active_Power\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
+			} else if (aRxBuffer[0] == ph1_reg6){
+				myprintf("Reading: PH1_Fundamental_Power\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
+			} else if (aRxBuffer[0] == ph1_reg7){
+				myprintf("Reading: PH1_Reactive_Power\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
+			} else if (aRxBuffer[0] == ph1_reg8){
+				myprintf("Reading: PH1_Apparent_RMS_Power\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
+			} else if (aRxBuffer[0] == tot_reg1){
+				myprintf("Reading: Total_Active_Energy\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
+			} else if (aRxBuffer[0] == tot_reg2){
+				myprintf("Reading: Total_Fundamental_Energy\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
+			} else if (aRxBuffer[0] == tot_reg3){
+				myprintf("Reading: Total_Reactive_Energy\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
+			} else if (aRxBuffer[0] == tot_reg4){
+				myprintf("Reading: Total_Apparent_Energy\r\n");
+				myprintf("%x | %x | %x | %x | %x \r\n", Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
+			} else {
+				myprintf(" Not a valid address \r\n");
+			}
+			USART3_PINSET_RX();
 			
+			
+		 	//USART3_PINSET_TX();
+		 	//HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
+		 	//USART3_PINSET_RX();
+			
+			USART3_RxFlag = 0;
 		 	//vTaskResume(USART1Handle);
 		 }
 
@@ -320,6 +391,13 @@ void StartSPI2(void const * argument)
 
 
 
+
+
+void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
+	for (int i = 0; i<size; i++){
+		dest[i] = src[i];
+	}
+}
 
 
 
