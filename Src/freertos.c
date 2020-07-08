@@ -55,7 +55,8 @@
 
 uint8_t ReadBuffer[5] = {0};
 uint8_t RxBuffer[5] = {0};
-uint8_t i[1] = {0x48};
+uint8_t i[1] = {0x00};
+double freq;
 
 uint8_t CH1_RMS									[5] = {0};
 uint8_t PH1_Active_Energy				[5] = {0};
@@ -94,6 +95,11 @@ osSemaphoreId myBinarySem01Handle;
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 void uint8_cpy(uint8_t* dest, uint8_t* src, uint8_t size);
+void CalcPrint_Freq(void);
+void CalcPrint_RMS(void);
+void CalcPrint_Phase(void);
+
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -231,53 +237,40 @@ void StartUSART1(void const * argument)
   {		
 	
 		if (i[0] > 0x8A){
-			i[0] = 0x48;
+			i[0] = 0x2E;
 		}
+	
+		i[0] = 0x48;
 		
 		if (USART1_RxFlag == 1){
-			RxBuffer[0] = ReadBuffer[0];
-			RxBuffer[1] = ReadBuffer[1];
-			RxBuffer[2] = ReadBuffer[2];
-			RxBuffer[3] = ReadBuffer[3];
+		 	RxBuffer[0] = ReadBuffer[0];
+		 	RxBuffer[1] = ReadBuffer[1];
+		 	RxBuffer[2] = ReadBuffer[2];
+		 	RxBuffer[3] = ReadBuffer[3];
 			RxBuffer[4] = ReadBuffer[4];
 			
-			if (i[0] == dsp_reg14){
-				uint8_cpy(CH1_RMS,RxBuffer,5);
-			} else if (i[0] == ph1_reg1){
-				uint8_cpy(PH1_Active_Energy, RxBuffer, 5);
-			} else if (i[0] == ph1_reg2){
-				uint8_cpy(PH1_Fundamental_Energy, RxBuffer, 5);
-			} else if (i[0] == ph1_reg3){
-				uint8_cpy(PH1_Reactive_Energy, RxBuffer, 5);
-			} else if (i[0] == ph1_reg4){
-				uint8_cpy(PH1_Apparent_Energy, RxBuffer,5 );
-			} else if (i[0] == ph1_reg5){
-				uint8_cpy(PH1_Active_Power, RxBuffer, 5);
-			} else if (i[0] == ph1_reg6){
-				uint8_cpy(PH1_Fundamental_Power, RxBuffer, 5);
-			} else if (i[0] == ph1_reg7){
-				uint8_cpy(PH1_Reactive_Power, RxBuffer, 5);
-			} else if (i[0] == ph1_reg8){
-				uint8_cpy(PH1_Apparent_RMS_Power, RxBuffer, 5);
-			} else if (i[0] == tot_reg1){
-				uint8_cpy(Total_Active_Energy, RxBuffer, 5);
-			} else if (i[0] == tot_reg2){
-				uint8_cpy(Total_Fundamental_Energy, RxBuffer, 5);
-			} else if (i[0] == tot_reg3){
-				uint8_cpy(Total_Reactive_Energy, RxBuffer, 5);
-			} else if (i[0] == tot_reg4){
-				uint8_cpy(Total_Apparent_Energy, RxBuffer, 5);
+		 	//myprintf("\r\n");
+		 	//USART3_PINSET_TX();
+		 	//myprintf("Address : %x \r\nData: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+		 	//USART3_PINSET_RX();
+			
+			if (i[0] == 0x2E){
+				CalcPrint_Freq();
 			}
 			
-			USART3_PINSET_TX();
-			myprintf("Address : %x \r\nData: %x | %x | %x | %x | %x \r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
-			USART3_PINSET_RX();
+			if (i[0] == 0x48){
+				CalcPrint_RMS();
+			}
+			
+			if (i[0] == 0x4E){
+				CalcPrint_Phase();
+			}
 			
 			
-			USART1_RxFlag = 0;
-			i[0] += 2;
+		 	USART1_RxFlag = 0;
+			//i[0] += 2;
 			
-			vTaskDelay(pdMS_TO_TICKS( 1000 ));
+		 	vTaskDelay(pdMS_TO_TICKS( 50 ));
 		}
 		
 		ReadMsgOnly(i[0],ReadBuffer);
@@ -393,8 +386,34 @@ void StartSPI2(void const * argument)
 
 
 
+
+void CalcPrint_Freq(void){
+	uint16_t CalcBuffer1 = RxBuffer[1];
+	uint16_t CalcBuffer2 = RxBuffer[0];
+	CalcBuffer1 = CalcBuffer1 << 8;
+		
+	CalcBuffer1 = CalcBuffer1 + CalcBuffer2;
+				
+	freq = 1 / (CalcBuffer1 * 0.000008);
+	USART3_PINSET_TX();
+	myprintf("Freq: %4f Hz\r\n", freq);
+	USART3_PINSET_RX();
+}
+
+void CalcPrint_RMS(void){
+	USART3_PINSET_TX();
+	myprintf("C1= %d Amps | V1= %d Volts\r\n",RxBuffer[3], RxBuffer[0]);
+	USART3_PINSET_RX();
+}
+
+void CalcPrint_Phase(void){
+	
+}
+
+
+
 void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
-	for (int i = 0; i<size; i++){
+	for (int i = 0; i < size; i++){
 		dest[i] = src[i];
 	}
 }
