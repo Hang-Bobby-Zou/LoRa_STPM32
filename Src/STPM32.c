@@ -136,36 +136,6 @@ bool STPM32_Init(void) {
 
 
 
-bool Read_Reg(uint32_t ReadAddress, uint8_t* ReturnBuffer){
-	
-	uint8_t ReadBuffer[5] = {0};	
-	
-	while(1){
-		if (USART1_RxFlag == 1){
-			ReturnBuffer[0] = ReadBuffer[0];
-			ReturnBuffer[1] = ReadBuffer[1];
-			ReturnBuffer[2] = ReadBuffer[2];
-			ReturnBuffer[3] = ReadBuffer[3];
-			ReturnBuffer[4] = ReadBuffer[4];
-			
-			USART3_PINSET_TX();
-			myprintf("Address: %x \r\nData: %x | %x | %x | %x | %x  \r\n",ReadAddress , ReturnBuffer[0], ReturnBuffer[1], ReturnBuffer[2], ReturnBuffer[3], ReturnBuffer[4]);
-			USART3_PINSET_RX();
-			
-			USART1_RxFlag = 0;
-			return true;
-		}
-
-		ReadMsgOnly(ReadAddress,ReadBuffer);
-		
-		
-	}
-	
-}
-
-
-
-
 
 
 
@@ -240,6 +210,9 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	CRCBuffer[2] = byteReverse(Buffer[2]);
 	CRCBuffer[3] = byteReverse(Buffer[3]);
 	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
+	
+	//HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
+	HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
 	
 	if (USART1_RxFlag == 0){
 		HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);

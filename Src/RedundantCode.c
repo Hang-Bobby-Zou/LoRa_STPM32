@@ -111,3 +111,31 @@
 // 				myprintf("Copying Total_Apparent_Energy\r\n");
 // 				uint8_cpy(Total_Apparent_Energy, RxBuffer, 5);
 // 			}
+
+
+// bool Read_Reg(uint32_t ReadAddress, uint8_t* ReturnBuffer){
+	
+// 	uint8_t ReadBuffer[5] = {0};	
+	
+// 	while(1){
+// 		if (USART1_RxFlag == 1){
+// 			ReturnBuffer[0] = ReadBuffer[0];
+// 			ReturnBuffer[1] = ReadBuffer[1];
+// 			ReturnBuffer[2] = ReadBuffer[2];
+// 			ReturnBuffer[3] = ReadBuffer[3];
+// 			ReturnBuffer[4] = ReadBuffer[4];
+			
+// 			USART3_PINSET_TX();
+// 			myprintf("Address: %x \r\nData: %x | %x | %x | %x | %x  \r\n",ReadAddress , ReturnBuffer[0], ReturnBuffer[1], ReturnBuffer[2], ReturnBuffer[3], ReturnBuffer[4]);
+// 			USART3_PINSET_RX();
+			
+// 			USART1_RxFlag = 0;
+// 			return true;
+// 		}
+
+// 		ReadMsgOnly(ReadAddress,ReadBuffer);
+		
+		
+// 	}
+	
+// }

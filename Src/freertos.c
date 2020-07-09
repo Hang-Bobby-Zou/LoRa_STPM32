@@ -55,10 +55,16 @@
 
 uint8_t ReadBuffer[5] = {0};
 uint8_t RxBuffer[5] = {0};
-uint8_t i[1] = {0x00};
+uint8_t i[1] = {0x2E};
 double freq;
+double phase;
+int count = 0;
+
+uint8_t PH_Period								[5] = {0};
 
 uint8_t CH1_RMS									[5] = {0};
+uint8_t C1_PHA									[5] = {0};
+
 uint8_t PH1_Active_Energy				[5] = {0};
 uint8_t PH1_Fundamental_Energy	[5] = {0};
 uint8_t PH1_Reactive_Energy			[5] = {0};
@@ -98,7 +104,7 @@ void uint8_cpy(uint8_t* dest, uint8_t* src, uint8_t size);
 void CalcPrint_Freq(void);
 void CalcPrint_RMS(void);
 void CalcPrint_Phase(void);
-
+void CalcPrint_Active_Energy(void);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -239,9 +245,10 @@ void StartUSART1(void const * argument)
 		if (i[0] > 0x8A){
 			i[0] = 0x2E;
 		}
-	
-		i[0] = 0x48;
 		
+		//i[0] = 0x2E;
+		
+
 		if (USART1_RxFlag == 1){
 		 	RxBuffer[0] = ReadBuffer[0];
 		 	RxBuffer[1] = ReadBuffer[1];
@@ -249,28 +256,81 @@ void StartUSART1(void const * argument)
 		 	RxBuffer[3] = ReadBuffer[3];
 			RxBuffer[4] = ReadBuffer[4];
 			
-		 	//myprintf("\r\n");
-		 	//USART3_PINSET_TX();
-		 	//myprintf("Address : %x \r\nData: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
-		 	//USART3_PINSET_RX();
-			
+			// USART3_PINSET_TX();
 			if (i[0] == 0x2E){
-				CalcPrint_Freq();
+				myprintf("Copying PH_Period\r\n");
+				uint8_cpy(PH_Period, RxBuffer, 5);
+			} else if (i[0] == 0x4E){
+				myprintf("Copying C1_PHA\r\n");
+				uint8_cpy(C1_PHA, RxBuffer, 5);
+			} else if (i[0] == dsp_reg14){
+				myprintf("Copying CH1_RMS\r\n");
+				uint8_cpy(CH1_RMS,RxBuffer,5);
+			} else if (i[0] == ph1_reg1){
+				myprintf("Copying PH1_Active_Energy\r\n");
+				uint8_cpy(PH1_Active_Energy, RxBuffer, 5);
+			} else if (i[0] == ph1_reg2){
+				myprintf("Copying PH1_Fundamental_Energy\r\n");
+				uint8_cpy(PH1_Fundamental_Energy, RxBuffer, 5);
+			} else if (i[0] == ph1_reg3){
+				myprintf("Copying PH1_Reactive_Energy\r\n");
+				uint8_cpy(PH1_Reactive_Energy, RxBuffer, 5);
+			} else if (i[0] == ph1_reg4){
+				myprintf("Copying PH1_Apparent_Energy\r\n");
+				uint8_cpy(PH1_Apparent_Energy, RxBuffer,5);
+			} else if (i[0] == ph1_reg5){
+				myprintf("Copying PH1_Active_Power\r\n");
+				uint8_cpy(PH1_Active_Power, RxBuffer, 5);
+			} else if (i[0] == ph1_reg6){
+				myprintf("Copying PH1_Fundamental_Power\r\n");
+				uint8_cpy(PH1_Fundamental_Power, RxBuffer, 5);
+			} else if (i[0] == ph1_reg7){
+				myprintf("Copying PH1_Reactive_Power\r\n");
+				uint8_cpy(PH1_Reactive_Power, RxBuffer, 5);
+			} else if (i[0] == ph1_reg8){
+				myprintf("Copying PH1_Apparent_RMS_Power\r\n");
+				uint8_cpy(PH1_Apparent_RMS_Power, RxBuffer, 5);
+			} else if (i[0] == tot_reg1){
+				myprintf("Copying Total_Active_Energy\r\n");
+				uint8_cpy(Total_Active_Energy, RxBuffer, 5);
+			} else if (i[0] == tot_reg2){
+				myprintf("Copying Total_Fundamental_Energy\r\n");
+				uint8_cpy(Total_Fundamental_Energy, RxBuffer, 5);
+			} else if (i[0] == tot_reg3){
+				myprintf("Copying Total_Reactive_Energy\r\n");
+				uint8_cpy(Total_Reactive_Energy, RxBuffer, 5);
+			} else if (i[0] == tot_reg4){
+				myprintf("Copying Total_Apparent_Energy\r\n");
+				uint8_cpy(Total_Apparent_Energy, RxBuffer, 5);
 			}
+			// USART3_PINSET_RX();
 			
-			if (i[0] == 0x48){
-				CalcPrint_RMS();
-			}
 			
-			if (i[0] == 0x4E){
-				CalcPrint_Phase();
-			}
+		 	myprintf("\r\n");
+		 	USART3_PINSET_TX();
+		 	myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+		 	USART3_PINSET_RX();
 			
+			// if (i[0] == 0x2E){
+			// 	CalcPrint_Freq();
+			// } else if (i[0] == 0x48){
+			//  	CalcPrint_RMS();
+			// } else if (i[0] == 0x4E){
+			// 	CalcPrint_Phase();
+			// } else if (i[0] == 0x54){
+			//  	CalcPrint_Active_Energy();
+			// }
+			
+			//if (count == 10){
+				//i[0] += 0x02;
+				//count = 0;
+			//}
+			
+			//count++;
 			
 		 	USART1_RxFlag = 0;
-			//i[0] += 2;
 			
-		 	vTaskDelay(pdMS_TO_TICKS( 50 ));
+		 	vTaskDelay(pdMS_TO_TICKS( 5 ));
 		}
 		
 		ReadMsgOnly(i[0],ReadBuffer);
@@ -388,26 +448,49 @@ void StartSPI2(void const * argument)
 
 
 void CalcPrint_Freq(void){
-	uint16_t CalcBuffer1 = RxBuffer[1];
-	uint16_t CalcBuffer2 = RxBuffer[0];
+	uint16_t CalcBuffer1 = PH_Period[1];
+	uint16_t CalcBuffer2 = PH_Period[0];
 	CalcBuffer1 = CalcBuffer1 << 8;
-		
+
 	CalcBuffer1 = CalcBuffer1 + CalcBuffer2;
-				
-	freq = 1 / (CalcBuffer1 * 0.000008);
+
+	freq = 1.0 / (CalcBuffer1 * 0.000008);
+	
 	USART3_PINSET_TX();
-	myprintf("Freq: %4f Hz\r\n", freq);
+	myprintf("Freq: %4f Hz\r\n\r\n", freq);
 	USART3_PINSET_RX();
 }
 
 void CalcPrint_RMS(void){
 	USART3_PINSET_TX();
-	myprintf("C1= %d Amps | V1= %d Volts\r\n",RxBuffer[3], RxBuffer[0]);
+	myprintf("C1= %d Amps | V1= %d Volts\r\n\r\n",CH1_RMS[3], CH1_RMS[0]);
 	USART3_PINSET_RX();
 }
 
 void CalcPrint_Phase(void){
+	phase = C1_PHA[3] / 125000 * 50 * 360;
 	
+	USART3_PINSET_TX();
+	myprintf("Phase = %4f degrees\r\n\r\n", phase);
+	USART3_PINSET_RX();
+}
+
+
+void CalcPrint_Active_Energy(void){
+	uint32_t CalcBuffer1 = PH1_Active_Energy[3];
+	uint32_t CalcBuffer2 = PH1_Active_Energy[2];
+	uint32_t CalcBuffer3 = PH1_Active_Energy[1];
+	uint32_t CalcBuffer4 = PH1_Active_Energy[0];
+	
+	uint32_t CalcBuffer = CalcBuffer1 << 24;
+	
+	CalcBuffer += (CalcBuffer2 << 16);
+	CalcBuffer += (CalcBuffer3 << 8);
+	CalcBuffer += (CalcBuffer4);
+	
+	USART3_PINSET_TX();
+	myprintf("Active Energy = %f Joules\r\n\r\n", CalcBuffer);
+	USART3_PINSET_RX();
 }
 
 
@@ -417,6 +500,7 @@ void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
 		dest[i] = src[i];
 	}
 }
+
 
 
 
