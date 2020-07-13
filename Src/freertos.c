@@ -45,8 +45,12 @@
 #define R1					810000
 #define R2 					470
 
+#define F_CLK				125000
+#define P_CLK				0.000008		//  1 / F_CLK
+#define D_CLK				8712.5 
+
+
 #define V_ref 			1.18
-#define k_int 			0.8155773
 
 #define A_v 				2
 #define A_i 				2
@@ -55,6 +59,8 @@
 
 #define k_s					0.0024
 #define k_int				1
+
+
 
 /* USER CODE END PD */
 
@@ -69,8 +75,6 @@
 uint8_t ReadBuffer[5] = {0};
 uint8_t RxBuffer[5] = {0};
 uint8_t i[1] = {0x2E};
-double freq;
-double phase;
 int count = 0;
 
 
@@ -275,7 +279,7 @@ void StartUSART1(void const * argument)
 			i[0] = 0x2E;
 		}
 		
-		//i[0] = 0x54;
+		//i[0] = 0x48;
 		
 
 		if (USART1_RxFlag == 1){
@@ -285,111 +289,117 @@ void StartUSART1(void const * argument)
 		 	RxBuffer[3] = ReadBuffer[3];
 			RxBuffer[4] = ReadBuffer[4];
 			
-		 	//myprintf("\r\n");
+		 	
 		 	//USART3_PINSET_TX();
 		 	//myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
 		 	//USART3_PINSET_RX();
-			
-			
+
 			
 			if (count == 10){
 			 	// USART3_PINSET_TX();
 				if (i[0] == 0x2E){
 					myprintf("Copying PH_Period\r\n");
 					uint8_cpy(PH_Period, RxBuffer, 5);
+					
 				} else if (i[0] == 0x4E){
 					myprintf("Copying C1_PHA\r\n");
 					uint8_cpy(C1_PHA, RxBuffer, 5);
-				} else if (i[0] == dsp_reg14){
+					
+				} else if (i[0] == 0x48){
 					myprintf("Copying CH1_RMS\r\n");
 					uint8_cpy(CH1_RMS,RxBuffer,5);
+					
 				} else if (i[0] == ph1_reg1){
 					myprintf("Copying PH1_Active_Energy\r\n");
 					uint8_cpy(PH1_Active_Energy, RxBuffer, 5);
+					CalcPrint_Active_Energy();
+					
 				} else if (i[0] == ph1_reg2){
 					myprintf("Copying PH1_Fundamental_Energy\r\n");
 					uint8_cpy(PH1_Fundamental_Energy, RxBuffer, 5);
+					//CalcPrint_Funda_Energy();
+					
 				} else if (i[0] == ph1_reg3){
 					myprintf("Copying PH1_Reactive_Energy\r\n");
 					uint8_cpy(PH1_Reactive_Energy, RxBuffer, 5);
+					CalcPrint_React_Energy();
+					
 				} else if (i[0] == ph1_reg4){
 					myprintf("Copying PH1_Apparent_Energy\r\n");
 					uint8_cpy(PH1_Apparent_Energy, RxBuffer,5);
+					CalcPrint_App_Energy();
+					
 				} else if (i[0] == ph1_reg5){
 					myprintf("Copying PH1_Active_Power\r\n");
 					uint8_cpy(PH1_Active_Power, RxBuffer, 5);
+					CalcPrint_Active_Pwr();
+					
 				} else if (i[0] == ph1_reg6){
 					myprintf("Copying PH1_Fundamental_Power\r\n");
 					uint8_cpy(PH1_Fundamental_Power, RxBuffer, 5);
+					//CalcPrint_Funda_Pwr();
+					
 				} else if (i[0] == ph1_reg7){
 					myprintf("Copying PH1_Reactive_Power\r\n");
 					uint8_cpy(PH1_Reactive_Power, RxBuffer, 5);
+					CalcPrint_React_Pwr();
+					
 				} else if (i[0] == ph1_reg8){
 					myprintf("Copying PH1_Apparent_RMS_Power\r\n");
 					uint8_cpy(PH1_Apparent_RMS_Power, RxBuffer, 5);
+					CalcPrint_App_RMS_Pwr();
+					
 				} else if (i[0] == tot_reg1){
 					myprintf("Copying Total_Active_Energy\r\n");
 					uint8_cpy(Total_Active_Energy, RxBuffer, 5);
+					//CalcPrint_Tot_Active_Pwr();
+					
 				} else if (i[0] == tot_reg2){
 					myprintf("Copying Total_Fundamental_Energy\r\n");
 					uint8_cpy(Total_Fundamental_Energy, RxBuffer, 5);
+					//CalcPrint_Tot_Funda_Pwr();
+					
 				} else if (i[0] == tot_reg3){
 					myprintf("Copying Total_Reactive_Energy\r\n");
 					uint8_cpy(Total_Reactive_Energy, RxBuffer, 5);
+					//CalcPrint_Tot_React_Pwr();
+					
 				} else if (i[0] == tot_reg4){
 					myprintf("Copying Total_Apparent_Energy\r\n");
 					uint8_cpy(Total_Apparent_Energy, RxBuffer, 5);
+					CalcPrint_Tot_App_Pwr();
+					
 				}
 				// USART3_PINSET_RX();
 				
-				
 				if (i[0] == 0x2E){
 					CalcPrint_Freq();
-				} else if (i[0] == 0x48){
+				} 
+				else if (i[0] == 0x48){
 					CalcPrint_RMS();
-				} else if (i[0] == 0x4E){
+					USART3_PINSET_TX();
+					myprintf("FLAG");
+					USART3_PINSET_RX();
+				} 
+				else if (i[0] == 0x4E){
 					CalcPrint_Phase();
-				} else if (i[0] == 0x54){
-					CalcPrint_Active_Energy();
-				} else if (i[0] == 0x56){
-					CalcPrint_Funda_Energy();
-				} else if (i[0] == 0x58){
-					CalcPrint_React_Energy();
-				} else if (i[0] == 0x5A){
-					CalcPrint_App_Energy();
-				} else if (i[0] == 0x5C){
-					CalcPrint_Active_Pwr();
-				} else if (i[0] == 0x5E){
-					CalcPrint_Funda_Pwr();
-				} else if (i[0] == 0x60){
-					CalcPrint_React_Pwr();
-				} else if (i[0] == 0x62){
-					CalcPrint_App_RMS_Pwr();
-				} else if (i[0] == 0x84){
-					CalcPrint_Tot_Active_Pwr();
-				} else if (i[0] == 0x86){
-					CalcPrint_Tot_Funda_Pwr();
-				} else if (i[0] == 0x88){
-					CalcPrint_Tot_React_Pwr();
-				} else if (i[0] == 0x8A){
-					CalcPrint_Tot_App_Pwr();
 				}
-				
 				i[0] += 0x02;
 			 	count = 0;
 			}
+			
 			count++;
 			
-			//i[0] += 0x02;
-
 		 	USART1_RxFlag = 0;
 			
-		 	//vTaskDelay(pdMS_TO_TICKS( 1 ));				//Block delay
+			//vTaskDelay (pdMS_TO_TICKS( 1000 ));
+			
 		}
 		
 		ReadMsgOnly(i[0],ReadBuffer);
 		
-		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));	//Runing delay
+		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));		//Runing delay
+		
 		osDelay(1);
   }
   /* USER CODE END StartUSART1 */
@@ -410,64 +420,64 @@ void StartUSART3(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 1);
+		//  HAL_UART_Receive_IT(&huart3, aRxBuffer, 1);
 
-		 if (USART3_RxFlag == 1){
-		 	//vTaskSuspend(USART1Handle);
+		//  if (USART3_RxFlag == 1){
+		//  	//vTaskSuspend(USART1Handle);
 			
-			USART3_PINSET_TX();
-			if (aRxBuffer[0] == dsp_reg14){
-				myprintf("Reading: CH1_RMS\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
-			} else if (aRxBuffer[0] == ph1_reg1){
-				myprintf("Reading: PH1_Active_Energy\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Energy[0],PH1_Active_Energy[1],PH1_Active_Energy[2],PH1_Active_Energy[3],PH1_Active_Energy[4]);
-			} else if (aRxBuffer[0] == ph1_reg2){
-				myprintf("Reading: PH1_Fundamental_Energy\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
-			} else if (aRxBuffer[0] == ph1_reg3){
-				myprintf("Reading: PH1_Reactive_Energy\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
-			} else if (aRxBuffer[0] == ph1_reg4){
-				myprintf("Reading: PH1_Apparent_Energy\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
-			} else if (aRxBuffer[0] == ph1_reg5){
-				myprintf("Reading: PH1_Active_Power\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
-			} else if (aRxBuffer[0] == ph1_reg6){
-				myprintf("Reading: PH1_Fundamental_Power\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
-			} else if (aRxBuffer[0] == ph1_reg7){
-				myprintf("Reading: PH1_Reactive_Power\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
-			} else if (aRxBuffer[0] == ph1_reg8){
-				myprintf("Reading: PH1_Apparent_RMS_Power\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
-			} else if (aRxBuffer[0] == tot_reg1){
-				myprintf("Reading: Total_Active_Energy\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
-			} else if (aRxBuffer[0] == tot_reg2){
-				myprintf("Reading: Total_Fundamental_Energy\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
-			} else if (aRxBuffer[0] == tot_reg3){
-				myprintf("Reading: Total_Reactive_Energy\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
-			} else if (aRxBuffer[0] == tot_reg4){
-				myprintf("Reading: Total_Apparent_Energy\r\n");
-				myprintf("%x | %x | %x | %x | %x \r\n", Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
-			} else {
-				myprintf(" Not a valid address \r\n");
-			}
-			USART3_PINSET_RX();
+		// 	USART3_PINSET_TX();
+		// 	if (aRxBuffer[0] == dsp_reg14){
+		// 		myprintf("Reading: CH1_RMS\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
+		// 	} else if (aRxBuffer[0] == ph1_reg1){
+		// 		myprintf("Reading: PH1_Active_Energy\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Energy[0],PH1_Active_Energy[1],PH1_Active_Energy[2],PH1_Active_Energy[3],PH1_Active_Energy[4]);
+		// 	} else if (aRxBuffer[0] == ph1_reg2){
+		// 		myprintf("Reading: PH1_Fundamental_Energy\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
+		// 	} else if (aRxBuffer[0] == ph1_reg3){
+		// 		myprintf("Reading: PH1_Reactive_Energy\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
+		// 	} else if (aRxBuffer[0] == ph1_reg4){
+		// 		myprintf("Reading: PH1_Apparent_Energy\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
+		// 	} else if (aRxBuffer[0] == ph1_reg5){
+		// 		myprintf("Reading: PH1_Active_Power\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
+		// 	} else if (aRxBuffer[0] == ph1_reg6){
+		// 		myprintf("Reading: PH1_Fundamental_Power\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
+		// 	} else if (aRxBuffer[0] == ph1_reg7){
+		// 		myprintf("Reading: PH1_Reactive_Power\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
+		// 	} else if (aRxBuffer[0] == ph1_reg8){
+		// 		myprintf("Reading: PH1_Apparent_RMS_Power\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
+		// 	} else if (aRxBuffer[0] == tot_reg1){
+		// 		myprintf("Reading: Total_Active_Energy\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
+		// 	} else if (aRxBuffer[0] == tot_reg2){
+		// 		myprintf("Reading: Total_Fundamental_Energy\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
+		// 	} else if (aRxBuffer[0] == tot_reg3){
+		// 		myprintf("Reading: Total_Reactive_Energy\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
+		// 	} else if (aRxBuffer[0] == tot_reg4){
+		// 		myprintf("Reading: Total_Apparent_Energy\r\n");
+		// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
+		// 	} else {
+		// 		myprintf(" Not a valid address \r\n");
+		// 	}
+		// 	USART3_PINSET_RX();
 			
 			
 		 	//USART3_PINSET_TX();
 		 	//HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
 		 	//USART3_PINSET_RX();
 			
-			USART3_RxFlag = 0;
+			// USART3_RxFlag = 0;
 		 	//vTaskResume(USART1Handle);
-		 }
+		//  }
 
 		osDelay(1); //This delay is in ms
   }
@@ -497,295 +507,340 @@ void StartSPI2(void const * argument)
 /* USER CODE BEGIN Application */
 
 
-
-
-
-
+/**
+* @brief Calculate and Print the Freq of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Freq(void){
-	uint16_t CalcBuffer1 = PH_Period[1];
-	uint16_t CalcBuffer2 = PH_Period[0];
-	CalcBuffer1 = CalcBuffer1 << 8;
+	uint16_t freq_raw;
 
-	CalcBuffer1 = CalcBuffer1 + CalcBuffer2;
-
-	freq = 1.0 / (CalcBuffer1 * 0.000008);
+	freq_raw = (uint16_t) PH_Period[1] << 8;
+	freq_raw += (uint16_t) PH_Period[2];
+	double freq = 1.0 / (freq_raw * P_CLK);
 	
 	USART3_PINSET_TX();
-	myprintf("Freq: %4f Hz\r\n\r\n", freq);
+	myprintf("Freq: %f Hz\r\n\r\n", freq);		//4 decimal numbers
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
 
-void CalcPrint_RMS(void){
-	uint16_t CalcBuffer1 = CH1_RMS[1];
-	uint16_t CalcBuffer2 = CH1_RMS[0];
+/**
+* @brief Calculate and Print the RMS voltage and current
+*		 of the power line.
+* @param Parameter: None
+* @retval None
+*/
+void CalcPrint_RMS(void){	
+	static double V1_RMS = 0;
+	static double C1_RMS = 0;
 	
-	CalcBuffer1 = CalcBuffer1 << 8;
-	CalcBuffer1 = CalcBuffer1 + CalcBuffer2;
+	uint16_t V1_RMS_raw = 0x0000;
+	V1_RMS_raw = (uint16_t) CH1_RMS[1] << 8;
+	V1_RMS_raw += (uint16_t) CH1_RMS[0];
+	V1_RMS_raw = V1_RMS_raw & 0x7FFF; 				//Mask the most significant bit.
 	
-	uint16_t V1_RMS = CalcBuffer1 & 0x7FFF;
+	V1_RMS = (double) V1_RMS_raw * (double) V_ref * (1.0 + (double) R1/ (double) R2) / ( (double) cal_v * (double) A_v * 32768.0);	
+
 	
-	uint16_t CalcBuffer3 = CH1_RMS[1];
-	uint16_t C1_RMS = CalcBuffer3 >> 7;
+	uint16_t C1_RMS_raw = 0x0000;
+	C1_RMS_raw = (uint16_t) CH1_RMS[1] >> 7;
+	C1_RMS_raw += (uint16_t) CH1_RMS[2] << 1;
+	C1_RMS_raw += (uint16_t) CH1_RMS[3] << 9;
+
+	C1_RMS = (double)C1_RMS_raw * (double)V_ref / ((double) cal_i * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
 	
-	uint16_t CalcBuffer4 = CH1_RMS[2];
-	uint16_t CalcBuffer5 = CH1_RMS[3];
-	
-	C1_RMS += CalcBuffer4 << 1;
-	C1_RMS += CalcBuffer5 << 9;
-	
-	uint16_t C1_RMS_Out = C1_RMS * V_ref / (cal_i * A_i * 131072 * k_s * k_int);
-	uint16_t V1_RMS_Out = V1_RMS * V_ref * (1 + R1/R2) / (cal_v * A_v * 32768); 
 	
 	USART3_PINSET_TX();
-	myprintf("C1= %d Amps | V1= %d Volts\r\n\r\n",C1_RMS_Out, V1_RMS_Out);
+	myprintf("C1= %lf Amps | V1= %lf Volts\r\n\r\n",C1_RMS, V1_RMS);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
 
+/**
+* @brief Calculate and Print the phase delay of voltage and current
+*		 for the fundamental harmonic of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Phase(void){
-	phase = C1_PHA[3] / 125000 * 50 * 360;
+	uint16_t C1_PHA_raw;
+	
+	C1_PHA_raw = (uint16_t) C1_PHA[3] << 8;
+	C1_PHA_raw += (uint16_t) C1_PHA[2];
+	C1_PHA_raw = C1_PHA_raw & 0x1FFE;
+
+	double phase = (double) C1_PHA_raw / (double) F_CLK * (double) 50 * 360.0;
 	
 	USART3_PINSET_TX();
-	myprintf("Phase = %4f degrees\r\n\r\n", phase);
+	myprintf("Phase = %lf degrees\r\n\r\n", phase);
 	USART3_PINSET_RX();
 	
-		HAL_Delay(1);
+	HAL_Delay(1);
 }
 
-
+/**
+* @brief Calculate and Print the active energy of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Active_Energy(void){
-	uint32_t CalcBuffer1 = PH1_Active_Energy[3];
-	uint32_t CalcBuffer2 = PH1_Active_Energy[2];
-	uint32_t CalcBuffer3 = PH1_Active_Energy[1];
-	uint32_t CalcBuffer4 = PH1_Active_Energy[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
-	
+	uint32_t Active_Energy_raw = 0x0000;
+	Active_Energy_raw += (uint16_t) PH1_Active_Energy[3] << 24;
+	Active_Energy_raw += (uint16_t) PH1_Active_Energy[2] << 16;
+	Active_Energy_raw += (uint16_t) PH1_Active_Energy[1] << 8;
+	Active_Energy_raw += (uint16_t) PH1_Active_Energy[0];
+
+	double Active_Energy = (double)Active_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
+
 	USART3_PINSET_TX();
-	myprintf("Active Energy = %lu Joules\r\n\r\n", CalcBuffer);
+	myprintf("Active Energy = %lf Watts\r\n\r\n", Active_Energy);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
 
+/**
+* @brief Calculate and Print the fundamental energy of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Funda_Energy(void){
-	uint32_t CalcBuffer1 = PH1_Fundamental_Energy[3];
-	uint32_t CalcBuffer2 = PH1_Fundamental_Energy[2];
-	uint32_t CalcBuffer3 = PH1_Fundamental_Energy[1];
-	uint32_t CalcBuffer4 = PH1_Fundamental_Energy[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
-	
+	uint32_t Funda_Energy_raw = 0x0000;
+	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[3] << 24;
+	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[2] << 16;
+	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[1] << 8;
+	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[0];
+
+	double Funda_Energy = (double)Funda_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
+
+
 	USART3_PINSET_TX();
-	myprintf("Fundamental Energy = %lu Joules\r\n\r\n", CalcBuffer);
+	myprintf("Fundamental Energy = %lf Watts\r\n\r\n", Funda_Energy);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 	
 }
-
+/**
+* @brief Calculate and Print the reactive energy of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_React_Energy(void){
-	uint32_t CalcBuffer1 = PH1_Reactive_Energy[3];
-	uint32_t CalcBuffer2 = PH1_Reactive_Energy[2];
-	uint32_t CalcBuffer3 = PH1_Reactive_Energy[1];
-	uint32_t CalcBuffer4 = PH1_Reactive_Energy[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
+	uint32_t React_Energy_raw = 0x0000;
+	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[3] << 24;
+	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[2] << 16;
+	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[1] << 8;
+	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[0];
+
+	double React_Energy = (double)React_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
 	USART3_PINSET_TX();
-	myprintf("Reactive Energy = %lu Joules\r\n\r\n", CalcBuffer);
+	myprintf("Reactive Energy = %lf Watts\r\n\r\n", React_Energy);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
-
+/**
+* @brief Calculate and Print the apparent energy of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_App_Energy(void){
-	uint32_t CalcBuffer1 = PH1_Apparent_Energy[3];
-	uint32_t CalcBuffer2 = PH1_Apparent_Energy[2];
-	uint32_t CalcBuffer3 = PH1_Apparent_Energy[1];
-	uint32_t CalcBuffer4 = PH1_Apparent_Energy[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
-	
+	uint32_t App_Energy_raw = 0x0000;
+	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[3] << 24;
+	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[2] << 16;
+	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[1] << 8;
+	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[0];
+
+	double App_Energy = (double)App_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
+
+
 	USART3_PINSET_TX();
-	myprintf("Apparent Energy = %lu Joules\r\n\r\n", CalcBuffer);
+	myprintf("Apparent Energy = %lf Watts\r\n\r\n", App_Energy);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
-
+/**
+* @brief Calculate and Print the active power of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Active_Pwr(void){
-	uint32_t CalcBuffer1 = (PH1_Active_Power[3] & 0x1F);
-	uint32_t CalcBuffer2 = PH1_Active_Power[2];
-	uint32_t CalcBuffer3 = PH1_Active_Power[1];
-	uint32_t CalcBuffer4 = PH1_Active_Power[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
-	
+	uint32_t Active_Pwr_raw = 0x00000000;
+	Active_Pwr_raw += (uint16_t) PH1_Active_Power[3] << 24;
+	Active_Pwr_raw += (uint16_t) PH1_Active_Power[2] << 16;
+	Active_Pwr_raw += (uint16_t) PH1_Active_Power[1] << 8;
+	Active_Pwr_raw += (uint16_t) PH1_Active_Power[0];
+
+	Active_Pwr_raw = Active_Pwr_raw & 0x1FFFFFFF;
+
+	double Active_Pwr = (double)Active_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / (3600.0 * (double)D_CLK * (double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 131072.0);
+
 	USART3_PINSET_TX();
-	myprintf("Active Power = %lu Watts\r\n\r\n", CalcBuffer);
+	myprintf("Active Power = %lf WattHrs\r\n\r\n", Active_Pwr);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
-
+/**
+* @brief Calculate and Print the fundamental power of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Funda_Pwr(void){
-	uint32_t CalcBuffer1 = (PH1_Fundamental_Power[3] & 0x1F);
-	uint32_t CalcBuffer2 = PH1_Fundamental_Power[2];
-	uint32_t CalcBuffer3 = PH1_Fundamental_Power[1];
-	uint32_t CalcBuffer4 = PH1_Fundamental_Power[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
+	uint32_t Funda_Pwr_raw = 0x00000000;
+	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[3] << 24;
+	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[2] << 16;
+	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[1] << 8;
+	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[0];
+
+	Funda_Pwr_raw = Funda_Pwr_raw & 0x1FFFFFFF;
+
+	double Funda_Pwr = (double)Funda_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / (3600.0 * (double)D_CLK * (double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 131072.0);
 	
 	USART3_PINSET_TX();
-	myprintf("Fundamental Power = %lu Watts\r\n\r\n", CalcBuffer);
+	myprintf("Fundamental Power = %lf WattHrs\r\n\r\n", Funda_Pwr);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
-
+/**
+* @brief Calculate and Print the reactive power of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_React_Pwr(void){
-	uint32_t CalcBuffer1 = (PH1_Reactive_Power[3] & 0x1F);
-	uint32_t CalcBuffer2 = PH1_Reactive_Power[2];
-	uint32_t CalcBuffer3 = PH1_Reactive_Power[1];
-	uint32_t CalcBuffer4 = PH1_Reactive_Power[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
+	uint32_t React_Pwr_raw = 0x00000000;
+	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[3] << 24;
+	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[2] << 16;
+	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[1] << 8;
+	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[0];
+
+	React_Pwr_raw = React_Pwr_raw & 0x1FFFFFFF;
+
+	double React_Pwr = (double)React_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / (3600.0 * (double)D_CLK * (double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 131072.0);
 	
 	USART3_PINSET_TX();
-	myprintf("Reactive Power = %lu Watts\r\n\r\n", CalcBuffer);
+	myprintf("Reactive Power = %lf WattHrs\r\n\r\n", React_Pwr);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
-
+/**
+* @brief Calculate and Print the apparent RMS power of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_App_RMS_Pwr(void){
-	uint32_t CalcBuffer1 = (PH1_Apparent_RMS_Power[3] & 0x1F);
-	uint32_t CalcBuffer2 = PH1_Apparent_RMS_Power[2];
-	uint32_t CalcBuffer3 = PH1_Apparent_RMS_Power[1];
-	uint32_t CalcBuffer4 = PH1_Apparent_RMS_Power[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
+	uint32_t App_RMS_Pwr_raw = 0x00000000;
+	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[3] << 24;
+	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[2] << 16;
+	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[1] << 8;
+	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[0];
+
+	App_RMS_Pwr_raw = App_RMS_Pwr_raw & 0x1FFFFFFF;
+
+	double Apparent_RMS_Power = (double)App_RMS_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / (3600.0 * (double)D_CLK * (double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 131072.0);
 	
 	USART3_PINSET_TX();
-	myprintf("Apparent_RMS Power = %lu Watts\r\n\r\n", CalcBuffer);
+	myprintf("Apparent_RMS Power = %lf WattHrs\r\n\r\n", Apparent_RMS_Power);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
 
+/**
+* @brief Calculate and Print the total active energy of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Tot_Active_Pwr(void){
-	uint32_t CalcBuffer1 = Total_Active_Energy[3];
-	uint32_t CalcBuffer2 = Total_Active_Energy[2];
-	uint32_t CalcBuffer3 = Total_Active_Energy[1];
-	uint32_t CalcBuffer4 = Total_Active_Energy[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
+	uint32_t Tot_Active_Pwr_raw = 0x00000000;
+	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[3] << 24;
+	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[2] << 16;
+	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[1] << 8;
+	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[0];
+
+	double Tot_Active_Pwr = (double)Tot_Active_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
 	USART3_PINSET_TX();
-	myprintf("Total Active Energy = %lu Joules\r\n\r\n", CalcBuffer);
+	myprintf("Total Active Energy = %lf Watts\r\n\r\n", Tot_Active_Pwr);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
-
+/**
+* @brief Calculate and Print the total fundamental energy of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Tot_Funda_Pwr(void){
-	uint32_t CalcBuffer1 = Total_Fundamental_Energy[3];
-	uint32_t CalcBuffer2 = Total_Fundamental_Energy[2];
-	uint32_t CalcBuffer3 = Total_Fundamental_Energy[1];
-	uint32_t CalcBuffer4 = Total_Fundamental_Energy[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
+	uint32_t Tot_Funda_Pwr_raw = 0x00000000;
+	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[3] << 24;
+	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[2] << 16;
+	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[1] << 8;
+	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[0];
+
+	double Tot_Funda_Pwr = (double)Tot_Funda_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
 	USART3_PINSET_TX();
-	myprintf("Total Fundamental Energy = %lu Joules\r\n\r\n", CalcBuffer);
+	myprintf("Total Fundamental Energy = %lf Watts\r\n\r\n", Tot_Funda_Pwr);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
-
+/**
+* @brief Calculate and Print the total reactive energy of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Tot_React_Pwr(void){
-	uint32_t CalcBuffer1 = Total_Reactive_Energy[3];
-	uint32_t CalcBuffer2 = Total_Reactive_Energy[2];
-	uint32_t CalcBuffer3 = Total_Reactive_Energy[1];
-	uint32_t CalcBuffer4 = Total_Reactive_Energy[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
+	uint32_t Tot_React_Pwr_raw = 0x00000000;
+	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[3] << 24;
+	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[2] << 16;
+	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[1] << 8;
+	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[0];
+
+	double Tot_React_Pwr = (double)Tot_React_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
 	USART3_PINSET_TX();
-	myprintf("Total Reactive Energy = %lu Joules\r\n\r\n", CalcBuffer);
+	myprintf("Total Reactive Energy = %f Watts\r\n\r\n", Tot_React_Pwr);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
-
+/**
+* @brief Calculate and Print the total apparent energy of the power line.
+* @param Parameter: None
+* @retval None
+*/
 void CalcPrint_Tot_App_Pwr(void){
-	uint32_t CalcBuffer1 = Total_Apparent_Energy[3];
-	uint32_t CalcBuffer2 = Total_Apparent_Energy[2];
-	uint32_t CalcBuffer3 = Total_Apparent_Energy[1];
-	uint32_t CalcBuffer4 = Total_Apparent_Energy[0];
-	
-	uint32_t CalcBuffer = CalcBuffer1 << 24;
-	
-	CalcBuffer += (CalcBuffer2 << 16);
-	CalcBuffer += (CalcBuffer3 << 8);
-	CalcBuffer += (CalcBuffer4);
+	uint32_t Tot_App_Pwr_raw = 0x00000000;
+	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[3] << 24;
+	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[2] << 16;
+	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[1] << 8;
+	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[0];
+
+	double Tot_App_Pwr = (double)Tot_App_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
 	USART3_PINSET_TX();
-	myprintf("Total Apparent Energy = %lu Joules\r\n\r\n", CalcBuffer);
+	myprintf("Total Apparent Energy = %lf Watts\r\n\r\n", Tot_App_Pwr);
 	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 }
 
-
+/**
+* @brief Copy the src string into dest string
+* @param Pointer: dest[], src[] 
+* @param Parameter: size of string
+* @retval None
+*/
 void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
 	for (int i = 0; i < size; i++){
 		dest[i] = src[i];

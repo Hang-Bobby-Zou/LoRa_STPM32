@@ -157,9 +157,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>245</LineNumber>
+          <LineNumber>277</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134230516</Address>
+          <Address>134230522</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -168,7 +168,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>../Src/freertos.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\LoRa_STPM32\../Src/freertos.c\245</Expression>
+          <Expression>\\LoRa_STPM32\../Src/freertos.c\277</Expression>
         </Bp>
       </Breakpoint>
       <MemoryWindow1>
