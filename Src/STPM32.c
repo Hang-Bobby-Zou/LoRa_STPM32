@@ -76,7 +76,7 @@ bool STPM32_Init(void) {
 															3. Writing auto-latch bit (S/W Auto Latch in DSP_CR3)
 		*/
 		//First set everything low.
-		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_SET);				// EN	Low
+		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_SET);				// EN	High
 		
 		HAL_Delay(3000);
 		
@@ -191,7 +191,7 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	
 	HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
 	
-	HAL_Delay(5);
+	HAL_Delay(10);
 	
 	return true;
 }
