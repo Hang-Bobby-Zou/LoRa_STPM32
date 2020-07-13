@@ -163,16 +163,16 @@ int main(void)
 		
 		
 		//Initialize LoRa
-			// USART3_PINSET_TX();
-			// myprintf("Initializing LoRa...\r\n");
-			// USART3_PINSET_RX();
+			USART3_PINSET_TX();
+			myprintf("Initializing LoRa...\r\n");
+			USART3_PINSET_RX();
 		
-			// if (LoRa_Init() != true)
-			// 	Error_Handler();
+			if (LoRa_Init() != true)
+				Error_Handler();
 			
-			// USART3_PINSET_TX();
-			// myprintf("LoRa Initialization Done!\r\n");
-			// USART3_PINSET_RX();
+			USART3_PINSET_TX();
+			myprintf("LoRa Initialization Done!\r\n");
+			USART3_PINSET_RX();
 		
 
 		/* Initialize external flash and TEST if flash is okay */

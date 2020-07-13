@@ -126,7 +126,8 @@ osSemaphoreId myBinarySem01Handle;
 /* USER CODE BEGIN FunctionPrototypes */
 void uint8_cpy(uint8_t* dest, uint8_t* src, uint8_t size);
 void CalcPrint_Freq(void);
-void CalcPrint_RMS(void);
+void CalcPrint_V1_RMS(void);
+void CalcPrint_C1_RMS(void);
 void CalcPrint_Phase(void);
 void CalcPrint_Active_Energy(void);
 void CalcPrint_Funda_Energy(void);
@@ -281,7 +282,7 @@ void StartUSART1(void const * argument)
 			
 			FlashPointer += 0x08;
 			USART3_PINSET_TX();
-			myprintf("Blocking USART1 for 3 seconds\r\n");
+			myprintf("Blocking USART1 for 3 seconds\r\n\r\n");
 			USART3_PINSET_RX();
 			
 			vTaskDelay (pdMS_TO_TICKS( 3000 ));	//If walks around for 1 term, then block itself for 1 sec for users to read something
@@ -303,11 +304,11 @@ void StartUSART1(void const * argument)
 		 	RxBuffer[3] = ReadBuffer[3];
 			RxBuffer[4] = ReadBuffer[4];
 					 	
-		 	USART3_PINSET_TX();
-		 	myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
-		 	USART3_PINSET_RX();
+		 	//USART3_PINSET_TX();
+		 	//myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+		 	//USART3_PINSET_RX();
 
-			if (count == 2){		//Wait for the third iteration so the data is stable
+			if (count == 10){		//Wait for the third iteration so the data is stable
 			 	// USART3_PINSET_TX();
 					if (i[0] == dsp_reg1){
 						myprintf("Copying PH_Period\r\n");
@@ -322,7 +323,8 @@ void StartUSART1(void const * argument)
 					} else if (i[0] == dsp_reg14){
 						myprintf("Copying CH1_RMS\r\n");
 						uint8_cpy(CH1_RMS,RxBuffer,5);
-						CalcPrint_RMS();
+						CalcPrint_V1_RMS();
+						CalcPrint_C1_RMS();
 						
 					} else if (i[0] == ph1_reg1){
 						myprintf("Copying PH1_Active_Energy\r\n");
@@ -421,7 +423,7 @@ void StartUSART3(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 1);
+		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 4);
 
 		 if (USART3_RxFlag == 1){
 			
@@ -472,12 +474,21 @@ void StartUSART3(void const * argument)
 
 			char data[8] = {0};
 
-			ext_flash_read(aRxBuffer[0], data, 8);
+			uint32_t addr = 0;
 			
-			myprintf("%x %x %x %x %x %x %x %x \r\n",data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+			addr = addr | aRxBuffer[0] << 24;
+			addr = addr | aRxBuffer[1] << 16;
+			addr = addr | aRxBuffer[2] << 8;
+			addr = addr | aRxBuffer[3];
+			
+			ext_flash_read(addr, data, 8);
 			
 			
-						
+			USART3_PINSET_TX();
+			myprintf("Reading addr: %x ,Data: %x %x %x %x %x %x %x %x \r\n\r\n",addr,data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+			USART3_PINSET_RX();
+			
+			
 			USART3_RxFlag = 0;
 		 }
 
@@ -497,38 +508,9 @@ void StartSPI2(void const * argument)
 {
   /* USER CODE BEGIN StartSPI2 */
   SPI2_Priority = uxTaskPriorityGet( NULL );
-	
-	uint8_t SPI2_RxBuffer[1] = {0};
-	uint8_t SPI2_TxBuffer[2] = {0};
-	
 	/* Infinite loop */
   for(;;)
   {
-		USART3_PINSET_TX();
-		myprintf("AA");
-		USART3_PINSET_RX();
-		
-		// Assmue read LoRa ID: 0(MSB)+0x42
-		SPI2_TxBuffer[0] = 0x42;
-		
-		HAL_SPI_Receive_IT(&hspi2, SPI2_RxBuffer, 1);
-		
-		HAL_SPI_Transmit(&hspi2, SPI2_TxBuffer, 2, 0xFFFF);
-		
-		HAL_Delay(1);
-		
-		if (SPI2_RxFlag == 1){
-
-			USART3_PINSET_TX();
-			myprintf("SPI2 ID: %x \r\n", SPI2_RxBuffer);
-			USART3_PINSET_RX();
-		
-			SPI2_RxFlag = 0;
-		}
-		
-		
-		HAL_Delay(100);
-		
 		osDelay(1);
   }
   /* USER CODE END StartSPI2 */
@@ -560,13 +542,13 @@ void CalcPrint_Freq(void){
 	
 	uint16_t freq_raw;
 
-	freq_raw = (uint16_t) PH_Period[1] << 8;
-	freq_raw += (uint16_t) PH_Period[2];
+	freq_raw = freq_raw | (uint16_t) PH_Period[1] << 8;
+	freq_raw = freq_raw | (uint16_t) PH_Period[2];
 	double freq = 1.0 / (freq_raw * P_CLK);
 	
 	if( freq < Freq_Low_Threshold || freq > Freq_High_Threshold){
 		USART3_PINSET_TX();
-		myprintf("ERROR: Freq error: %f \r\n", freq);		//4 decimal numbers
+		myprintf("ERROR: Freq error: %f Hz\r\n\r\n", freq);		//4 decimal numbers
 		USART3_PINSET_RX();
 	} else {
 		USART3_PINSET_TX();
@@ -578,12 +560,12 @@ void CalcPrint_Freq(void){
 }
 
 /**
-* @brief Calculate and Print the RMS voltage and current
+* @brief Calculate and Print the RMS voltage
 *		 of the power line.
 * @param Parameter: None
 * @retval None
 */
-void CalcPrint_RMS(void){	
+void CalcPrint_V1_RMS(void){	
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = dsp_reg14;
@@ -599,34 +581,41 @@ void CalcPrint_RMS(void){
 	ext_flash_last_write_or_erase_done();
 	
 	static double V1_RMS = 0;
-	static double C1_RMS = 0;
 	
 	uint16_t V1_RMS_raw = 0x0000;
-	V1_RMS_raw = (uint16_t) CH1_RMS[1] << 8;
-	V1_RMS_raw += (uint16_t) CH1_RMS[0];
+	V1_RMS_raw = V1_RMS_raw | ((uint16_t) CH1_RMS[1] << 8);
+	V1_RMS_raw = V1_RMS_raw | (uint16_t) CH1_RMS[0];
 	V1_RMS_raw = V1_RMS_raw & 0x7FFF; 				//Mask the most significant bit.
 	
 	V1_RMS = (double) V1_RMS_raw * (double) V_ref * (1.0 + (double) R1/ (double) R2) / ( (double) cal_v * (double) A_v * 32768.0);	
 
+
+	USART3_PINSET_TX();
+	myprintf("V1= %lf Volts\r\n",V1_RMS);
+	USART3_PINSET_RX();
+
+}
+
+/**
+* @brief Calculate and Print the RMS current
+*		 of the power line.
+* @param Parameter: None
+* @retval None
+*/
+void CalcPrint_C1_RMS(void){	
+	static double C1_RMS = 0;
 	
 	uint16_t C1_RMS_raw = 0x0000;
-	C1_RMS_raw = (uint16_t) CH1_RMS[1] >> 7;
-	C1_RMS_raw += (uint16_t) CH1_RMS[2] << 1;
-	C1_RMS_raw += (uint16_t) CH1_RMS[3] << 9;
+	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[1] >> 7);
+	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[2] << 1);
+	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[3] << 9);
 
-	C1_RMS = (double)C1_RMS_raw * (double)V_ref / ((double) cal_i * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
+	C1_RMS = (double) C1_RMS_raw * (double) V_ref / ((double) cal_i * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
 	
-	if ( V1_RMS < V1_Low_Threshold || V1_RMS > V1_High_Threshold){
-		USART3_PINSET_TX();
-		myprintf("ERROR: V1 error: %lf \r\n", V1_RMS);
-		USART3_PINSET_RX();
-	} else {
-		USART3_PINSET_TX();
-		myprintf("C1= %lf Amps | V1= %lf Volts\r\n\r\n",C1_RMS, V1_RMS);
-		USART3_PINSET_RX();
-	}
+	USART3_PINSET_TX();
+	myprintf("C1= %lf Amps\r\n",C1_RMS);
+	USART3_PINSET_RX();
 	
-	HAL_Delay(1);
 }
 
 /**
@@ -652,8 +641,8 @@ void CalcPrint_Phase(void){
 	
 	uint16_t C1_PHA_raw;
 	
-	C1_PHA_raw = (uint16_t) C1_PHA[3] << 8;
-	C1_PHA_raw += (uint16_t) C1_PHA[2];
+	C1_PHA_raw = C1_PHA_raw | (uint16_t) C1_PHA[3] << 8;
+	C1_PHA_raw = C1_PHA_raw | (uint16_t) C1_PHA[2];
 	C1_PHA_raw = C1_PHA_raw & 0x1FFE;
 
 	double phase = (double) C1_PHA_raw / (double) F_CLK * (double) 50 * 360.0;
@@ -687,10 +676,10 @@ void CalcPrint_Active_Energy(void){
 	
 	
 	uint32_t Active_Energy_raw = 0x0000;
-	Active_Energy_raw += (uint16_t) PH1_Active_Energy[3] << 24;
-	Active_Energy_raw += (uint16_t) PH1_Active_Energy[2] << 16;
-	Active_Energy_raw += (uint16_t) PH1_Active_Energy[1] << 8;
-	Active_Energy_raw += (uint16_t) PH1_Active_Energy[0];
+	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[3] << 24;
+	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[2] << 16;
+	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[1] << 8;
+	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[0];
 
 	double Active_Energy = (double)Active_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 
@@ -722,10 +711,10 @@ void CalcPrint_Funda_Energy(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t Funda_Energy_raw = 0x0000;
-	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[3] << 24;
-	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[2] << 16;
-	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[1] << 8;
-	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[0];
+	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[3] << 24;
+	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[2] << 16;
+	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[1] << 8;
+	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[0];
 
 	double Funda_Energy = (double)Funda_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 
@@ -758,10 +747,10 @@ void CalcPrint_React_Energy(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t React_Energy_raw = 0x0000;
-	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[3] << 24;
-	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[2] << 16;
-	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[1] << 8;
-	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[0];
+	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[3] << 24;
+	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[2] << 16;
+	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[1] << 8;
+	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[0];
 
 	double React_Energy = (double)React_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
@@ -792,10 +781,10 @@ void CalcPrint_App_Energy(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t App_Energy_raw = 0x0000;
-	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[3] << 24;
-	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[2] << 16;
-	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[1] << 8;
-	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[0];
+	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[3] << 24;
+	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[2] << 16;
+	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[1] << 8;
+	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[0];
 
 	double App_Energy = (double)App_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 
@@ -827,10 +816,10 @@ void CalcPrint_Active_Pwr(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t Active_Pwr_raw = 0x00000000;
-	Active_Pwr_raw += (uint16_t) PH1_Active_Power[3] << 24;
-	Active_Pwr_raw += (uint16_t) PH1_Active_Power[2] << 16;
-	Active_Pwr_raw += (uint16_t) PH1_Active_Power[1] << 8;
-	Active_Pwr_raw += (uint16_t) PH1_Active_Power[0];
+	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[3] << 24;
+	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[2] << 16;
+	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[1] << 8;
+	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[0];
 
 	Active_Pwr_raw = Active_Pwr_raw & 0x1FFFFFFF;
 
@@ -863,10 +852,10 @@ void CalcPrint_Funda_Pwr(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t Funda_Pwr_raw = 0x00000000;
-	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[3] << 24;
-	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[2] << 16;
-	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[1] << 8;
-	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[0];
+	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[3] << 24;
+	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[2] << 16;
+	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[1] << 8;
+	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[0];
 
 	Funda_Pwr_raw = Funda_Pwr_raw & 0x1FFFFFFF;
 
@@ -899,10 +888,10 @@ void CalcPrint_React_Pwr(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t React_Pwr_raw = 0x00000000;
-	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[3] << 24;
-	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[2] << 16;
-	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[1] << 8;
-	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[0];
+	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[3] << 24;
+	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[2] << 16;
+	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[1] << 8;
+	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[0];
 
 	React_Pwr_raw = React_Pwr_raw & 0x1FFFFFFF;
 
@@ -935,10 +924,10 @@ void CalcPrint_App_RMS_Pwr(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t App_RMS_Pwr_raw = 0x00000000;
-	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[3] << 24;
-	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[2] << 16;
-	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[1] << 8;
-	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[0];
+	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[3] << 24;
+	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[2] << 16;
+	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[1] << 8;
+	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[0];
 
 	App_RMS_Pwr_raw = App_RMS_Pwr_raw & 0x1FFFFFFF;
 
@@ -972,10 +961,10 @@ void CalcPrint_Tot_Active_Energy(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t Tot_Active_Pwr_raw = 0x00000000;
-	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[3] << 24;
-	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[2] << 16;
-	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[1] << 8;
-	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[0];
+	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[3] << 24;
+	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[2] << 16;
+	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[1] << 8;
+	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[0];
 
 	double Tot_Active_Pwr = (double)Tot_Active_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
@@ -1006,10 +995,10 @@ void CalcPrint_Tot_Funda_Energy(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t Tot_Funda_Pwr_raw = 0x00000000;
-	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[3] << 24;
-	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[2] << 16;
-	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[1] << 8;
-	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[0];
+	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[3] << 24;
+	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[2] << 16;
+	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[1] << 8;
+	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[0];
 
 	double Tot_Funda_Pwr = (double)Tot_Funda_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
@@ -1040,10 +1029,10 @@ void CalcPrint_Tot_React_Energy(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t Tot_React_Pwr_raw = 0x00000000;
-	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[3] << 24;
-	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[2] << 16;
-	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[1] << 8;
-	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[0];
+	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[3] << 24;
+	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[2] << 16;
+	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[1] << 8;
+	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[0];
 
 	double Tot_React_Pwr = (double)Tot_React_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
@@ -1074,10 +1063,10 @@ void CalcPrint_Tot_App_Energy(void){
 	ext_flash_last_write_or_erase_done();
 	
 	uint32_t Tot_App_Pwr_raw = 0x00000000;
-	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[3] << 24;
-	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[2] << 16;
-	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[1] << 8;
-	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[0];
+	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[3] << 24;
+	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[2] << 16;
+	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[1] << 8;
+	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[0];
 
 	double Tot_App_Pwr = (double)Tot_App_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
 	
