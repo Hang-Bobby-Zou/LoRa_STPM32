@@ -80,6 +80,8 @@ void Error_Handler(void);
 #define USART3__RE_GPIO_Port GPIOB
 #define NRST_1278_Pin GPIO_PIN_2
 #define NRST_1278_GPIO_Port GPIOB
+#define SPI2_NSS_Pin GPIO_PIN_12
+#define SPI2_NSS_GPIO_Port GPIOB
 #define DIO5_Pin GPIO_PIN_8
 #define DIO5_GPIO_Port GPIOA
 #define CS_FLASH_Pin GPIO_PIN_15

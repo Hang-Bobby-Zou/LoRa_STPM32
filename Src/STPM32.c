@@ -160,7 +160,7 @@ bool SendMsgOnly (uint32_t SendAddress, uint8_t* SendMessage){
 	
 	HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
 
-	HAL_Delay(5);
+	HAL_Delay(1);
 	
 	return true;
 }
@@ -191,7 +191,7 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	
 	HAL_UART_Transmit(&huart1, (uint8_t*) Buffer, 5, 0xFFFF);
 	
-	HAL_Delay(10);
+	HAL_Delay(1);	//Delay for 1 ms between each transmit to avoid any loss of data.
 	
 	return true;
 }

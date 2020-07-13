@@ -64,3 +64,4 @@ lora-stpm32\freertos.o: ../Inc/ext_flash_tb.h
 lora-stpm32\freertos.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 lora-stpm32\freertos.o: ../Inc/STPM32.h
 lora-stpm32\freertos.o: ../Inc/STPM32_AddressMap.h
+lora-stpm32\freertos.o: ../Inc/LoRa.h

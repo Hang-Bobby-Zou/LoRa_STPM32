@@ -11,7 +11,7 @@
 //if (huart1.Instance == USART1){
 
 //vTaskSuspend(USART1Handle);
-
+//vTaskResume(USART1Handle);
 
 //vTaskPrioritySet( USART3Handle, ( USART1_Priority - 2 ) );
 
