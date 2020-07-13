@@ -60,17 +60,17 @@
 #include "spi.h"
 #include "ext_flash_tb.h"
 
-#define ReadWriteSize 1024	//In bytes
+#define ReadWriteSize 1024	//In bytes max
 #define SectorNum			512		//In numbers
 #define BlockNum			31		//In numbers
 #define TestSize			3			//Defined in Sectors, change this to change the number of sectors to be tested, max 512
 
 //Function prototypes
 bool Randomize(char str[],uint32_t num,uint32_t param);
-bool ReadWrite(uint32_t address);
-bool EraseSector(uint32_t address);
-void WriteSector(uint32_t address);
-bool EraseBlock(uint32_t address);
+void WriteSector_tb(uint32_t address);
+bool ReadWrite_tb(uint32_t address);
+bool EraseSector_tb(uint32_t address);
+bool EraseBlock_tb(uint32_t address);
 
 /**
   * @brief  Test bench for external flash
@@ -97,7 +97,7 @@ bool ext_flash_tb(void){
 /*		ReadWrite Test																										*/
 /*======================================================================*/
 		for (int i = 0; i < TestSize; i++){
-			if (ReadWrite(AddressMap[i]) != true)
+			if (ReadWrite_tb(AddressMap[i]) != true)
 				return false;
 			
 		HAL_Delay(1);
@@ -108,7 +108,7 @@ bool ext_flash_tb(void){
 /*		Erase sector Test																									*/
 /*======================================================================*/
 		for (int i = 0; i < TestSize; i++){
-			if (EraseSector(AddressMap[i]) != true)
+			if (EraseSector_tb(AddressMap[i]) != true)
 				return false;
 			
 		HAL_Delay(1);
@@ -118,11 +118,11 @@ bool ext_flash_tb(void){
 /*		Erase block Test																									*/
 /*======================================================================*/
 		for (int i = 0; i< TestSize; i++){
-				WriteSector(AddressMap[i]);
+				WriteSector_tb(AddressMap[i]);
 		}
 		
 		for (int i = 0; i< TestSize; i += 16){
-				if (EraseBlock(AddressMap[i]) != true)
+				if (EraseBlock_tb(AddressMap[i]) != true)
 					return false;
 				
 		HAL_Delay(1);
@@ -139,13 +139,35 @@ bool ext_flash_tb(void){
 }
 
 
+//
+//	Testbench functions, ending with _tb
+//
+
+/**
+  * @brief  Write to a specific sector
+	* @intval	Sector Address
+  * @retval NONE
+  */
+void WriteSector_tb(uint32_t address){
+		char RandomString 	[ReadWriteSize];
+	
+		Randomize(RandomString,ReadWriteSize,0);
+				
+		ext_flash_erase_sector(address);
+		ext_flash_last_write_or_erase_done();			// Wait for erase to be done
+		//ext_flash_read(address, ReadData,ReadWriteSize);		// Read from address
+				
+		ext_flash_write(address,RandomString,ReadWriteSize);
+		ext_flash_last_write_or_erase_done();			// Wait for write to be done
+}
+
 /**
   * @brief  Erase the whole block of data starting sector address
 	*					and validate itself
 	* @intval	Sector Address
   * @retval If successful, return true, else return false
   */
-bool EraseBlock(uint32_t address){
+bool EraseBlock_tb(uint32_t address){
 		char ReadData 			[ReadWriteSize];
 		char EmptyData			[ReadWriteSize] = {0};
 		
@@ -160,7 +182,7 @@ bool EraseBlock(uint32_t address){
 				ext_flash_read(address + i, ReadData,ReadWriteSize);
 			
 				if (memcmp(EmptyData, ReadData, ReadWriteSize) != 0){
-				return false;
+					return false;
 				}
 		}
 		return true;
@@ -173,7 +195,7 @@ bool EraseBlock(uint32_t address){
 	* @intval	Sector Address
   * @retval If successful, return true, else return false
   */
-bool EraseSector(uint32_t address){
+bool EraseSector_tb(uint32_t address){
 		char ReadData 			[ReadWriteSize];
 		char EmptyData			[ReadWriteSize] = {0};
 		
@@ -199,7 +221,7 @@ bool EraseSector(uint32_t address){
 	* @intval	Sector Address
   * @retval If successful, return true, else return false
   */
-bool ReadWrite(uint32_t address){
+bool ReadWrite_tb(uint32_t address){
 		char ReadData				[ReadWriteSize];
 		char RandomString 	[ReadWriteSize];
 	
@@ -219,25 +241,6 @@ bool ReadWrite(uint32_t address){
 		}
 		return true;
 }
-
-/**
-  * @brief  Write to a specific sector
-	* @intval	Sector Address
-  * @retval NONE
-  */
-void WriteSector(uint32_t address){
-		char RandomString 	[ReadWriteSize];
-	
-		Randomize(RandomString,ReadWriteSize,0);
-				
-		ext_flash_erase_sector(address);
-		ext_flash_last_write_or_erase_done();			// Wait for erase to be done
-		//ext_flash_read(address, ReadData,ReadWriteSize);		// Read from address
-				
-		ext_flash_write(address,RandomString,ReadWriteSize);
-		ext_flash_last_write_or_erase_done();			// Wait for write to be done
-}
-
 
 /**
   * @brief  Randomize a string

@@ -614,10 +614,9 @@ Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=lora-stpm32\startup_stm32l433xx.d -olora-stpm32\startup_stm32l4
 33xx.o -I..\Inc -I.\RTE\_LoRa-STPM32 -ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CM
 SIS\Core\Include -ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS
-\Device\ST\STM32L4xx\Include --predefine="__EVAL SETA 1" --predefine="__MICROLI
-B SETA 1" --predefine="__UVISION_VERSION SETA 528" --predefine="_RTE_ SETA 1" -
--predefine="STM32L433xx SETA 1" --list=startup_stm32l433xx.lst startup_stm32l43
-3xx.s
+\Device\ST\STM32L4xx\Include --predefine="__MICROLIB SETA 1" --predefine="__UVI
+SION_VERSION SETA 528" --predefine="_RTE_ SETA 1" --predefine="STM32L433xx SETA
+ 1" --list=startup_stm32l433xx.lst startup_stm32l433xx.s
 
 
 
@@ -1549,4 +1548,4 @@ Symbol: __main
       At line 175 in file startup_stm32l433xx.s
 Comment: __main used once
 2 symbols
-431 symbols in table
+430 symbols in table

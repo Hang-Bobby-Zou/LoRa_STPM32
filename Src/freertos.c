@@ -60,7 +60,11 @@
 #define k_s					0.0024
 #define k_int				1
 
+#define Freq_Low_Threshold	45.0
+#define Freq_High_Threshold	65.0
 
+#define V1_Low_Threshold 		200.0
+#define V1_High_Threshold		270.0
 
 /* USER CODE END PD */
 
@@ -76,11 +80,7 @@ uint8_t ReadBuffer[5] = {0};
 uint8_t RxBuffer[5] = {0};
 uint8_t i[1] = {0x2E};
 int count = 0;
-
-
-
-
-
+uint16_t FlashPointer = 0x00;
 
 
 uint8_t PH_Period								[5] = {0};
@@ -135,10 +135,10 @@ void CalcPrint_Active_Pwr(void);
 void CalcPrint_Funda_Pwr(void);
 void CalcPrint_React_Pwr(void);
 void CalcPrint_App_RMS_Pwr(void);
-void CalcPrint_Tot_Active_Pwr(void);
-void CalcPrint_Tot_Funda_Pwr(void);
-void CalcPrint_Tot_React_Pwr(void);
-void CalcPrint_Tot_App_Pwr(void);
+void CalcPrint_Tot_Active_Energy(void);
+void CalcPrint_Tot_Funda_Energy(void);
+void CalcPrint_Tot_React_Energy(void);
+void CalcPrint_Tot_App_Energy(void);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -274,13 +274,26 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-	
+	  //To cycle the register address pointer
 		if (i[0] > 0x8A){
 			i[0] = 0x2E;
+			
+			FlashPointer += 0x08;
+			USART3_PINSET_TX();
+			myprintf("Blocking USART1 for 3 seconds\r\n");
+			USART3_PINSET_RX();
+			
+			vTaskDelay (pdMS_TO_TICKS( 3000 ));	//If walks around for 1 term, then block itself for 1 sec for users to read something
 		}
 		
-		//i[0] = 0x48;
-		
+		if (FlashPointer > 0x00FFFF){
+			FlashPointer = 0x000000;
+			
+			USART3_PINSET_TX();
+			myprintf("!!!Flash Full!!!\r\n");
+			myprintf("...Overwriting Previous Info...\r\n");
+			USART3_PINSET_RX();
+		}
 
 		if (USART1_RxFlag == 1){
 		 	RxBuffer[0] = ReadBuffer[0];
@@ -290,110 +303,99 @@ void StartUSART1(void const * argument)
 			RxBuffer[4] = ReadBuffer[4];
 			
 		 	
-		 	//USART3_PINSET_TX();
-		 	//myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
-		 	//USART3_PINSET_RX();
+		 	USART3_PINSET_TX();
+		 	myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+		 	USART3_PINSET_RX();
 
 			
-			if (count == 10){
+			if (count == 2){		//Wait for the third iteration to be stable
 			 	// USART3_PINSET_TX();
-				if (i[0] == 0x2E){
-					myprintf("Copying PH_Period\r\n");
-					uint8_cpy(PH_Period, RxBuffer, 5);
+					if (i[0] == dsp_reg1){
+						myprintf("Copying PH_Period\r\n");
+						uint8_cpy(PH_Period, RxBuffer, 5);
+						CalcPrint_Freq();
 					
-				} else if (i[0] == 0x4E){
-					myprintf("Copying C1_PHA\r\n");
-					uint8_cpy(C1_PHA, RxBuffer, 5);
-					
-				} else if (i[0] == 0x48){
-					myprintf("Copying CH1_RMS\r\n");
-					uint8_cpy(CH1_RMS,RxBuffer,5);
-					
-				} else if (i[0] == ph1_reg1){
-					myprintf("Copying PH1_Active_Energy\r\n");
-					uint8_cpy(PH1_Active_Energy, RxBuffer, 5);
-					CalcPrint_Active_Energy();
-					
-				} else if (i[0] == ph1_reg2){
-					myprintf("Copying PH1_Fundamental_Energy\r\n");
-					uint8_cpy(PH1_Fundamental_Energy, RxBuffer, 5);
-					//CalcPrint_Funda_Energy();
-					
-				} else if (i[0] == ph1_reg3){
-					myprintf("Copying PH1_Reactive_Energy\r\n");
-					uint8_cpy(PH1_Reactive_Energy, RxBuffer, 5);
-					CalcPrint_React_Energy();
-					
-				} else if (i[0] == ph1_reg4){
-					myprintf("Copying PH1_Apparent_Energy\r\n");
-					uint8_cpy(PH1_Apparent_Energy, RxBuffer,5);
-					CalcPrint_App_Energy();
-					
-				} else if (i[0] == ph1_reg5){
-					myprintf("Copying PH1_Active_Power\r\n");
-					uint8_cpy(PH1_Active_Power, RxBuffer, 5);
-					CalcPrint_Active_Pwr();
-					
-				} else if (i[0] == ph1_reg6){
-					myprintf("Copying PH1_Fundamental_Power\r\n");
-					uint8_cpy(PH1_Fundamental_Power, RxBuffer, 5);
-					//CalcPrint_Funda_Pwr();
-					
-				} else if (i[0] == ph1_reg7){
-					myprintf("Copying PH1_Reactive_Power\r\n");
-					uint8_cpy(PH1_Reactive_Power, RxBuffer, 5);
-					CalcPrint_React_Pwr();
-					
-				} else if (i[0] == ph1_reg8){
-					myprintf("Copying PH1_Apparent_RMS_Power\r\n");
-					uint8_cpy(PH1_Apparent_RMS_Power, RxBuffer, 5);
-					CalcPrint_App_RMS_Pwr();
-					
-				} else if (i[0] == tot_reg1){
-					myprintf("Copying Total_Active_Energy\r\n");
-					uint8_cpy(Total_Active_Energy, RxBuffer, 5);
-					//CalcPrint_Tot_Active_Pwr();
-					
-				} else if (i[0] == tot_reg2){
-					myprintf("Copying Total_Fundamental_Energy\r\n");
-					uint8_cpy(Total_Fundamental_Energy, RxBuffer, 5);
-					//CalcPrint_Tot_Funda_Pwr();
-					
-				} else if (i[0] == tot_reg3){
-					myprintf("Copying Total_Reactive_Energy\r\n");
-					uint8_cpy(Total_Reactive_Energy, RxBuffer, 5);
-					//CalcPrint_Tot_React_Pwr();
-					
-				} else if (i[0] == tot_reg4){
-					myprintf("Copying Total_Apparent_Energy\r\n");
-					uint8_cpy(Total_Apparent_Energy, RxBuffer, 5);
-					CalcPrint_Tot_App_Pwr();
-					
-				}
+					} else if (i[0] == dsp_reg17){
+						myprintf("Copying C1_PHA\r\n");
+						uint8_cpy(C1_PHA, RxBuffer, 5);
+						CalcPrint_Phase();
+						
+					} else if (i[0] == dsp_reg14){
+						myprintf("Copying CH1_RMS\r\n");
+						uint8_cpy(CH1_RMS,RxBuffer,5);
+						CalcPrint_RMS();
+						
+					} else if (i[0] == ph1_reg1){
+						myprintf("Copying PH1_Active_Energy\r\n");
+						uint8_cpy(PH1_Active_Energy, RxBuffer, 5);
+						CalcPrint_Active_Energy();
+						
+					} else if (i[0] == ph1_reg2){
+						myprintf("Copying PH1_Fundamental_Energy\r\n");
+						uint8_cpy(PH1_Fundamental_Energy, RxBuffer, 5);
+						//CalcPrint_Funda_Energy();
+						
+					} else if (i[0] == ph1_reg3){
+						myprintf("Copying PH1_Reactive_Energy\r\n");
+						uint8_cpy(PH1_Reactive_Energy, RxBuffer, 5);
+						CalcPrint_React_Energy();
+						
+					} else if (i[0] == ph1_reg4){
+						myprintf("Copying PH1_Apparent_Energy\r\n");
+						uint8_cpy(PH1_Apparent_Energy, RxBuffer,5);
+						CalcPrint_App_Energy();
+						
+					} else if (i[0] == ph1_reg5){
+						myprintf("Copying PH1_Active_Power\r\n");
+						uint8_cpy(PH1_Active_Power, RxBuffer, 5);
+						CalcPrint_Active_Pwr();
+						
+					} else if (i[0] == ph1_reg6){
+						myprintf("Copying PH1_Fundamental_Power\r\n");
+						uint8_cpy(PH1_Fundamental_Power, RxBuffer, 5);
+						//CalcPrint_Funda_Pwr();
+						
+					} else if (i[0] == ph1_reg7){
+						myprintf("Copying PH1_Reactive_Power\r\n");
+						uint8_cpy(PH1_Reactive_Power, RxBuffer, 5);
+						CalcPrint_React_Pwr();
+						
+					} else if (i[0] == ph1_reg8){
+						myprintf("Copying PH1_Apparent_RMS_Power\r\n");
+						uint8_cpy(PH1_Apparent_RMS_Power, RxBuffer, 5);
+						CalcPrint_App_RMS_Pwr();
+						
+					} else if (i[0] == tot_reg1){
+						myprintf("Copying Total_Active_Energy\r\n");
+						uint8_cpy(Total_Active_Energy, RxBuffer, 5);
+						//CalcPrint_Tot_Active_Energy();
+						
+					} else if (i[0] == tot_reg2){
+						myprintf("Copying Total_Fundamental_Energy\r\n");
+						uint8_cpy(Total_Fundamental_Energy, RxBuffer, 5);
+						//CalcPrint_Tot_Funda_Energy();
+						
+					} else if (i[0] == tot_reg3){
+						myprintf("Copying Total_Reactive_Energy\r\n");
+						uint8_cpy(Total_Reactive_Energy, RxBuffer, 5);
+						//CalcPrint_Tot_React_Energy();
+						
+					} else if (i[0] == tot_reg4){
+						myprintf("Copying Total_Apparent_Energy\r\n");
+						uint8_cpy(Total_Apparent_Energy, RxBuffer, 5);
+						CalcPrint_Tot_App_Energy();
+						
+					}
 				// USART3_PINSET_RX();
 				
-				if (i[0] == 0x2E){
-					CalcPrint_Freq();
-				} 
-				else if (i[0] == 0x48){
-					CalcPrint_RMS();
-					USART3_PINSET_TX();
-					myprintf("FLAG");
-					USART3_PINSET_RX();
-				} 
-				else if (i[0] == 0x4E){
-					CalcPrint_Phase();
-				}
 				i[0] += 0x02;
-			 	count = 0;
+				
+				count = 0;
 			}
-			
+
 			count++;
-			
+
 		 	USART1_RxFlag = 0;
-			
-			//vTaskDelay (pdMS_TO_TICKS( 1000 ));
-			
 		}
 		
 		ReadMsgOnly(i[0],ReadBuffer);
@@ -401,7 +403,7 @@ void StartUSART1(void const * argument)
 		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));		//Runing delay
 		
 		osDelay(1);
-  }
+  	}
   /* USER CODE END StartUSART1 */
 }
 
@@ -420,64 +422,57 @@ void StartUSART3(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-		//  HAL_UART_Receive_IT(&huart3, aRxBuffer, 1);
+		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 1);
 
-		//  if (USART3_RxFlag == 1){
-		//  	//vTaskSuspend(USART1Handle);
+		 if (USART3_RxFlag == 1){
 			
-		// 	USART3_PINSET_TX();
-		// 	if (aRxBuffer[0] == dsp_reg14){
-		// 		myprintf("Reading: CH1_RMS\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
-		// 	} else if (aRxBuffer[0] == ph1_reg1){
-		// 		myprintf("Reading: PH1_Active_Energy\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Energy[0],PH1_Active_Energy[1],PH1_Active_Energy[2],PH1_Active_Energy[3],PH1_Active_Energy[4]);
-		// 	} else if (aRxBuffer[0] == ph1_reg2){
-		// 		myprintf("Reading: PH1_Fundamental_Energy\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
-		// 	} else if (aRxBuffer[0] == ph1_reg3){
-		// 		myprintf("Reading: PH1_Reactive_Energy\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
-		// 	} else if (aRxBuffer[0] == ph1_reg4){
-		// 		myprintf("Reading: PH1_Apparent_Energy\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
-		// 	} else if (aRxBuffer[0] == ph1_reg5){
-		// 		myprintf("Reading: PH1_Active_Power\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
-		// 	} else if (aRxBuffer[0] == ph1_reg6){
-		// 		myprintf("Reading: PH1_Fundamental_Power\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
-		// 	} else if (aRxBuffer[0] == ph1_reg7){
-		// 		myprintf("Reading: PH1_Reactive_Power\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
-		// 	} else if (aRxBuffer[0] == ph1_reg8){
-		// 		myprintf("Reading: PH1_Apparent_RMS_Power\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
-		// 	} else if (aRxBuffer[0] == tot_reg1){
-		// 		myprintf("Reading: Total_Active_Energy\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
-		// 	} else if (aRxBuffer[0] == tot_reg2){
-		// 		myprintf("Reading: Total_Fundamental_Energy\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
-		// 	} else if (aRxBuffer[0] == tot_reg3){
-		// 		myprintf("Reading: Total_Reactive_Energy\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
-		// 	} else if (aRxBuffer[0] == tot_reg4){
-		// 		myprintf("Reading: Total_Apparent_Energy\r\n");
-		// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
-		// 	} else {
-		// 		myprintf(" Not a valid address \r\n");
-		// 	}
-		// 	USART3_PINSET_RX();
-			
-			
-		 	//USART3_PINSET_TX();
-		 	//HAL_UART_Transmit(&huart3, aRxBuffer, 8, 0xFFFF);
-		 	//USART3_PINSET_RX();
-			
-			// USART3_RxFlag = 0;
-		 	//vTaskResume(USART1Handle);
-		//  }
+			USART3_PINSET_TX();
+				if (aRxBuffer[0] == dsp_reg14){
+					myprintf("Reading: CH1_RMS\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
+				} else if (aRxBuffer[0] == ph1_reg1){
+					myprintf("Reading: PH1_Active_Energy\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Energy[0],PH1_Active_Energy[1],PH1_Active_Energy[2],PH1_Active_Energy[3],PH1_Active_Energy[4]);
+				} else if (aRxBuffer[0] == ph1_reg2){
+					myprintf("Reading: PH1_Fundamental_Energy\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
+				} else if (aRxBuffer[0] == ph1_reg3){
+					myprintf("Reading: PH1_Reactive_Energy\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
+				} else if (aRxBuffer[0] == ph1_reg4){
+					myprintf("Reading: PH1_Apparent_Energy\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
+				} else if (aRxBuffer[0] == ph1_reg5){
+					myprintf("Reading: PH1_Active_Power\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
+				} else if (aRxBuffer[0] == ph1_reg6){
+					myprintf("Reading: PH1_Fundamental_Power\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
+				} else if (aRxBuffer[0] == ph1_reg7){
+					myprintf("Reading: PH1_Reactive_Power\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
+				} else if (aRxBuffer[0] == ph1_reg8){
+					myprintf("Reading: PH1_Apparent_RMS_Power\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
+				} else if (aRxBuffer[0] == tot_reg1){
+					myprintf("Reading: Total_Active_Energy\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
+				} else if (aRxBuffer[0] == tot_reg2){
+					myprintf("Reading: Total_Fundamental_Energy\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
+				} else if (aRxBuffer[0] == tot_reg3){
+					myprintf("Reading: Total_Reactive_Energy\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
+				} else if (aRxBuffer[0] == tot_reg4){
+					myprintf("Reading: Total_Apparent_Energy\r\n");
+					myprintf("%x | %x | %x | %x | %x \r\n", Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
+				} else {
+					myprintf(" Not a valid address \r\n");
+				}
+			USART3_PINSET_RX();
+						
+			USART3_RxFlag = 0;
+		 }
 
 		osDelay(1); //This delay is in ms
   }
@@ -513,15 +508,35 @@ void StartSPI2(void const * argument)
 * @retval None
 */
 void CalcPrint_Freq(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = dsp_reg1;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = PH_Period[0];
+	FlashBuffer [4] = PH_Period[1];
+	FlashBuffer [5] = PH_Period[2];
+	FlashBuffer [6] = PH_Period[3];
+	FlashBuffer [7] = PH_Period[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Freq, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint16_t freq_raw;
 
 	freq_raw = (uint16_t) PH_Period[1] << 8;
 	freq_raw += (uint16_t) PH_Period[2];
 	double freq = 1.0 / (freq_raw * P_CLK);
 	
-	USART3_PINSET_TX();
-	myprintf("Freq: %f Hz\r\n\r\n", freq);		//4 decimal numbers
-	USART3_PINSET_RX();
+	if( freq < Freq_Low_Threshold || freq > Freq_High_Threshold){
+		USART3_PINSET_TX();
+		myprintf("ERROR: Freq error: %f \r\n", freq);		//4 decimal numbers
+		USART3_PINSET_RX();
+	} else {
+		USART3_PINSET_TX();
+		myprintf("Freq: %f Hz\r\n\r\n", freq);		//4 decimal numbers
+		USART3_PINSET_RX();
+	}
 	
 	HAL_Delay(1);
 }
@@ -533,6 +548,20 @@ void CalcPrint_Freq(void){
 * @retval None
 */
 void CalcPrint_RMS(void){	
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = dsp_reg14;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = CH1_RMS[0];
+	FlashBuffer [4] = CH1_RMS[1];
+	FlashBuffer [5] = CH1_RMS[2];
+	FlashBuffer [6] = CH1_RMS[3];
+	FlashBuffer [7] = CH1_RMS[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_RMS, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	static double V1_RMS = 0;
 	static double C1_RMS = 0;
 	
@@ -551,10 +580,15 @@ void CalcPrint_RMS(void){
 
 	C1_RMS = (double)C1_RMS_raw * (double)V_ref / ((double) cal_i * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
 	
-	
-	USART3_PINSET_TX();
-	myprintf("C1= %lf Amps | V1= %lf Volts\r\n\r\n",C1_RMS, V1_RMS);
-	USART3_PINSET_RX();
+	if ( V1_RMS < V1_Low_Threshold || V1_RMS > V1_High_Threshold){
+		USART3_PINSET_TX();
+		myprintf("ERROR: V1 error: %lf \r\n", V1_RMS);
+		USART3_PINSET_RX();
+	} else {
+		USART3_PINSET_TX();
+		myprintf("C1= %lf Amps | V1= %lf Volts\r\n\r\n",C1_RMS, V1_RMS);
+		USART3_PINSET_RX();
+	}
 	
 	HAL_Delay(1);
 }
@@ -566,6 +600,20 @@ void CalcPrint_RMS(void){
 * @retval None
 */
 void CalcPrint_Phase(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = dsp_reg17;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = C1_PHA[0];
+	FlashBuffer [4] = C1_PHA[1];
+	FlashBuffer [5] = C1_PHA[2];
+	FlashBuffer [6] = C1_PHA[3];
+	FlashBuffer [7] = C1_PHA[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Phase, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint16_t C1_PHA_raw;
 	
 	C1_PHA_raw = (uint16_t) C1_PHA[3] << 8;
@@ -587,6 +635,21 @@ void CalcPrint_Phase(void){
 * @retval None
 */
 void CalcPrint_Active_Energy(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = ph1_reg1;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = PH1_Active_Energy[0];
+	FlashBuffer [4] = PH1_Active_Energy[1];
+	FlashBuffer [5] = PH1_Active_Energy[2];
+	FlashBuffer [6] = PH1_Active_Energy[3];
+	FlashBuffer [7] = PH1_Active_Energy[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Active_Energy, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
+	
 	uint32_t Active_Energy_raw = 0x0000;
 	Active_Energy_raw += (uint16_t) PH1_Active_Energy[3] << 24;
 	Active_Energy_raw += (uint16_t) PH1_Active_Energy[2] << 16;
@@ -608,6 +671,20 @@ void CalcPrint_Active_Energy(void){
 * @retval None
 */
 void CalcPrint_Funda_Energy(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = ph1_reg2;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = PH1_Fundamental_Energy[0];
+	FlashBuffer [4] = PH1_Fundamental_Energy[1];
+	FlashBuffer [5] = PH1_Fundamental_Energy[2];
+	FlashBuffer [6] = PH1_Fundamental_Energy[3];
+	FlashBuffer [7] = PH1_Fundamental_Energy[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Funda_Energy, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t Funda_Energy_raw = 0x0000;
 	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[3] << 24;
 	Funda_Energy_raw += (uint16_t) PH1_Fundamental_Energy[2] << 16;
@@ -630,6 +707,20 @@ void CalcPrint_Funda_Energy(void){
 * @retval None
 */
 void CalcPrint_React_Energy(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = ph1_reg3;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = PH1_Reactive_Energy[0];
+	FlashBuffer [4] = PH1_Reactive_Energy[1];
+	FlashBuffer [5] = PH1_Reactive_Energy[2];
+	FlashBuffer [6] = PH1_Reactive_Energy[3];
+	FlashBuffer [7] = PH1_Reactive_Energy[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_React_Energy, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t React_Energy_raw = 0x0000;
 	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[3] << 24;
 	React_Energy_raw += (uint16_t) PH1_Reactive_Energy[2] << 16;
@@ -650,6 +741,20 @@ void CalcPrint_React_Energy(void){
 * @retval None
 */
 void CalcPrint_App_Energy(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = ph1_reg4;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = PH1_Apparent_Energy[0];
+	FlashBuffer [4] = PH1_Apparent_Energy[1];
+	FlashBuffer [5] = PH1_Apparent_Energy[2];
+	FlashBuffer [6] = PH1_Apparent_Energy[3];
+	FlashBuffer [7] = PH1_Apparent_Energy[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_App_Energy, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t App_Energy_raw = 0x0000;
 	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[3] << 24;
 	App_Energy_raw += (uint16_t) PH1_Apparent_Energy[2] << 16;
@@ -671,6 +776,20 @@ void CalcPrint_App_Energy(void){
 * @retval None
 */
 void CalcPrint_Active_Pwr(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = ph1_reg5;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = PH1_Active_Power[0];
+	FlashBuffer [4] = PH1_Active_Power[1];
+	FlashBuffer [5] = PH1_Active_Power[2];
+	FlashBuffer [6] = PH1_Active_Power[3];
+	FlashBuffer [7] = PH1_Active_Power[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Active_Power, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t Active_Pwr_raw = 0x00000000;
 	Active_Pwr_raw += (uint16_t) PH1_Active_Power[3] << 24;
 	Active_Pwr_raw += (uint16_t) PH1_Active_Power[2] << 16;
@@ -693,6 +812,20 @@ void CalcPrint_Active_Pwr(void){
 * @retval None
 */
 void CalcPrint_Funda_Pwr(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = ph1_reg6;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = PH1_Fundamental_Power[0];
+	FlashBuffer [4] = PH1_Fundamental_Power[1];
+	FlashBuffer [5] = PH1_Fundamental_Power[2];
+	FlashBuffer [6] = PH1_Fundamental_Power[3];
+	FlashBuffer [7] = PH1_Fundamental_Power[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Funda_Pwr, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t Funda_Pwr_raw = 0x00000000;
 	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[3] << 24;
 	Funda_Pwr_raw += (uint16_t) PH1_Fundamental_Power[2] << 16;
@@ -715,6 +848,20 @@ void CalcPrint_Funda_Pwr(void){
 * @retval None
 */
 void CalcPrint_React_Pwr(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = ph1_reg7;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = PH1_Reactive_Power[0];
+	FlashBuffer [4] = PH1_Reactive_Power[1];
+	FlashBuffer [5] = PH1_Reactive_Power[2];
+	FlashBuffer [6] = PH1_Reactive_Power[3];
+	FlashBuffer [7] = PH1_Reactive_Power[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_React_Pwr, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t React_Pwr_raw = 0x00000000;
 	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[3] << 24;
 	React_Pwr_raw += (uint16_t) PH1_Reactive_Power[2] << 16;
@@ -737,6 +884,20 @@ void CalcPrint_React_Pwr(void){
 * @retval None
 */
 void CalcPrint_App_RMS_Pwr(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = ph1_reg8;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = PH1_Apparent_RMS_Power[0];
+	FlashBuffer [4] = PH1_Apparent_RMS_Power[1];
+	FlashBuffer [5] = PH1_Apparent_RMS_Power[2];
+	FlashBuffer [6] = PH1_Apparent_RMS_Power[3];
+	FlashBuffer [7] = PH1_Apparent_RMS_Power[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_App_RMS_Pwr, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t App_RMS_Pwr_raw = 0x00000000;
 	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[3] << 24;
 	App_RMS_Pwr_raw += (uint16_t) PH1_Apparent_RMS_Power[2] << 16;
@@ -759,7 +920,21 @@ void CalcPrint_App_RMS_Pwr(void){
 * @param Parameter: None
 * @retval None
 */
-void CalcPrint_Tot_Active_Pwr(void){
+void CalcPrint_Tot_Active_Energy(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = tot_reg1;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = Total_Active_Energy[0];
+	FlashBuffer [4] = Total_Active_Energy[1];
+	FlashBuffer [5] = Total_Active_Energy[2];
+	FlashBuffer [6] = Total_Active_Energy[3];
+	FlashBuffer [7] = Total_Active_Energy[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Tot_Active_Energy, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t Tot_Active_Pwr_raw = 0x00000000;
 	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[3] << 24;
 	Tot_Active_Pwr_raw += (uint16_t) Total_Active_Energy[2] << 16;
@@ -779,7 +954,21 @@ void CalcPrint_Tot_Active_Pwr(void){
 * @param Parameter: None
 * @retval None
 */
-void CalcPrint_Tot_Funda_Pwr(void){
+void CalcPrint_Tot_Funda_Energy(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = tot_reg2;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = Total_Fundamental_Energy[0];
+	FlashBuffer [4] = Total_Fundamental_Energy[1];
+	FlashBuffer [5] = Total_Fundamental_Energy[2];
+	FlashBuffer [6] = Total_Fundamental_Energy[3];
+	FlashBuffer [7] = Total_Fundamental_Energy[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Tot_Funda_Energy, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t Tot_Funda_Pwr_raw = 0x00000000;
 	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[3] << 24;
 	Tot_Funda_Pwr_raw += (uint16_t) Total_Fundamental_Energy[2] << 16;
@@ -799,7 +988,21 @@ void CalcPrint_Tot_Funda_Pwr(void){
 * @param Parameter: None
 * @retval None
 */
-void CalcPrint_Tot_React_Pwr(void){
+void CalcPrint_Tot_React_Energy(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = tot_reg3;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = Total_Reactive_Energy[0];
+	FlashBuffer [4] = Total_Reactive_Energy[1];
+	FlashBuffer [5] = Total_Reactive_Energy[2];
+	FlashBuffer [6] = Total_Reactive_Energy[3];
+	FlashBuffer [7] = Total_Reactive_Energy[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Tot_React_Energy, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t Tot_React_Pwr_raw = 0x00000000;
 	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[3] << 24;
 	Tot_React_Pwr_raw += (uint16_t) Total_Reactive_Energy[2] << 16;
@@ -819,7 +1022,21 @@ void CalcPrint_Tot_React_Pwr(void){
 * @param Parameter: None
 * @retval None
 */
-void CalcPrint_Tot_App_Pwr(void){
+void CalcPrint_Tot_App_Energy(void){
+	uint8_t FlashBuffer [8] = {0};
+	
+	FlashBuffer [0] = tot_reg4;
+	FlashBuffer [1] = FlashPointer >> 8;
+	FlashBuffer [2] = (uint8_t) FlashPointer;
+	FlashBuffer [3] = Total_Apparent_Energy[0];
+	FlashBuffer [4] = Total_Apparent_Energy[1];
+	FlashBuffer [5] = Total_Apparent_Energy[2];
+	FlashBuffer [6] = Total_Apparent_Energy[3];
+	FlashBuffer [7] = Total_Apparent_Energy[4];
+	
+	ext_flash_write(FlashPointer + FlashAddr_Tot_App_Energy, (char*) FlashBuffer, 8);
+	ext_flash_last_write_or_erase_done();
+	
 	uint32_t Tot_App_Pwr_raw = 0x00000000;
 	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[3] << 24;
 	Tot_App_Pwr_raw += (uint16_t) Total_Apparent_Energy[2] << 16;
@@ -835,6 +1052,10 @@ void CalcPrint_Tot_App_Pwr(void){
 	HAL_Delay(1);
 }
 
+
+
+
+
 /**
 * @brief Copy the src string into dest string
 * @param Pointer: dest[], src[] 
@@ -846,10 +1067,6 @@ void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
 		dest[i] = src[i];
 	}
 }
-
-
-
-
 
 /**
   * @brief Rx Transfer completed callbacks

@@ -161,12 +161,12 @@ int main(void)
 		
 		
 		/* Initialize external flash and TEST if flash is okay */
-		//ext_flash_init();
-		//ext_flash_power_on();
+		ext_flash_init();
+		ext_flash_power_on();
 		
-		//if (ext_flash_tb() == false){
-		//		Error_Handler();
-		//}
+		if (ext_flash_tb() == false){
+				Error_Handler();
+		}
 		
 		//for (int i = 0; i < 32; i++){
 		//	ext_flash_erase_sector(i);

@@ -78,6 +78,22 @@
 #define tot_reg4	0x8A
 
 
+#define FlashAddr_Freq							0x000000
+#define FlashAddr_RMS								0x010000
+#define FlashAddr_Phase 						0x020000
+#define FlashAddr_Active_Energy			0x030000
+#define FlashAddr_Funda_Energy			0x040000
+#define FlashAddr_React_Energy			0x050000
+#define FlashAddr_App_Energy				0x060000
+#define FlashAddr_Active_Power			0x070000
+#define FlashAddr_Funda_Pwr					0x080000
+#define FlashAddr_React_Pwr					0x090000
+#define FlashAddr_App_RMS_Pwr				0x0A0000
+#define FlashAddr_Tot_Active_Energy	0x0B0000
+#define FlashAddr_Tot_Funda_Energy	0x0C0000
+#define FlashAddr_Tot_React_Energy	0x0D0000
+#define FlashAddr_Tot_App_Energy		0x0E0000
+
 
 
 
