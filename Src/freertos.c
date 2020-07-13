@@ -33,6 +33,7 @@
 #include "ext_flash_tb.h"
 #include "STPM32.h"
 #include "STPM32_AddressMap.h"
+#include "LoRa.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -210,7 +211,7 @@ void MX_FREERTOS_Init(void) {
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
-  osThreadDef(USART3, StartUSART3, osPriorityBelowNormal, 0, 128);
+  osThreadDef(USART3, StartUSART3, osPriorityNormal, 0, 128);
   USART3Handle = osThreadCreate(osThread(USART3), NULL);
 
   /* definition and creation of SPI2 */
@@ -301,14 +302,12 @@ void StartUSART1(void const * argument)
 		 	RxBuffer[2] = ReadBuffer[2];
 		 	RxBuffer[3] = ReadBuffer[3];
 			RxBuffer[4] = ReadBuffer[4];
-			
-		 	
+					 	
 		 	USART3_PINSET_TX();
 		 	myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
 		 	USART3_PINSET_RX();
 
-			
-			if (count == 2){		//Wait for the third iteration to be stable
+			if (count == 2){		//Wait for the third iteration so the data is stable
 			 	// USART3_PINSET_TX();
 					if (i[0] == dsp_reg1){
 						myprintf("Copying PH_Period\r\n");
@@ -426,50 +425,58 @@ void StartUSART3(void const * argument)
 
 		 if (USART3_RxFlag == 1){
 			
-			USART3_PINSET_TX();
-				if (aRxBuffer[0] == dsp_reg14){
-					myprintf("Reading: CH1_RMS\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
-				} else if (aRxBuffer[0] == ph1_reg1){
-					myprintf("Reading: PH1_Active_Energy\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Energy[0],PH1_Active_Energy[1],PH1_Active_Energy[2],PH1_Active_Energy[3],PH1_Active_Energy[4]);
-				} else if (aRxBuffer[0] == ph1_reg2){
-					myprintf("Reading: PH1_Fundamental_Energy\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
-				} else if (aRxBuffer[0] == ph1_reg3){
-					myprintf("Reading: PH1_Reactive_Energy\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
-				} else if (aRxBuffer[0] == ph1_reg4){
-					myprintf("Reading: PH1_Apparent_Energy\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
-				} else if (aRxBuffer[0] == ph1_reg5){
-					myprintf("Reading: PH1_Active_Power\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
-				} else if (aRxBuffer[0] == ph1_reg6){
-					myprintf("Reading: PH1_Fundamental_Power\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
-				} else if (aRxBuffer[0] == ph1_reg7){
-					myprintf("Reading: PH1_Reactive_Power\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
-				} else if (aRxBuffer[0] == ph1_reg8){
-					myprintf("Reading: PH1_Apparent_RMS_Power\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
-				} else if (aRxBuffer[0] == tot_reg1){
-					myprintf("Reading: Total_Active_Energy\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
-				} else if (aRxBuffer[0] == tot_reg2){
-					myprintf("Reading: Total_Fundamental_Energy\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
-				} else if (aRxBuffer[0] == tot_reg3){
-					myprintf("Reading: Total_Reactive_Energy\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
-				} else if (aRxBuffer[0] == tot_reg4){
-					myprintf("Reading: Total_Apparent_Energy\r\n");
-					myprintf("%x | %x | %x | %x | %x \r\n", Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
-				} else {
-					myprintf(" Not a valid address \r\n");
-				}
-			USART3_PINSET_RX();
+			// USART3_PINSET_TX();
+			// 	if (aRxBuffer[0] == dsp_reg14){
+			// 		myprintf("Reading: CH1_RMS\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg1){
+			// 		myprintf("Reading: PH1_Active_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Energy[0],PH1_Active_Energy[1],PH1_Active_Energy[2],PH1_Active_Energy[3],PH1_Active_Energy[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg2){
+			// 		myprintf("Reading: PH1_Fundamental_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg3){
+			// 		myprintf("Reading: PH1_Reactive_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg4){
+			// 		myprintf("Reading: PH1_Apparent_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg5){
+			// 		myprintf("Reading: PH1_Active_Power\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg6){
+			// 		myprintf("Reading: PH1_Fundamental_Power\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg7){
+			// 		myprintf("Reading: PH1_Reactive_Power\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg8){
+			// 		myprintf("Reading: PH1_Apparent_RMS_Power\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
+			// 	} else if (aRxBuffer[0] == tot_reg1){
+			// 		myprintf("Reading: Total_Active_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
+			// 	} else if (aRxBuffer[0] == tot_reg2){
+			// 		myprintf("Reading: Total_Fundamental_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
+			// 	} else if (aRxBuffer[0] == tot_reg3){
+			// 		myprintf("Reading: Total_Reactive_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
+			// 	} else if (aRxBuffer[0] == tot_reg4){
+			// 		myprintf("Reading: Total_Apparent_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
+			// 	} else {
+			// 		myprintf(" Not a valid address \r\n");
+			// 	}
+			// USART3_PINSET_RX();
+
+			char data[8] = {0};
+
+			ext_flash_read(aRxBuffer[0], data, 8);
+			
+			myprintf("%x %x %x %x %x %x %x %x \r\n",data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+			
+			
 						
 			USART3_RxFlag = 0;
 		 }
@@ -490,10 +497,39 @@ void StartSPI2(void const * argument)
 {
   /* USER CODE BEGIN StartSPI2 */
   SPI2_Priority = uxTaskPriorityGet( NULL );
+	
+	uint8_t SPI2_RxBuffer[1] = {0};
+	uint8_t SPI2_TxBuffer[2] = {0};
+	
 	/* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+		USART3_PINSET_TX();
+		myprintf("AA");
+		USART3_PINSET_RX();
+		
+		// Assmue read LoRa ID: 0(MSB)+0x42
+		SPI2_TxBuffer[0] = 0x42;
+		
+		HAL_SPI_Receive_IT(&hspi2, SPI2_RxBuffer, 1);
+		
+		HAL_SPI_Transmit(&hspi2, SPI2_TxBuffer, 2, 0xFFFF);
+		
+		HAL_Delay(1);
+		
+		if (SPI2_RxFlag == 1){
+
+			USART3_PINSET_TX();
+			myprintf("SPI2 ID: %x \r\n", SPI2_RxBuffer);
+			USART3_PINSET_RX();
+		
+			SPI2_RxFlag = 0;
+		}
+		
+		
+		HAL_Delay(100);
+		
+		osDelay(1);
   }
   /* USER CODE END StartSPI2 */
 }

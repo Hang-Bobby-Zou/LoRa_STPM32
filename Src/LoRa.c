@@ -28,9 +28,6 @@
 #include "spi.h"
 #include "LoRa.h"
 
-uint8_t SPI2_RxBuffer[1] = {0};
-uint8_t SPI2_TxBuffer[2] = {0};
-
 bool LoRa_Init(void){
 	
 	/*
@@ -38,21 +35,8 @@ bool LoRa_Init(void){
 		` A wnr bit, which is 1 for write access and 0 for read access
 		` Then 7 bits of address, MSB first
 	*/
-	
-	// Assmue read LoRa ID: 0+0x42
-	SPI2_TxBuffer[0] = 0x42;
-	
-	HAL_SPI_Receive_IT(&hspi2, SPI2_RxBuffer, 2);
-	HAL_SPI_Transmit(&hspi2, SPI2_TxBuffer, 2, 0xFFFF);
-
-	
-	if (SPI2_RxFlag == 1){
-		SPI2_RxFlag = 0;
-		
-		USART3_PINSET_TX();
-		myprintf("%x", SPI2_RxBuffer);
-		USART3_PINSET_RX();
-	}
+	// Enable Power LoRa
+	HAL_GPIO_WritePin(CMD_PWR_LORA_GPIO_Port, CMD_PWR_LORA_Pin, GPIO_PIN_SET);
 	
 	
 	

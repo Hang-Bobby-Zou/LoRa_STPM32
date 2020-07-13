@@ -149,30 +149,54 @@ int main(void)
 		myprintf("Test\r\n");
 		USART3_PINSET_RX();
 		
-		
 		//Initialize STPM32
-		if (STPM32_Init() != true)
-			Error_Handler();
-	
+			USART3_PINSET_TX();
+			myprintf("Initializing STPM32...\r\n");
+			USART3_PINSET_RX();
+		
+			if (STPM32_Init() != true)
+				Error_Handler();
+		
+			USART3_PINSET_TX();
+			myprintf("STPM32 Initialization Done!\r\n");
+			USART3_PINSET_RX();
+		
 		
 		//Initialize LoRa
-		//if (LoRa_Init() != true)
-		//	Error_Handler();
+			// USART3_PINSET_TX();
+			// myprintf("Initializing LoRa...\r\n");
+			// USART3_PINSET_RX();
 		
+			// if (LoRa_Init() != true)
+			// 	Error_Handler();
+			
+			// USART3_PINSET_TX();
+			// myprintf("LoRa Initialization Done!\r\n");
+			// USART3_PINSET_RX();
 		
+
 		/* Initialize external flash and TEST if flash is okay */
-		ext_flash_init();
-		ext_flash_power_on();
+			USART3_PINSET_TX();
+			myprintf("Initializing External Flash...\r\n");
+			USART3_PINSET_RX();
 		
-		if (ext_flash_tb() == false){
+			ext_flash_init();
+			ext_flash_power_on();
+			
+			//if (ext_flash_tb() == false){
+			//		Error_Handler();
+			//}
+			if (ext_flash_is_detected() != 1)	
 				Error_Handler();
-		}
 		
-		//for (int i = 0; i < 32; i++){
-		//	ext_flash_erase_sector(i);
-		//	ext_flash_last_write_or_erase_done();
-		//}
 		
+			for (int i = 0; i < 32; i++){
+				ext_flash_erase_block(i);
+				ext_flash_last_write_or_erase_done();
+			}
+			USART3_PINSET_TX();
+			myprintf("External Flash Initialization Done!\r\n");
+			USART3_PINSET_RX();
 		
 		
 		USART3_PINSET_TX();
@@ -304,8 +328,11 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-	//while(1){
-	//}
+	while(1){
+		USART3_PINSET_TX();
+		myprintf("!!!Error Handler!!!\r\n");
+		USART3_PINSET_RX();
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
