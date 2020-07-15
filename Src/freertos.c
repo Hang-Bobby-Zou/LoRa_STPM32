@@ -580,6 +580,7 @@ void CalcPrint_V1_RMS(void){
 	ext_flash_write(FlashPointer + FlashAddr_RMS, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
+	
 	static double V1_RMS = 0;
 	
 	uint16_t V1_RMS_raw = 0x0000;
@@ -588,7 +589,6 @@ void CalcPrint_V1_RMS(void){
 	V1_RMS_raw = V1_RMS_raw & 0x7FFF; 				//Mask the most significant bit.
 	
 	V1_RMS = (double) V1_RMS_raw * (double) V_ref * (1.0 + (double) R1/ (double) R2) / ( (double) cal_v * (double) A_v * 32768.0);	
-
 
 	USART3_PINSET_TX();
 	myprintf("V1= %lf Volts\r\n",V1_RMS);
