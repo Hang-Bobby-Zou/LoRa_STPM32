@@ -1,0 +1,16 @@
+lora-stpm32\loramac_init.o: ..\Src\LoRaMAC_init.c
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/boards/utilities.h
+lora-stpm32\loramac_init.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/boards/board.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/system/gpio.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/boards/pinName-board.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/boards/pinName-ioe.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/system/gps.h
+lora-stpm32\loramac_init.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/peripherals/mpl3115.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/mac/LoRaMac.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/system/timer.h
+lora-stpm32\loramac_init.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/radio/radio.h
+lora-stpm32\loramac_init.o: ../Drivers/LoRaMAC/mac/region/Region.h
+lora-stpm32\loramac_init.o: ../Inc/Commissioning.h

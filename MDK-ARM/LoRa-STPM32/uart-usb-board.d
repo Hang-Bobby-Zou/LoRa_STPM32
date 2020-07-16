@@ -1,0 +1,11 @@
+lora-stpm32\uart-usb-board.o: ..\Drivers\LoRaMAC\boards\LoRaMote\uart-usb-board.c
+lora-stpm32\uart-usb-board.o: ../Drivers/LoRaMAC/boards/board.h
+lora-stpm32\uart-usb-board.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+lora-stpm32\uart-usb-board.o: ../Drivers/LoRaMAC/system/uart.h
+lora-stpm32\uart-usb-board.o: ../Drivers/LoRaMAC/system/fifo.h
+lora-stpm32\uart-usb-board.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+lora-stpm32\uart-usb-board.o: ../Drivers/LoRaMAC/system/gpio.h
+lora-stpm32\uart-usb-board.o: ../Drivers/LoRaMAC/boards/pinName-board.h
+lora-stpm32\uart-usb-board.o: ../Drivers/LoRaMAC/boards/pinName-ioe.h
+lora-stpm32\uart-usb-board.o: ../Drivers/LoRaMAC/boards/uart-board.h
+lora-stpm32\uart-usb-board.o: ..\Drivers\LoRaMAC\boards\LoRaMote\board-config.h

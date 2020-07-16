@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32L433xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                                       ../Drivers/STM32L4xx_HAL_Driver/Inc;                                       ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;                                       ../Drivers/CMSIS/Device/ST/STM32L4xx/Include;                                       ../Drivers/CMSIS/Include;                                ../Middlewares/Third_Party/FreeRTOS/Source/include;                                ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;                                ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F</IncludePath>
+              <IncludePath>../Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/LoRaMAC/boards;../Drivers/LoRaMAC/mac;../Drivers/LoRaMAC/radio;../Drivers/LoRaMAC/system;../Drivers/LoRaMAC/system/crypto;../Drivers/LoRaMAC/peripherals</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -423,19 +423,9 @@
               <FilePath>../Src/main.c</FilePath>
             </File>
             <File>
-              <FileName>gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/gpio.c</FilePath>
-            </File>
-            <File>
               <FileName>freertos.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/freertos.c</FilePath>
-            </File>
-            <File>
-              <FileName>spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/spi.c</FilePath>
             </File>
             <File>
               <FileName>usart.c</FileName>
@@ -461,6 +451,21 @@
               <FileName>stm32l4xx_hal_timebase_tim.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/stm32l4xx_hal_timebase_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>LoRaMAC_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\LoRaMAC_init.c</FilePath>
+            </File>
+            <File>
+              <FileName>HAL_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\HAL_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>HAL_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\HAL_spi.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -651,6 +656,241 @@
               <FileName>port.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/port.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Driver/LoRaMAC</GroupName>
+          <Files>
+            <File>
+              <FileName>LoRaMac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\LoRaMac.c</FilePath>
+            </File>
+            <File>
+              <FileName>LoRaMacCrypto.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\LoRaMacCrypto.c</FilePath>
+            </File>
+            <File>
+              <FileName>Region.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\Region.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionAS923.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionAS923.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionAU915.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionAU915.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionCN470.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionCN470.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionCN779.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionCN779.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionCommon.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionCommon.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionEU433.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionEU433.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionEU868.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionEU868.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionIN865.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionIN865.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionKR920.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionKR920.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionUS915.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionUS915.c</FilePath>
+            </File>
+            <File>
+              <FileName>RegionUS915-Hybrid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\mac\region\RegionUS915-Hybrid.c</FilePath>
+            </File>
+            <File>
+              <FileName>sx1276.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\radio\sx1276\sx1276.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>eeprom.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\eeprom.c</FilePath>
+            </File>
+            <File>
+              <FileName>fifo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\fifo.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>gps.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\gps.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>aes.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\crypto\aes.c</FilePath>
+            </File>
+            <File>
+              <FileName>cmac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\system\crypto\cmac.c</FilePath>
+            </File>
+            <File>
+              <FileName>board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\board.c</FilePath>
+            </File>
+            <File>
+              <FileName>delay-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\delay-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>eeprom-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\eeprom-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\gpio-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>gps-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\gps-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtc-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\rtc-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\spi-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\uart-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart-usb-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\uart-usb-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\adc-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\LoRaMote\i2c-board.c</FilePath>
+            </File>
+            <File>
+              <FileName>utilities.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\mcu\utilities.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio-ioe.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\peripherals\gpio-ioe.c</FilePath>
+            </File>
+            <File>
+              <FileName>mag3110.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\peripherals\mag3110.c</FilePath>
+            </File>
+            <File>
+              <FileName>mma8451.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\peripherals\mma8451.c</FilePath>
+            </File>
+            <File>
+              <FileName>mpl3115.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\peripherals\mpl3115.c</FilePath>
+            </File>
+            <File>
+              <FileName>pam7q.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\peripherals\pam7q.c</FilePath>
+            </File>
+            <File>
+              <FileName>sx1509.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\peripherals\sx1509.c</FilePath>
+            </File>
+            <File>
+              <FileName>sx9500.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\peripherals\sx9500.c</FilePath>
+            </File>
+            <File>
+              <FileName>sx1276-board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\LoRaMAC\boards\SensorNode\sx1276-board.c</FilePath>
             </File>
           </Files>
         </Group>

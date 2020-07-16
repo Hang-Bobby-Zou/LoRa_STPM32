@@ -27,7 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
 #include "usart.h"
-#include "spi.h"
+#include "HAL_spi.h"
 #include "ext_flash.h"
 #include "stdio.h"
 #include "ext_flash_tb.h"
@@ -78,7 +78,7 @@
 /* USER CODE BEGIN Variables */
 
 uint8_t ReadBuffer[5] = {0};
-uint8_t RxBuffer[5] = {0};
+uint8_t HAL_RxBuffer[5] = {0};
 uint8_t i[1] = {0x2E};
 int count = 0;
 uint16_t FlashPointer = 0x00;
@@ -298,11 +298,11 @@ void StartUSART1(void const * argument)
 		}
 
 		if (USART1_RxFlag == 1){
-		 	RxBuffer[0] = ReadBuffer[0];
-		 	RxBuffer[1] = ReadBuffer[1];
-		 	RxBuffer[2] = ReadBuffer[2];
-		 	RxBuffer[3] = ReadBuffer[3];
-			RxBuffer[4] = ReadBuffer[4];
+		 	HAL_RxBuffer[0] = ReadBuffer[0];
+		 	HAL_RxBuffer[1] = ReadBuffer[1];
+		 	HAL_RxBuffer[2] = ReadBuffer[2];
+		 	HAL_RxBuffer[3] = ReadBuffer[3];
+			HAL_RxBuffer[4] = ReadBuffer[4];
 					 	
 		 	//USART3_PINSET_TX();
 		 	//myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
@@ -312,78 +312,78 @@ void StartUSART1(void const * argument)
 			 	// USART3_PINSET_TX();
 					if (i[0] == dsp_reg1){
 						myprintf("Copying PH_Period\r\n");
-						uint8_cpy(PH_Period, RxBuffer, 5);
+						uint8_cpy(PH_Period, HAL_RxBuffer, 5);
 						CalcPrint_Freq();
 					
 					} else if (i[0] == dsp_reg17){
 						myprintf("Copying C1_PHA\r\n");
-						uint8_cpy(C1_PHA, RxBuffer, 5);
+						uint8_cpy(C1_PHA, HAL_RxBuffer, 5);
 						CalcPrint_Phase();
 						
 					} else if (i[0] == dsp_reg14){
 						myprintf("Copying CH1_RMS\r\n");
-						uint8_cpy(CH1_RMS,RxBuffer,5);
+						uint8_cpy(CH1_RMS,HAL_RxBuffer,5);
 						CalcPrint_V1_RMS();
 						CalcPrint_C1_RMS();
 						
 					} else if (i[0] == ph1_reg1){
 						myprintf("Copying PH1_Active_Energy\r\n");
-						uint8_cpy(PH1_Active_Energy, RxBuffer, 5);
+						uint8_cpy(PH1_Active_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Active_Energy();
 						
 					} else if (i[0] == ph1_reg2){
 						myprintf("Copying PH1_Fundamental_Energy\r\n");
-						uint8_cpy(PH1_Fundamental_Energy, RxBuffer, 5);
+						uint8_cpy(PH1_Fundamental_Energy, HAL_RxBuffer, 5);
 						//CalcPrint_Funda_Energy();
 						
 					} else if (i[0] == ph1_reg3){
 						myprintf("Copying PH1_Reactive_Energy\r\n");
-						uint8_cpy(PH1_Reactive_Energy, RxBuffer, 5);
+						uint8_cpy(PH1_Reactive_Energy, HAL_RxBuffer, 5);
 						CalcPrint_React_Energy();
 						
 					} else if (i[0] == ph1_reg4){
 						myprintf("Copying PH1_Apparent_Energy\r\n");
-						uint8_cpy(PH1_Apparent_Energy, RxBuffer,5);
+						uint8_cpy(PH1_Apparent_Energy, HAL_RxBuffer,5);
 						CalcPrint_App_Energy();
 						
 					} else if (i[0] == ph1_reg5){
 						myprintf("Copying PH1_Active_Power\r\n");
-						uint8_cpy(PH1_Active_Power, RxBuffer, 5);
+						uint8_cpy(PH1_Active_Power, HAL_RxBuffer, 5);
 						CalcPrint_Active_Pwr();
 						
 					} else if (i[0] == ph1_reg6){
 						myprintf("Copying PH1_Fundamental_Power\r\n");
-						uint8_cpy(PH1_Fundamental_Power, RxBuffer, 5);
+						uint8_cpy(PH1_Fundamental_Power, HAL_RxBuffer, 5);
 						//CalcPrint_Funda_Pwr();
 						
 					} else if (i[0] == ph1_reg7){
 						myprintf("Copying PH1_Reactive_Power\r\n");
-						uint8_cpy(PH1_Reactive_Power, RxBuffer, 5);
+						uint8_cpy(PH1_Reactive_Power, HAL_RxBuffer, 5);
 						CalcPrint_React_Pwr();
 						
 					} else if (i[0] == ph1_reg8){
 						myprintf("Copying PH1_Apparent_RMS_Power\r\n");
-						uint8_cpy(PH1_Apparent_RMS_Power, RxBuffer, 5);
+						uint8_cpy(PH1_Apparent_RMS_Power, HAL_RxBuffer, 5);
 						CalcPrint_App_RMS_Pwr();
 						
 					} else if (i[0] == tot_reg1){
 						myprintf("Copying Total_Active_Energy\r\n");
-						uint8_cpy(Total_Active_Energy, RxBuffer, 5);
+						uint8_cpy(Total_Active_Energy, HAL_RxBuffer, 5);
 						//CalcPrint_Tot_Active_Energy();
 						
 					} else if (i[0] == tot_reg2){
 						myprintf("Copying Total_Fundamental_Energy\r\n");
-						uint8_cpy(Total_Fundamental_Energy, RxBuffer, 5);
+						uint8_cpy(Total_Fundamental_Energy, HAL_RxBuffer, 5);
 						//CalcPrint_Tot_Funda_Energy();
 						
 					} else if (i[0] == tot_reg3){
 						myprintf("Copying Total_Reactive_Energy\r\n");
-						uint8_cpy(Total_Reactive_Energy, RxBuffer, 5);
+						uint8_cpy(Total_Reactive_Energy, HAL_RxBuffer, 5);
 						//CalcPrint_Tot_React_Energy();
 						
 					} else if (i[0] == tot_reg4){
 						myprintf("Copying Total_Apparent_Energy\r\n");
-						uint8_cpy(Total_Apparent_Energy, RxBuffer, 5);
+						uint8_cpy(Total_Apparent_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Tot_App_Energy();
 						
 					}
@@ -1093,42 +1093,42 @@ void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
 	}
 }
 
-/**
-  * @brief Rx Transfer completed callbacks
-  * @param huart: uart handle
-  * @retval None
-  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
+// /**
+//   * @brief Rx Transfer completed callbacks
+//   * @param huart: uart handle
+//   * @retval None
+//   */
+// void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+//   /* Prevent unused argument(s) compilation warning */
+//   UNUSED(huart);
 	
-	if (huart == &huart1){
-		USART1_RxFlag = 1;
-	}
+// 	if (huart == &huart1){
+// 		USART1_RxFlag = 1;
+// 	}
 	
-	if (huart == &huart3){
-		USART3_RxFlag = 1;
-	}
-}
+// 	if (huart == &huart3){
+// 		USART3_RxFlag = 1;
+// 	}
+// }
 
-/**
-  * @brief Tx Transfer completed callbacks
-  * @param huart: uart handle
-  * @retval None
-  */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
+// /**
+//   * @brief Tx Transfer completed callbacks
+//   * @param huart: uart handle
+//   * @retval None
+//   */
+// void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+//   /* Prevent unused argument(s) compilation warning */
+//   UNUSED(huart);
 	
-	if (huart == &huart1){
-		USART1_TxFlag = 1;
-	}
+// 	if (huart == &huart1){
+// 		USART1_TxFlag = 1;
+// 	}
 	
-	if (huart == &huart3){
-		USART3_TxFlag = 1;
-	}
+// 	if (huart == &huart3){
+// 		USART3_TxFlag = 1;
+// 	}
 	
-}
+// }
 
 /**
   * @brief Tx Transfer completed callbacks
@@ -1164,6 +1164,7 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
 	if (hspi == &hspi2){
 		SPI2_RxFlag = 1;
 	}
+	
 }
 
 

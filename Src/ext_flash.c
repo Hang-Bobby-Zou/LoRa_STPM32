@@ -26,7 +26,7 @@
 #include "main.h"
 #include "ext_flash.h"
 #include "usart.h"
-#include "spi.h"
+#include "HAL_spi.h"
 #include "ext_flash_tb.h"
 
 /*============================================================================*/

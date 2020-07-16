@@ -25,7 +25,7 @@
 
 #include "main.h"
 #include "usart.h"
-#include "spi.h"
+#include "HAL_spi.h"
 #include "LoRa.h"
 
 uint8_t SPI2_RxBuffer[2] = {0};

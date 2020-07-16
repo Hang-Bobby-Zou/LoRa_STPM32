@@ -57,5 +57,5 @@ lora-stpm32\ext_flash_tb.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pc
 lora-stpm32\ext_flash_tb.o: ../Inc/ext_flash.h
 lora-stpm32\ext_flash_tb.o: ../Inc/usart.h
 lora-stpm32\ext_flash_tb.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
-lora-stpm32\ext_flash_tb.o: ../Inc/spi.h
+lora-stpm32\ext_flash_tb.o: ../Inc/HAL_spi.h
 lora-stpm32\ext_flash_tb.o: ../Inc/ext_flash_tb.h

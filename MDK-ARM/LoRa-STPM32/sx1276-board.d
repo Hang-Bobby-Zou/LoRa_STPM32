@@ -1,0 +1,16 @@
+lora-stpm32\sx1276-board.o: ..\Drivers\LoRaMAC\boards\SensorNode\sx1276-board.c
+lora-stpm32\sx1276-board.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/boards/utilities.h
+lora-stpm32\sx1276-board.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+lora-stpm32\sx1276-board.o: ..\Drivers\LoRaMAC\boards\SensorNode\board-config.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/system/delay.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/radio/radio.h
+lora-stpm32\sx1276-board.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/boards/sx1276-board.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/system/gpio.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/boards/pinName-board.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/boards/pinName-ioe.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/system/spi.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-Fsk.h
+lora-stpm32\sx1276-board.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-LoRa.h

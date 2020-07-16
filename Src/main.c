@@ -21,10 +21,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "spi.h"
+#include "HAL_spi.h"
 #include "usart.h"
 #include "usb.h"
-#include "gpio.h"
+#include "HAL_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -163,6 +163,7 @@ int main(void)
 		
 		
 		//Initialize LoRa
+		
 			USART3_PINSET_TX();
 			myprintf("Initializing LoRa...\r\n");
 			USART3_PINSET_RX();

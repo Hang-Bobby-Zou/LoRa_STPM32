@@ -1,0 +1,12 @@
+lora-stpm32\regionkr920.o: ..\Drivers\LoRaMAC\mac\region\RegionKR920.c
+lora-stpm32\regionkr920.o: ../Drivers/LoRaMAC/boards/utilities.h
+lora-stpm32\regionkr920.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+lora-stpm32\regionkr920.o: ..\Drivers\LoRaMAC\mac\region\RegionCommon.h
+lora-stpm32\regionkr920.o: ../Drivers/LoRaMAC/mac/LoRaMac.h
+lora-stpm32\regionkr920.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+lora-stpm32\regionkr920.o: ../Drivers/LoRaMAC/system/timer.h
+lora-stpm32\regionkr920.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+lora-stpm32\regionkr920.o: ../Drivers/LoRaMAC/radio/radio.h
+lora-stpm32\regionkr920.o: ../Drivers/LoRaMAC/mac/region/Region.h
+lora-stpm32\regionkr920.o: ..\Drivers\LoRaMAC\mac\region\RegionKR920.h
+lora-stpm32\regionkr920.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

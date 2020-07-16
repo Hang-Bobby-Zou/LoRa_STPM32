@@ -53,13 +53,13 @@ lora-stpm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
 lora-stpm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 lora-stpm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 lora-stpm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
-lora-stpm32\main.o: ../Inc/spi.h
+lora-stpm32\main.o: ../Inc/HAL_spi.h
 lora-stpm32\main.o: ../Inc/usart.h
 lora-stpm32\main.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 lora-stpm32\main.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 lora-stpm32\main.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 lora-stpm32\main.o: ../Inc/usb.h
-lora-stpm32\main.o: ../Inc/gpio.h
+lora-stpm32\main.o: ../Inc/HAL_gpio.h
 lora-stpm32\main.o: ../Inc/ext_flash.h
 lora-stpm32\main.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 lora-stpm32\main.o: ../Inc/ext_flash_tb.h
