@@ -43,23 +43,23 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define R1					810000
-#define R2 					470
+#define R1									810000
+#define R2 									470
 
-#define F_CLK				125000
-#define P_CLK				0.000008		//  1 / F_CLK
-#define D_CLK				8712.5 
+#define F_CLK								125000
+#define P_CLK								0.000008		//  1 / F_CLK
+#define D_CLK								8712.5 
 
 
-#define V_ref 			1.18
+#define V_ref 							1.18
 
-#define A_v 				2
-#define A_i 				2
-#define cal_v 			0.875
-#define cal_i				0.875
+#define A_v 								2
+#define A_i 								2
+#define cal_v 							0.875
+#define cal_i								0.875
 
-#define k_s					0.0024
-#define k_int				1
+#define k_s									0.0024
+#define k_int								1
 
 #define Freq_Low_Threshold	45.0
 #define Freq_High_Threshold	65.0
@@ -76,16 +76,14 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
 uint8_t ReadBuffer[5] = {0};
 uint8_t HAL_RxBuffer[5] = {0};
 uint8_t i[1] = {0x2E};
 int count = 0;
 uint16_t FlashPointer = 0x00;
 
-
+//Raw data from STPM32 defines
 uint8_t PH_Period								[5] = {0};
-
 uint8_t CH1_RMS									[5] = {0};
 uint8_t C1_PHA									[5] = {0};
 
@@ -108,11 +106,6 @@ UBaseType_t USART1_Priority;
 UBaseType_t USART3_Priority;
 UBaseType_t SPI1_Priority;
 UBaseType_t SPI2_Priority;
-
-//uint32_t 	flash_pointer = 0;
-//uint32_t 	flash_sector_pointer = 0;
-//uint8_t 	flash_buffer[4096] = {0};
-//uint32_t 	flash_count = 0;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -423,9 +416,9 @@ void StartUSART3(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-		 HAL_UART_Receive_IT(&huart3, aRxBuffer, 4);
+		HAL_UART_Receive_IT(&huart3, aRxBuffer, 4);
 
-		 if (USART3_RxFlag == 1){
+		if (USART3_RxFlag == 1){
 			
 			// USART3_PINSET_TX();
 			// 	if (aRxBuffer[0] == dsp_reg14){
@@ -490,7 +483,7 @@ void StartUSART3(void const * argument)
 			
 			
 			USART3_RxFlag = 0;
-		 }
+		}
 
 		osDelay(1); //This delay is in ms
   }
@@ -1078,9 +1071,6 @@ void CalcPrint_Tot_App_Energy(void){
 }
 
 
-
-
-
 /**
 * @brief Copy the src string into dest string
 * @param Pointer: dest[], src[] 
@@ -1092,6 +1082,15 @@ void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
 		dest[i] = src[i];
 	}
 }
+
+
+
+
+
+
+
+
+
 
 // /**
 //   * @brief Rx Transfer completed callbacks

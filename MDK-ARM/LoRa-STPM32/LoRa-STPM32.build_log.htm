@@ -28,33 +28,13 @@ Project File Date:  07/16/2020
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'D:\Software\Keil_v5\ARM\ARMCC\Bin'
 Build target 'LoRa-STPM32'
 compiling LoRaMAC_init.c...
-..\Src\LoRaMAC_init.c(12): warning:  #1215-D: #warning directive: "No active region defined, LORAMAC_REGION_EU868 will be used as default."
-  #warning "No active region defined, LORAMAC_REGION_EU868 will be used as default."
-..\Src\LoRaMAC_init.c(70): warning:  #177-D: variable "NwkSKey"  was declared but never referenced
-  static uint8_t NwkSKey[] = LORAWAN_NWKSKEY;
-..\Src\LoRaMAC_init.c(71): warning:  #177-D: variable "AppSKey"  was declared but never referenced
-  static uint8_t AppSKey[] = LORAWAN_APPSKEY;
-..\Src\LoRaMAC_init.c(76): warning:  #177-D: variable "DevAddr"  was declared but never referenced
-  static uint32_t DevAddr = LORAWAN_DEVICE_ADDRESS;
-..\Src\LoRaMAC_init.c(108): warning:  #177-D: variable "TxDutyCycleTime"  was declared but never referenced
-  static uint32_t TxDutyCycleTime;
-..\Src\LoRaMAC_init.c(118): warning:  #550-D: variable "AppLedStateOn"  was set but never used
+..\Src\LoRaMAC_init.c(122): warning:  #550-D: variable "AppLedStateOn"  was set but never used
   static bool AppLedStateOn = false;
-..\Src\LoRaMAC_init.c(133): warning:  #550-D: variable "NextTx"  was set but never used
-  static bool NextTx = true;
-..\Src\LoRaMAC_init.c(174): warning:  #177-D: function "PrepareTxFrame"  was declared but never referenced
-  static void PrepareTxFrame( uint8_t port )
-..\Src\LoRaMAC_init.c(291): warning:  #177-D: function "SendFrame"  was declared but never referenced
-  static bool SendFrame( void )
-..\Src\LoRaMAC_init.c(377): warning:  #177-D: function "OnLed1TimerEvent"  was declared but never referenced
-  static void OnLed1TimerEvent( void )
-..\Src\LoRaMAC_init.c(387): warning:  #177-D: function "OnLed2TimerEvent"  was declared but never referenced
-  static void OnLed2TimerEvent( void )
-..\Src\LoRaMAC_init.c: 11 warnings, 0 errors
+..\Src\LoRaMAC_init.c: 1 warning, 0 errors
 linking...
 Program Size: Code=33884 RO-data=788 RW-data=472 ZI-data=41032  
 FromELF: creating hex file...
-"LoRa-STPM32\LoRa-STPM32.axf" - 0 Error(s), 11 Warning(s).
+"LoRa-STPM32\LoRa-STPM32.axf" - 0 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -77,7 +57,7 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.2.0
-Build Time Elapsed:  00:00:02
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

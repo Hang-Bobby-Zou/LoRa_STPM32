@@ -150,60 +150,63 @@ int main(void)
 		USART3_PINSET_RX();
 		
 		//Initialize STPM32
-			USART3_PINSET_TX();
-			myprintf("Initializing STPM32...\r\n");
-			USART3_PINSET_RX();
+		USART3_PINSET_TX();
+		myprintf("Initializing STPM32...\r\n");
+		USART3_PINSET_RX();
 		
-			if (STPM32_Init() != true)
+		if (STPM32_Init() != true)
 				Error_Handler();
 		
-			USART3_PINSET_TX();
-			myprintf("STPM32 Initialization Done!\r\n");
-			USART3_PINSET_RX();
+		USART3_PINSET_TX();
+		myprintf("STPM32 Initialization Done!\r\n");
+		USART3_PINSET_RX();
 		
 		
 		//Initialize LoRa
+		USART3_PINSET_TX();
+		myprintf("Initializing LoRa...\r\n");
+		USART3_PINSET_RX();
 		
-			USART3_PINSET_TX();
-			myprintf("Initializing LoRa...\r\n");
-			USART3_PINSET_RX();
-		
-			if (LoRa_Init() != true)
+		if (LoRa_Init() != true)
 				Error_Handler();
 			
-			USART3_PINSET_TX();
-			myprintf("LoRa Initialization Done!\r\n");
-			USART3_PINSET_RX();
+		USART3_PINSET_TX();
+		myprintf("LoRa Initialization Done!\r\n");
+		USART3_PINSET_RX();
 		
 
 		/* Initialize external flash and TEST if flash is okay */
-			USART3_PINSET_TX();
-			myprintf("Initializing External Flash...\r\n");
-			USART3_PINSET_RX();
+		USART3_PINSET_TX();
+		myprintf("Initializing External Flash...\r\n");
+		USART3_PINSET_RX();
 		
-			ext_flash_init();
-			ext_flash_power_on();
+		ext_flash_init();
+		ext_flash_power_on();
 			
-			//if (ext_flash_tb() == false){
-			//		Error_Handler();
-			//}
-			if (ext_flash_is_detected() != 1)	
+		//if (ext_flash_tb() == false){
+		//		Error_Handler();
+		//}
+		if (ext_flash_is_detected() != 1)	
 				Error_Handler();
 		
 		
-			for (int i = 0; i < 32; i++){
+		for (int i = 0; i < 32; i++){
 				ext_flash_erase_block(i);
 				ext_flash_last_write_or_erase_done();
-			}
-			USART3_PINSET_TX();
-			myprintf("External Flash Initialization Done!\r\n");
-			USART3_PINSET_RX();
+		}
+		USART3_PINSET_TX();
+		myprintf("External Flash Initialization Done!\r\n");
+		USART3_PINSET_RX();
 		
 		
+		
+		//Finishing up by printing "Starting FreeRTOS System..."
 		USART3_PINSET_TX();
 		myprintf("Starting FreeRTOC System...\r\n");
 		myprintf("\r\n");
 		USART3_PINSET_RX();
+		
+		
 		
   /* USER CODE END 2 */
 

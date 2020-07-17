@@ -7,6 +7,10 @@
 #include "LoRaMac.h"
 #include "Commissioning.h"
 
+// Define the active region to be CN470
+#define ACTIVE_REGION	LORAMAC_REGION_CN470
+
+
 #ifndef ACTIVE_REGION
 
 #warning "No active region defined, LORAMAC_REGION_EU868 will be used as default."
@@ -120,12 +124,12 @@ static bool AppLedStateOn = false;
 /*!
  * Timer to handle the state of LED1
  */
-static TimerEvent_t Led1Timer;
+//static TimerEvent_t Led1Timer;
 
 /*!
  * Timer to handle the state of LED2
  */
-static TimerEvent_t Led2Timer;
+//static TimerEvent_t Led2Timer;
 
 /*!
  * Indicates if a new packet can be sent
@@ -374,22 +378,22 @@ static void OnTxNextPacketTimerEvent( void )
 /*!
  * \brief Function executed on Led 1 Timeout event
  */
-static void OnLed1TimerEvent( void )
-{
-    TimerStop( &Led1Timer );
+//static void OnLed1TimerEvent( void )
+//{
+//    TimerStop( &Led1Timer );
     // Switch LED 1 OFF
-    //GpioWrite( &Led1, 1 );
-}
+//    GpioWrite( &Led1, 1 );
+//}
 
 /*!
  * \brief Function executed on Led 2 Timeout event
  */
-static void OnLed2TimerEvent( void )
-{
-    TimerStop( &Led2Timer );
-    // Switch LED 2 OFF
-    //GpioWrite( &Led2, 1 );
-}
+//static void OnLed2TimerEvent( void )
+//{
+//    TimerStop( &Led2Timer );
+		//Switch LED 2 OFF
+//    GpioWrite( &Led2, 1 );
+//}
 
 /*!
  * \brief   MCPS-Confirm event function
@@ -731,56 +735,138 @@ static void MlmeIndication( MlmeIndication_t *mlmeIndication )
     }
 }
 
+
+
+
+
+
 void LoRaMAC_init (void){
-	LoRaMacPrimitives_t LoRaMacPrimitives;
-  LoRaMacCallback_t LoRaMacCallbacks;
-	MibRequestConfirm_t mibReq;
-	
-	DeviceState = DEVICE_STATE_INIT;
-	
-	switch (DeviceState){
-		case DEVICE_STATE_INIT: {
-			LoRaMacPrimitives.MacMcpsConfirm = McpsConfirm;
-      LoRaMacPrimitives.MacMcpsIndication = McpsIndication;
-      LoRaMacPrimitives.MacMlmeConfirm = MlmeConfirm;
-      LoRaMacPrimitives.MacMlmeIndication = MlmeIndication;
-      //LoRaMacCallbacks.GetBatteryLevel = BoardGetBatteryLevel;
-      LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, ACTIVE_REGION );
-
-      TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );
-
-      //TimerInit( &Led1Timer, OnLed1TimerEvent );
-			//TimerSetValue( &Led1Timer, 25 );
-
-      //TimerInit( &Led2Timer, OnLed2TimerEvent );
-      //TimerSetValue( &Led2Timer, 25 );
-
-      mibReq.Type = MIB_ADR;
-      mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
-      LoRaMacMibSetRequestConfirm( &mibReq );
-
-      mibReq.Type = MIB_PUBLIC_NETWORK;
-      mibReq.Param.EnablePublicNetwork = LORAWAN_PUBLIC_NETWORK;
-      LoRaMacMibSetRequestConfirm( &mibReq );
-		}
-		case DEVICE_STATE_JOIN: {
-			
-		}
-		case DEVICE_STATE_SEND: {
-			
-		}
-		case DEVICE_STATE_CYCLE: {
-			
-		}
-		case DEVICE_STATE_SLEEP: {
-			
-		}
+		LoRaMacPrimitives_t LoRaMacPrimitives;
+		LoRaMacCallback_t LoRaMacCallbacks;
+		MibRequestConfirm_t mibReq;
 		
+		DeviceState = DEVICE_STATE_INIT;
 		
-	}
-	
-	
-	
+		switch (DeviceState){
+				case DEVICE_STATE_INIT:{
+						LoRaMacPrimitives.MacMcpsConfirm = McpsConfirm;
+						LoRaMacPrimitives.MacMcpsIndication = McpsIndication;
+						LoRaMacPrimitives.MacMlmeConfirm = MlmeConfirm;
+						LoRaMacPrimitives.MacMlmeIndication = MlmeIndication;
+						//LoRaMacCallbacks.GetBatteryLevel = BoardGetBatteryLevel;
+						LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, ACTIVE_REGION );
+
+						TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );
+
+						//TimerInit( &Led1Timer, OnLed1TimerEvent );
+						//TimerSetValue( &Led1Timer, 25 );
+
+						//TimerInit( &Led2Timer, OnLed2TimerEvent );
+						//TimerSetValue( &Led2Timer, 25 );
+
+						mibReq.Type = MIB_ADR;
+						mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
+						LoRaMacMibSetRequestConfirm( &mibReq );
+
+						mibReq.Type = MIB_PUBLIC_NETWORK;
+						mibReq.Param.EnablePublicNetwork = LORAWAN_PUBLIC_NETWORK;
+						LoRaMacMibSetRequestConfirm( &mibReq );
+				}
+		
+				case DEVICE_STATE_JOIN:{
+						#if( OVER_THE_AIR_ACTIVATION != 0 )
+								MlmeReq_t mlmeReq;
+
+								// Initialize LoRaMac device unique ID
+								BoardGetUniqueId( DevEui );
+
+								mlmeReq.Type = MLME_JOIN;
+
+								mlmeReq.Req.Join.DevEui = DevEui;
+								mlmeReq.Req.Join.AppEui = AppEui;
+								mlmeReq.Req.Join.AppKey = AppKey;
+								mlmeReq.Req.Join.Datarate = LORAWAN_DEFAULT_DATARATE;
+
+								if( LoRaMacMlmeRequest( &mlmeReq ) == LORAMAC_STATUS_OK ){
+										DeviceState = DEVICE_STATE_SLEEP;
+								} else {
+										DeviceState = DEVICE_STATE_CYCLE;
+								}
+						#else
+								// Choose a random device address if not already defined in Commissioning.h
+								if( DevAddr == 0 ){
+										// Random seed initialization
+										srand1( BoardGetRandomSeed( ) );
+
+										// Choose a random device address
+										DevAddr = randr( 0, 0x01FFFFFF );
+								}
+
+								mibReq.Type = MIB_NET_ID;
+								mibReq.Param.NetID = LORAWAN_NETWORK_ID;
+								LoRaMacMibSetRequestConfirm( &mibReq );
+
+								mibReq.Type = MIB_DEV_ADDR;
+								mibReq.Param.DevAddr = DevAddr;
+								LoRaMacMibSetRequestConfirm( &mibReq );
+
+								mibReq.Type = MIB_NWK_SKEY;
+								mibReq.Param.NwkSKey = NwkSKey;
+								LoRaMacMibSetRequestConfirm( &mibReq );
+
+								mibReq.Type = MIB_APP_SKEY;
+								mibReq.Param.AppSKey = AppSKey;
+								LoRaMacMibSetRequestConfirm( &mibReq );
+
+								mibReq.Type = MIB_NETWORK_JOINED;
+								mibReq.Param.IsNetworkJoined = true;
+								LoRaMacMibSetRequestConfirm( &mibReq );
+
+								DeviceState = DEVICE_STATE_SEND;
+						#endif
+								
+								break;
+				}
+				
+				case DEVICE_STATE_SEND:{
+						if( NextTx == true ){
+								PrepareTxFrame( AppPort );
+
+								NextTx = SendFrame( );
+						}
+						if( ComplianceTest.Running == true ){
+								// Schedule next packet transmission
+								TxDutyCycleTime = 5000; // 5000 ms
+						} else {
+								// Schedule next packet transmission
+								TxDutyCycleTime = APP_TX_DUTYCYCLE + randr( -APP_TX_DUTYCYCLE_RND, APP_TX_DUTYCYCLE_RND );
+						}
+						
+						DeviceState = DEVICE_STATE_CYCLE;
+						break;
+				}
+				
+				case DEVICE_STATE_CYCLE:{
+						DeviceState = DEVICE_STATE_SLEEP;
+
+						// Schedule next packet transmission
+						TimerSetValue( &TxNextPacketTimer, TxDutyCycleTime );
+						TimerStart( &TxNextPacketTimer );
+						break;
+				}
+				
+				case DEVICE_STATE_SLEEP:
+				{
+						// Wake up through events
+						TimerLowPowerHandler( );
+						break;
+				}
+				default:
+				{
+						DeviceState = DEVICE_STATE_INIT;
+						break;
+				}
+		}
 }
 
 
