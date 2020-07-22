@@ -41,7 +41,7 @@ void MX_SPI1_Init(void);
 void MX_SPI2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+uint16_t SPI2_InOut(uint16_t data );
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

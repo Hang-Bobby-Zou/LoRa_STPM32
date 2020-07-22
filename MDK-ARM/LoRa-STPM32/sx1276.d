@@ -16,3 +16,5 @@ lora-stpm32\sx1276.o: ../Drivers/LoRaMAC/system/spi.h
 lora-stpm32\sx1276.o: ..\Drivers\LoRaMAC\radio\sx1276\sx1276Regs-Fsk.h
 lora-stpm32\sx1276.o: ..\Drivers\LoRaMAC\radio\sx1276\sx1276Regs-LoRa.h
 lora-stpm32\sx1276.o: ../Drivers/LoRaMAC/boards/sx1276-board.h
+lora-stpm32\sx1276.o: ../Inc/LoRa.h
+lora-stpm32\sx1276.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

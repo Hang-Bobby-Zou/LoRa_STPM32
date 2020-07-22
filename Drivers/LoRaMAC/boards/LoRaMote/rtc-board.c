@@ -27,6 +27,11 @@
 #include "timer.h"
 #include "gpio.h"
 #include "rtc-board.h"
+#include "tim.h"
+
+
+static uint32_t RtcSetTimeout_TimerValue = 0;
+
 
 /*!
  * RTC Time base in ms
@@ -207,182 +212,62 @@ RtcCalendar_t RtcConvertTimerTimeToCalendarTick( TimerTime_t timeCounter );
  */
 //static void RtcCheckCalendarRollOver( uint8_t year );
 
-void RtcInit( void )
-{
-    // RtcCalendar_t rtcInit;
-
-    // if( RtcInitialized == false )
-    // {
-    //     __HAL_RCC_RTC_ENABLE( );
-
-    //     RtcHandle.Instance = RTC;
-    //     RtcHandle.Init.HourFormat = RTC_HOURFORMAT_24;
-
-    //     RtcHandle.Init.AsynchPrediv = 3;
-    //     RtcHandle.Init.SynchPrediv = 3;
-
-    //     RtcHandle.Init.OutPut = RTC_OUTPUT_DISABLE;
-    //     RtcHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-    //     RtcHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-    //     HAL_RTC_Init( &RtcHandle );
-
-    //     Set Date: Friday 1st of January 2000
-    //     rtcInit.CalendarDate.Year = 0;
-    //     rtcInit.CalendarDate.Month = 1;
-    //     rtcInit.CalendarDate.Date = 1;
-    //     rtcInit.CalendarDate.WeekDay = RTC_WEEKDAY_SATURDAY;
-    //     HAL_RTC_SetDate( &RtcHandle, &rtcInit.CalendarDate, RTC_FORMAT_BIN );
-
-    //     Set Time: 00:00:00
-    //     rtcInit.CalendarTime.Hours = 0;
-    //     rtcInit.CalendarTime.Minutes = 0;
-    //     rtcInit.CalendarTime.Seconds = 0;
-    //     rtcInit.CalendarTime.TimeFormat = RTC_HOURFORMAT12_AM;
-    //     rtcInit.CalendarTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-    //     rtcInit.CalendarTime.StoreOperation = RTC_STOREOPERATION_RESET;
-    //     HAL_RTC_SetTime( &RtcHandle, &rtcInit.CalendarTime, RTC_FORMAT_BIN );
-
-    //     HAL_NVIC_SetPriority( RTC_Alarm_IRQn, 4, 0 );
-    //     HAL_NVIC_EnableIRQ( RTC_Alarm_IRQn );
-    //     RtcInitialized = true;
-    // }
-}
+void RtcInit( void ){ }
 
 void RtcSetTimeout( uint32_t timeout )
 {
-    // RtcStartWakeUpAlarm( timeout );
+	RtcSetTimeout_TimerValue = RtcGetTimerValue();
 }
 
 TimerTime_t RtcGetAdjustedTimeoutValue( uint32_t timeout )
 {
-    // if( timeout > McuWakeUpTime )
-    // {   // we have waken up from a GPIO and we have lost "McuWakeUpTime" that we need to compensate on next event
-    //     if( NonScheduledWakeUp == true )
-    //     {
-    //         NonScheduledWakeUp = false;
-    //         timeout -= McuWakeUpTime;
-    //     }
-    // }
-
-    // if( timeout > McuWakeUpTime )
-    // {   // we don't go in low power mode for delay below 50ms (needed for LEDs)
-    //     if( timeout < 50 ) // 50 ms
-    //     {
-    //         RtcTimerEventAllowsLowPower = false;
-    //     }
-    //     else
-    //     {
-    //         RtcTimerEventAllowsLowPower = true;
-    //         timeout -= McuWakeUpTime;
-    //     }
-    // }
-    // return  timeout;
-		return 0;
+	return timeout;
 }
 
 TimerTime_t RtcGetTimerValue( void )
 {
-    // return( RtcConvertCalendarTickToTimerTime( NULL ) );
-	return 0;
+	return TIM7_GetTimeMs();
 }
 
 TimerTime_t RtcGetElapsedAlarmTime( void )
 {
-    // TimerTime_t currentTime = 0;
-    // TimerTime_t contextTime = 0;
-
-    // currentTime = RtcConvertCalendarTickToTimerTime( NULL );
-    // contextTime = RtcConvertCalendarTickToTimerTime( &RtcCalendarContext );
-
-    // if( currentTime < contextTime )
-    // {
-    //     return( currentTime + ( 0xFFFFFFFF - contextTime ) );
-    // }
-    // else
-    // {
-    //     return( currentTime - contextTime );
-    // }
-	return 0;
+	return( RtcGetTimerValue() - RtcSetTimeout_TimerValue );
 }
 
 TimerTime_t RtcComputeFutureEventTime( TimerTime_t futureEventInTime )
 {
-    // return( RtcGetTimerValue( ) + futureEventInTime );
-	return 0;
+	return( TIM7_GetTimeMs( ) + futureEventInTime );
 }
 
 TimerTime_t RtcComputeElapsedTime( TimerTime_t eventInTime )
 {
-    // TimerTime_t elapsedTime = 0;
-
-    // // Needed at boot, cannot compute with 0 or elapsed time will be equal to current time
-    // if( eventInTime == 0 )
-    // {
-    //     return 0;
-    // }
-
-    // elapsedTime = RtcConvertCalendarTickToTimerTime( NULL );
-
-    // if( elapsedTime < eventInTime )
-    // { // roll over of the counter
-    //     return( elapsedTime + ( 0xFFFFFFFF - eventInTime ) );
-    // }
-    // else
-    // {
-    //     return( elapsedTime - eventInTime );
-    // }
-	return 0;
+	return( RtcGetTimerValue() - eventInTime );
 }
 
-void BlockLowPowerDuringTask ( bool status )
-{
-//     if( status == true )
-//     {
-//         RtcRecoverMcuStatus( );
-//     }
-//     LowPowerDisableDuringTask = status;
-}
+void BlockLowPowerDuringTask ( bool status ){ }
 
-void RtcEnterLowPowerStopMode( void )
-{
-    // if( ( LowPowerDisableDuringTask == false ) && ( RtcTimerEventAllowsLowPower == true ) )
-    // {
-    //     BoardDeInitMcu( );
+void RtcEnterLowPowerStopMode( void ){ }
 
-    //     // Disable the Power Voltage Detector
-    //     HAL_PWR_DisablePVD( );
+void RtcRecoverMcuStatus( void ){ }
 
-    //     SET_BIT( PWR->CR, PWR_CR_CWUF );
 
-    //     // Enable Ultra low power mode
-    //     HAL_PWREx_EnableUltraLowPower( );
 
-    //     // Enable the fast wake up from Ultra low power mode
-    //     HAL_PWREx_EnableFastWakeUp( );
 
-    //     // Enter Stop Mode
-    //     HAL_PWR_EnterSTOPMode( PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI );
-    // }
-}
 
-void RtcRecoverMcuStatus( void )
-{
-    // // PWR_FLAG_WU indicates the Alarm has waken-up the MCU
-    // if( __HAL_PWR_GET_FLAG( PWR_FLAG_WU ) != RESET )
-    // {
-    //     __HAL_PWR_CLEAR_FLAG( PWR_FLAG_WU );
-    // }
-    // else
-    // {
-    //     NonScheduledWakeUp = true;
-    // }
-    // // check the clk source and set to full speed if we are coming from sleep mode
-    // if( ( __HAL_RCC_GET_SYSCLK_SOURCE( ) == RCC_SYSCLKSOURCE_STATUS_HSI ) ||
-    //     ( __HAL_RCC_GET_SYSCLK_SOURCE( ) == RCC_SYSCLKSOURCE_STATUS_MSI ) )
-    // {
-    //     BoardInitMcu( );
-    // }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //static void RtcComputeWakeUpTime( void )
 //{

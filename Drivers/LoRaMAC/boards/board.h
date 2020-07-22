@@ -138,3 +138,4 @@ uint8_t GetBoardPowerSource( void );
 BoardVersion_t BoardGetVersion( void );
 
 #endif // __BOARD_H__
+

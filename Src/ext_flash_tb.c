@@ -3,7 +3,8 @@
  * @{
  * \file ext_flash_tb.c
  * \author Hang Bobby Zou
- * \brief External SPI flash testbench
+ * \brief External SPI flash testbench, by repeatly randomize, write and erase
+ *				flash sectors and blocks to test the robustness of SPI flash
  */
  
 /******************************************************************************/
@@ -31,8 +32,6 @@
 					|-------------------------------------|
 					// Block Size  	: 65536 bytes
 					// Sector Size 	:	4096 bytes
-					
-					
 */
 /******************************************************************************/
  
@@ -48,24 +47,28 @@
 #include <stdio.h>
 
 /*============================================================================*/
-/*                   INCLUDE FILES                                            */
+/*                   PRIVATE INCLUDES			                                    */
 /*============================================================================*/
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "task.h"
-
 #include "main.h"
 #include "ext_flash.h"
 #include "usart.h"
 #include "HAL_spi.h"
 #include "ext_flash_tb.h"
 
+/*============================================================================*/
+/*                   PRIVATE DEFINES			                                    */
+/*============================================================================*/
 #define ReadWriteSize 1024	//In bytes max
 #define SectorNum			512		//In numbers
 #define BlockNum			31		//In numbers
 #define TestSize			3			//Defined in Sectors, change this to change the number of sectors to be tested, max 512
 
-//Function prototypes
+/*============================================================================*/
+/*                   PRIVATE FUNCTION PROTOTYPES		                          */
+/*============================================================================*/
 bool Randomize(char str[],uint32_t num,uint32_t param);
 void WriteSector_tb(uint32_t address);
 bool ReadWrite_tb(uint32_t address);
@@ -79,70 +82,61 @@ bool EraseBlock_tb(uint32_t address);
   */
 bool ext_flash_tb(void){
 		
+		//Address map of the falsh, each increment in sectors
 		uint32_t AddressMap[SectorNum] = {0};
 		for (int i = 0; i < SectorNum; i++){
-				AddressMap[i] = i * 4096; 	//i * 0x001000
+			AddressMap[i] = i * 4096; 	//i * 0x001000
 		}
 		
-/*======================================================================*/
-/*		Detection Test																										*/
-/*======================================================================*/
+		
+		/* Detection Test */
 		// If flash is not detected, then goes to Error_Handler
-		if (ext_flash_is_detected() != 1){
-				return false;
-		}
+		if (ext_flash_is_detected() != 1)
+			return false;
+
 		
-		
-/*======================================================================*/
-/*		ReadWrite Test																										*/
-/*======================================================================*/
+		/* ReadWrite Test */
 		for (int i = 0; i < TestSize; i++){
 			if (ReadWrite_tb(AddressMap[i]) != true)
 				return false;
 			
-		HAL_Delay(1);
+			HAL_Delay(1);
 		}
 		
 
-/*======================================================================*/
-/*		Erase sector Test																									*/
-/*======================================================================*/
+		/* Erase sector Test */
 		for (int i = 0; i < TestSize; i++){
 			if (EraseSector_tb(AddressMap[i]) != true)
 				return false;
 			
-		HAL_Delay(1);
+			HAL_Delay(1);
 		}
 
-/*======================================================================*/
-/*		Erase block Test																									*/
-/*======================================================================*/
+		
+		/* Erase block Test */
 		for (int i = 0; i< TestSize; i++){
-				WriteSector_tb(AddressMap[i]);
+			WriteSector_tb(AddressMap[i]);
 		}
 		
 		for (int i = 0; i< TestSize; i += 16){
-				if (EraseBlock_tb(AddressMap[i]) != true)
-					return false;
-				
-		HAL_Delay(1);
+			if (EraseBlock_tb(AddressMap[i]) != true)
+				return false;
+
+			HAL_Delay(1);
 		}
 		
 
-/*======================================================================*/
-/*		Finish Judge																											*/
-/*======================================================================*/
 		
+		/* Finish Judge */
 		//If all test passes, return true
 		return true;
 		
 }
 
 
-//
-//	Testbench functions, ending with _tb
-//
-
+/*============================================================================*/
+/*                   Flash Testbench Functions                                */
+/*============================================================================*/
 /**
   * @brief  Write to a specific sector
 	* @intval	Sector Address
@@ -243,7 +237,7 @@ bool ReadWrite_tb(uint32_t address){
 }
 
 /**
-  * @brief  Randomize a string
+  * @brief  Randomize a string using rand() function
 	* @intval	String pointer, number of elements and randomize variable param
   * @retval If successful, return true, else return false
   */

@@ -55,26 +55,26 @@ uint8_t I2cWrite( I2c_t *obj, uint8_t deviceAddr, uint16_t addr, uint8_t data )
 {
     if( I2cInitialized == true )
     {
-        if( I2cMcuWriteBuffer( obj, deviceAddr, addr, &data, 1 ) == FAIL )
+        if( I2cMcuWriteBuffer( obj, deviceAddr, addr, &data, 1 ) == LoRa_FAIL )
         {
             // if first attempt fails due to an IRQ, try a second time
-            if( I2cMcuWriteBuffer( obj, deviceAddr, addr, &data, 1 ) == FAIL )
+            if( I2cMcuWriteBuffer( obj, deviceAddr, addr, &data, 1 ) == LoRa_FAIL )
             {
-                return FAIL;
+                return LoRa_FAIL;
             }
             else
             {
-                return SUCCESS;
+                return LoRa_SUCCESS;
             }
         }
         else
         {
-            return SUCCESS;
+            return LoRa_SUCCESS;
         }
     }
     else
     {
-        return FAIL;
+        return LoRa_FAIL;
     }
 }
 
@@ -82,26 +82,26 @@ uint8_t I2cWriteBuffer( I2c_t *obj, uint8_t deviceAddr, uint16_t addr, uint8_t *
 {
     if( I2cInitialized == true )
     {
-        if( I2cMcuWriteBuffer( obj, deviceAddr, addr, buffer, size ) == FAIL )
+        if( I2cMcuWriteBuffer( obj, deviceAddr, addr, buffer, size ) == LoRa_FAIL )
         {
             // if first attempt fails due to an IRQ, try a second time
-            if( I2cMcuWriteBuffer( obj, deviceAddr, addr, buffer, size ) == FAIL )
+            if( I2cMcuWriteBuffer( obj, deviceAddr, addr, buffer, size ) == LoRa_FAIL )
             {
-                return FAIL;
+                return LoRa_FAIL;
             }
             else
             {
-                return SUCCESS;
+                return LoRa_SUCCESS;
             }
         }
         else
         {
-            return SUCCESS;
+            return LoRa_SUCCESS;
         }
     }
     else
     {
-        return FAIL;
+        return LoRa_FAIL;
     }
 }
 
@@ -113,7 +113,7 @@ uint8_t I2cRead( I2c_t *obj, uint8_t deviceAddr, uint16_t addr, uint8_t *data )
     }
     else
     {
-        return FAIL;
+        return LoRa_FAIL;
     }
 }
 
@@ -125,6 +125,6 @@ uint8_t I2cReadBuffer( I2c_t *obj, uint8_t deviceAddr, uint16_t addr, uint8_t *b
     }
     else
     {
-        return FAIL;
+        return LoRa_FAIL;
     }
 }

@@ -130,12 +130,24 @@
 /*!
  * Receive delay 1
  */
-#define CN470_RECEIVE_DELAY1                        1000
+//#define CN470_RECEIVE_DELAY1                        1000
+#ifdef LORA_PICO_MODE
+	#define CN470_RECEIVE_DELAY1                        2000
+#else
+	#define CN470_RECEIVE_DELAY1                        1000
+#endif
+
 
 /*!
  * Receive delay 2
  */
-#define CN470_RECEIVE_DELAY2                        2000
+//#define CN470_RECEIVE_DELAY2                        2000
+#ifdef LORA_PICO_MODE
+	#define CN470_RECEIVE_DELAY2                        3000
+#else
+  #define CN470_RECEIVE_DELAY2                        2000
+#endif
+
 
 /*!
  * Join accept delay 1
@@ -165,7 +177,13 @@
 /*!
  * Second reception window channel frequency definition.
  */
-#define CN470_RX_WND_2_FREQ                         505300000
+//#define CN470_RX_WND_2_FREQ                         505300000
+#ifdef LORA_PICO_MODE
+	#define CN470_RX_WND_2_FREQ                         471725000
+#else
+	#define CN470_RX_WND_2_FREQ                         505300000
+#endif
+
 
 /*!
  * Second reception window channel datarate definition.

@@ -107,7 +107,7 @@ void I2cSetAddrSize( I2c_t *obj, I2cAddrSize addrSize )
 
 uint8_t I2cMcuWriteBuffer( I2c_t *obj, uint8_t deviceAddr, uint16_t addr, uint8_t *buffer, uint16_t size )
 {
-    uint8_t status = FAIL;
+    uint8_t status = LoRa_FAIL;
     uint16_t memAddSize = 0;
 
     if( I2cInternalAddrSize == I2C_ADDR_SIZE_8 )
@@ -118,14 +118,14 @@ uint8_t I2cMcuWriteBuffer( I2c_t *obj, uint8_t deviceAddr, uint16_t addr, uint8_
     {
         memAddSize = I2C_MEMADD_SIZE_16BIT;
     }
-    status = ( HAL_I2C_Mem_Write( &I2cHandle, deviceAddr, addr, memAddSize, buffer, size, 2000 ) == HAL_OK ) ? SUCCESS : FAIL;
+    status = ( HAL_I2C_Mem_Write( &I2cHandle, deviceAddr, addr, memAddSize, buffer, size, 2000 ) == HAL_OK ) ? LoRa_SUCCESS : LoRa_FAIL;
 
     return status;
 }
 
 uint8_t I2cMcuReadBuffer( I2c_t *obj, uint8_t deviceAddr, uint16_t addr, uint8_t *buffer, uint16_t size )
 {
-    uint8_t status = FAIL;
+    uint8_t status = LoRa_FAIL;
     uint16_t memAddSize = 0;
 
     if( I2cInternalAddrSize == I2C_ADDR_SIZE_8 )
@@ -136,16 +136,16 @@ uint8_t I2cMcuReadBuffer( I2c_t *obj, uint8_t deviceAddr, uint16_t addr, uint8_t
     {
         memAddSize = I2C_MEMADD_SIZE_16BIT;
     }
-    status = ( HAL_I2C_Mem_Read( &I2cHandle, deviceAddr, addr, memAddSize, buffer, size, 2000 ) == HAL_OK ) ? SUCCESS : FAIL;
+    status = ( HAL_I2C_Mem_Read( &I2cHandle, deviceAddr, addr, memAddSize, buffer, size, 2000 ) == HAL_OK ) ? SUCCESS : LoRa_FAIL;
 
     return status;
 }
 
 uint8_t I2cMcuWaitStandbyState( I2c_t *obj, uint8_t deviceAddr )
 {
-    uint8_t status = FAIL;
+    uint8_t status = LoRa_FAIL;
 
-    status = ( HAL_I2C_IsDeviceReady( &I2cHandle, deviceAddr, 300, 4096 ) == HAL_OK ) ? SUCCESS : FAIL;;
+    status = ( HAL_I2C_IsDeviceReady( &I2cHandle, deviceAddr, 300, 4096 ) == HAL_OK ) ? SUCCESS : LoRa_FAIL;;
 
     return status;
 }

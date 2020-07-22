@@ -26,7 +26,10 @@
 #include "delay.h"
 #include "radio.h"
 #include "sx1276-board.h"
+#include "stm32l4xx_hal.h"
+#include "main.h"
 
+#include "HAL_gpio.h"
 /*!
  * Flag used to set the RF switch control pins in low power mode when the radio is not active.
  */
@@ -71,7 +74,7 @@ Gpio_t AntSwitchHf;
 
 void SX1276IoInit( void )
 {
-    GpioInit( &SX1276.Spi.Nss, RADIO_NSS, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 1 );
+/*    GpioInit( &SX1276.Spi.Nss, RADIO_NSS, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 1 );
 
     GpioInit( &SX1276.DIO0, RADIO_DIO_0, PIN_INPUT, PIN_PUSH_PULL, PIN_PULL_UP, 0 );
     GpioInit( &SX1276.DIO1, RADIO_DIO_1, PIN_INPUT, PIN_PUSH_PULL, PIN_PULL_UP, 0 );
@@ -79,17 +82,18 @@ void SX1276IoInit( void )
     GpioInit( &SX1276.DIO3, RADIO_DIO_3, PIN_INPUT, PIN_PUSH_PULL, PIN_PULL_UP, 0 );
     GpioInit( &SX1276.DIO4, RADIO_DIO_4, PIN_INPUT, PIN_PUSH_PULL, PIN_PULL_UP, 0 );
     GpioInit( &SX1276.DIO5, RADIO_DIO_5, PIN_INPUT, PIN_PUSH_PULL, PIN_PULL_UP, 0 );
+*/
 }
 
-void SX1276IoIrqInit( DioIrqHandler **irqHandlers )
-{
-    GpioSetInterrupt( &SX1276.DIO0, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[0] );
-    GpioSetInterrupt( &SX1276.DIO1, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[1] );
-    GpioSetInterrupt( &SX1276.DIO2, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[2] );
-    GpioSetInterrupt( &SX1276.DIO3, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[3] );
-    GpioSetInterrupt( &SX1276.DIO4, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[4] );
-    GpioSetInterrupt( &SX1276.DIO5, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[5] );
-}
+//void SX1276IoIrqInit( DioIrqHandler **irqHandlers )
+//{
+//		GpioSetInterrupt( &SX1276.DIO0, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[0] );
+//    GpioSetInterrupt( &SX1276.DIO1, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[1] );
+//    GpioSetInterrupt( &SX1276.DIO2, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[2] );
+//    GpioSetInterrupt( &SX1276.DIO3, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[3] );
+//    GpioSetInterrupt( &SX1276.DIO4, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[4] );
+//    GpioSetInterrupt( &SX1276.DIO5, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, irqHandlers[5] );
+//}
 
 void SX1276IoDeInit( void )
 {
@@ -135,14 +139,17 @@ void SX1276Reset( void )
     SX1276SetBoardTcxo( true );
 
     // Set RESET pin to 0
-    GpioInit( &SX1276.Reset, RADIO_RESET, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );
-
+		//GpioInit( &SX1276.Reset, RADIO_RESET, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );
+		HAL_GPIO_WritePin( NRST_1278_GPIO_Port, NRST_1278_Pin, ( GPIO_PinState )0 );
+	
+	
     // Wait 1 ms
     DelayMs( 1 );
 
     // Configure RESET as input
-    GpioInit( &SX1276.Reset, RADIO_RESET, PIN_INPUT, PIN_PUSH_PULL, PIN_NO_PULL, 1 );
-
+    //GpioInit( &SX1276.Reset, RADIO_RESET, PIN_INPUT, PIN_PUSH_PULL, PIN_NO_PULL, 1 );
+		HAL_GPIO_WritePin( NRST_1278_GPIO_Port, NRST_1278_Pin, ( GPIO_PinState )1 );
+	
     // Wait 6 ms
     DelayMs( 6 );
 }
@@ -229,12 +236,12 @@ void SX1276SetAntSwLowPower( bool status )
 
         if( status == false )
         {
-            SX1276SetBoardTcxo( true );
+            //SX1276SetBoardTcxo( true );
             SX1276AntSwInit( );
         }
         else
         {
-            SX1276SetBoardTcxo( false );
+            //SX1276SetBoardTcxo( false );
             SX1276AntSwDeInit( );
         }
     }
@@ -242,14 +249,14 @@ void SX1276SetAntSwLowPower( bool status )
 
 void SX1276AntSwInit( void )
 {
-    GpioInit( &AntSwitchLf, RADIO_ANT_SWITCH_LF, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 1 );
-    GpioInit( &AntSwitchHf, RADIO_ANT_SWITCH_HF, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 0 );
+    //GpioInit( &AntSwitchLf, RADIO_ANT_SWITCH_LF, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 1 );
+    //GpioInit( &AntSwitchHf, RADIO_ANT_SWITCH_HF, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 0 );
 }
 
 void SX1276AntSwDeInit( void )
 {
-    GpioInit( &AntSwitchLf, RADIO_ANT_SWITCH_LF, PIN_OUTPUT, PIN_OPEN_DRAIN, PIN_NO_PULL, 0 );
-    GpioInit( &AntSwitchHf, RADIO_ANT_SWITCH_HF, PIN_OUTPUT, PIN_OPEN_DRAIN, PIN_NO_PULL, 0 );
+    //GpioInit( &AntSwitchLf, RADIO_ANT_SWITCH_LF, PIN_OUTPUT, PIN_OPEN_DRAIN, PIN_NO_PULL, 0 );
+    //GpioInit( &AntSwitchHf, RADIO_ANT_SWITCH_HF, PIN_OUTPUT, PIN_OPEN_DRAIN, PIN_NO_PULL, 0 );
 }
 
 void SX1276SetAntSw( uint8_t opMode )
@@ -257,15 +264,17 @@ void SX1276SetAntSw( uint8_t opMode )
     switch( opMode )
     {
     case RFLR_OPMODE_TRANSMITTER:
-        GpioWrite( &AntSwitchLf, 0 );
-        GpioWrite( &AntSwitchHf, 1 );
+        //GpioWrite( &AntSwitchLf, 0 );
+        //GpioWrite( &AntSwitchHf, 1 );
+				GPIO_SX1276_Tx();
         break;
     case RFLR_OPMODE_RECEIVER:
     case RFLR_OPMODE_RECEIVER_SINGLE:
     case RFLR_OPMODE_CAD:
     default:
-        GpioWrite( &AntSwitchLf, 1 );
-        GpioWrite( &AntSwitchHf, 0 );
+        //GpioWrite( &AntSwitchLf, 1 );
+        //GpioWrite( &AntSwitchHf, 0 );
+				GPIO_SX1276_Rx();
         break;
     }
 }

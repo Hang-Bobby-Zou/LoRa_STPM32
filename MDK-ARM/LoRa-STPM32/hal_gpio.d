@@ -40,3 +40,12 @@ lora-stpm32\hal_gpio.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_e
 lora-stpm32\hal_gpio.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd.h
 lora-stpm32\hal_gpio.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_usb.h
 lora-stpm32\hal_gpio.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd_ex.h
+lora-stpm32\hal_gpio.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276.h
+lora-stpm32\hal_gpio.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+lora-stpm32\hal_gpio.o: ../Drivers/LoRaMAC/system/gpio.h
+lora-stpm32\hal_gpio.o: ../Drivers/LoRaMAC/boards/pinName-board.h
+lora-stpm32\hal_gpio.o: ../Drivers/LoRaMAC/boards/pinName-ioe.h
+lora-stpm32\hal_gpio.o: ../Drivers/LoRaMAC/system/spi.h
+lora-stpm32\hal_gpio.o: ../Drivers/LoRaMAC/radio/radio.h
+lora-stpm32\hal_gpio.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-Fsk.h
+lora-stpm32\hal_gpio.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-LoRa.h

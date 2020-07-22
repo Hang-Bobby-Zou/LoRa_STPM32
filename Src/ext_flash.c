@@ -4,9 +4,10 @@
  * \file ext_flash.c
  * \copyright 
  * \author Matthew wang
- * \adapted by Bobby in purpose of using STM32L433 with LoRa board
+ * \adapted by Bobby in purpose of using flash with STM32L433 board
  * \brief External SPI flash driver source code.
  */
+
 /*============================================================================*/
 /*                   STANDARD INCLUDE FILES                                   */
 /*============================================================================*/
@@ -94,9 +95,7 @@
 					|	  		|   0    |  000000h | 000FFFh |
 					|-------------------------------------|
 					// Block Size  	: 65536 bytes
-					// Sector Size 	:	4096 bytes
-					
-					
+					// Sector Size 	:	4096 bytes	
 */
 /******************************************************************************/
 

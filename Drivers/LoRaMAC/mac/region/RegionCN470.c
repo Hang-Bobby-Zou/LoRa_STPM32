@@ -296,12 +296,41 @@ void RegionCN470InitDefaults( InitType_t type )
             }
 
             // Initialize the channels default mask
-            ChannelsDefaultMask[0] = 0xFFFF;
-            ChannelsDefaultMask[1] = 0xFFFF;
-            ChannelsDefaultMask[2] = 0xFFFF;
-            ChannelsDefaultMask[3] = 0xFFFF;
-            ChannelsDefaultMask[4] = 0xFFFF;
-            ChannelsDefaultMask[5] = 0xFFFF;
+//            ChannelsDefaultMask[0] = 0xFFFF;
+//            ChannelsDefaultMask[1] = 0xFFFF;
+//            ChannelsDefaultMask[2] = 0xFFFF;
+//            ChannelsDefaultMask[3] = 0xFFFF;
+//            ChannelsDefaultMask[4] = 0xFFFF;
+//            ChannelsDefaultMask[5] = 0xFFFF;
+#ifdef LORA_KIWI_MODE
+  ChannelsDefaultMask[0] = 0x00FF;  \\00-15
+  ChannelsDefaultMask[1] = 0x0000;  \\16-31 
+  ChannelsDefaultMask[2] = 0x0000;  \\32-47 
+  ChannelsDefaultMask[3] = 0x0000;  \\48-63 
+  ChannelsDefaultMask[4] = 0x0000;  \\64-79
+  ChannelsDefaultMask[5] = 0x0000;  \\80-95
+#elif defined( LORA_PICO_MODE )
+  ChannelsDefaultMask[0] = 0x0003;  \\00-15
+  ChannelsDefaultMask[1] = 0x0000;  \\16-31 
+  ChannelsDefaultMask[2] = 0x0000;  \\32-47 
+  ChannelsDefaultMask[3] = 0x0000;  \\48-63 
+  ChannelsDefaultMask[4] = 0x0000;  \\64-79
+  ChannelsDefaultMask[5] = 0x0000;  \\80-95						
+#elif defined( LORA_CLAA_MODE )
+  ChannelsDefaultMask[0] = 0x0000;  \\00-15
+  ChannelsDefaultMask[1] = 0x0000;  \\16-31 
+  ChannelsDefaultMask[2] = 0x0000;  \\32-47 
+	ChannelsDefaultMask[3] = 0xF000;  \\48-63 
+  ChannelsDefaultMask[4] = 0x000F;  \\64-79
+  ChannelsDefaultMask[5] = 0x0000;  \\80-95							
+#else						
+  ChannelsDefaultMask[0] = 0xFFFF;
+  ChannelsDefaultMask[1] = 0xFFFF;
+  ChannelsDefaultMask[2] = 0xFFFF;
+  ChannelsDefaultMask[3] = 0xFFFF;
+  ChannelsDefaultMask[4] = 0xFFFF;
+  ChannelsDefaultMask[5] = 0xFFFF;
+#endif
 
             // Update the channels mask
             RegionCommonChanMaskCopy( ChannelsMask, ChannelsDefaultMask, 6 );
@@ -472,7 +501,12 @@ bool RegionCN470RxConfig( RxConfigParams_t* rxConfig, int8_t* datarate )
     if( rxConfig->RxSlot == RX_SLOT_WIN_1 )
     {
         // Apply window 1 frequency
-        frequency = CN470_FIRST_RX1_CHANNEL + ( rxConfig->Channel % 48 ) * CN470_STEPWIDTH_RX1_CHANNEL;
+        //frequency = CN470_FIRST_RX1_CHANNEL + ( rxConfig->Channel % 48 ) * CN470_STEPWIDTH_RX1_CHANNEL;
+#ifdef LORA_CLAA_MODE
+			frequency = CN470_FIRST_RX1_CHANNEL + ( rxConfig->Channel % 51 ) * CN470_STEPWIDTH_RX1_CHANNEL;
+#else			
+			frequency = CN470_FIRST_RX1_CHANNEL + ( rxConfig->Channel % 48 ) * CN470_STEPWIDTH_RX1_CHANNEL;
+#endif
     }
 
     // Read the physical datarate from the datarates table
@@ -571,7 +605,12 @@ uint8_t RegionCN470LinkAdrReq( LinkAdrReqParams_t* linkAdrReq, int8_t* drOut, in
                     status &= 0xFE; // Channel mask KO
                 }
             }
-            channelsMask[linkAdrParams.ChMaskCtrl] = linkAdrParams.ChMask;
+            //channelsMask[linkAdrParams.ChMaskCtrl] = linkAdrParams.ChMask;
+						#ifdef LORA_CLAA_MODE
+							channelsMask[linkAdrParams.ChMaskCtrl] = 0xffff;
+						#else												
+              channelsMask[linkAdrParams.ChMaskCtrl] = linkAdrParams.ChMask;
+						#endif
         }
     }
 

@@ -22,6 +22,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "HAL_spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "usb.h"
 #include "HAL_gpio.h"
@@ -32,6 +33,8 @@
 #include "ext_flash_tb.h"
 #include "STPM32.h"
 #include "LoRa.h"
+#include "stm32l4xx_it.h"
+#include "HAL_LoRaMAC.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,6 +103,8 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_PCD_Init();
   MX_SPI2_Init();
+  MX_TIM6_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 		
 		/*	---- Connetion Table ----
@@ -127,6 +132,10 @@ int main(void)
 		/* Initialize USB */
 		HAL_PCD_MspInit(&hpcd_USB_FS);
 		
+		/* Initialize Timer7*/
+		//HAL_TIM_Base_Init(&htim7);
+		//HAL_TIM_Base_Start_IT(&htim7);
+				
 		/* Initialize UART for sending message*/ 
 		HAL_UART_MspInit(&huart1);		//UART1 - Connect STPM32
 		HAL_UART_MspInit(&huart3);		//UART3 - Connect Serial Out Terminal
@@ -145,9 +154,7 @@ int main(void)
 				|-----------------------------------|
 		*/
 		// Here set UART3 to be in S4 mode, Tx is on
-		USART3_PINSET_TX();
 		myprintf("Test\r\n");
-		USART3_PINSET_RX();
 		
 		//Initialize STPM32
 		USART3_PINSET_TX();
@@ -163,16 +170,13 @@ int main(void)
 		
 		
 		//Initialize LoRa
-		USART3_PINSET_TX();
 		myprintf("Initializing LoRa...\r\n");
-		USART3_PINSET_RX();
 		
 		if (LoRa_Init() != true)
 				Error_Handler();
-			
-		USART3_PINSET_TX();
+		
 		myprintf("LoRa Initialization Done!\r\n");
-		USART3_PINSET_RX();
+		
 		
 
 		/* Initialize external flash and TEST if flash is okay */
@@ -186,17 +190,17 @@ int main(void)
 		//if (ext_flash_tb() == false){
 		//		Error_Handler();
 		//}
-		if (ext_flash_is_detected() != 1)	
-				Error_Handler();
+		//if (ext_flash_is_detected() != 1)	
+		//		Error_Handler();
 		
-		
-		for (int i = 0; i < 32; i++){
-				ext_flash_erase_block(i);
-				ext_flash_last_write_or_erase_done();
-		}
-		USART3_PINSET_TX();
-		myprintf("External Flash Initialization Done!\r\n");
-		USART3_PINSET_RX();
+		//myprintf("Erasing all block from flash...\r\n");
+		//for (int i = 0; i < 32; i++){
+		//		ext_flash_erase_block(i);
+		//		ext_flash_last_write_or_erase_done();
+		//}
+		//USART3_PINSET_TX();
+		//myprintf("External Flash Initialization Done!\r\n");
+		//USART3_PINSET_RX();
 		
 		
 		
@@ -320,7 +324,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-	
+	if(htim->Instance == TIM7)
+	{
+		TIM7_Irq_Num++;
+		TIM7_IRQHandler();	
+	}	
   /* USER CODE END Callback 1 */
 }
 

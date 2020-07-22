@@ -176,7 +176,14 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 } 
 
 /* USER CODE BEGIN 1 */
-
+uint16_t SPI2_InOut(uint16_t data )
+{
+    uint8_t rxData = 0;
+    uint8_t txData = 0;	  
+	  txData = (uint8_t)data;
+    HAL_SPI_TransmitReceive(&hspi2,&txData,&rxData,1,1000);
+    return( (uint16_t)rxData );	
+}
 
 /* USER CODE END 1 */
 

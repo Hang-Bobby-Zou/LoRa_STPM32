@@ -45,3 +45,5 @@ lora-stpm32\spi-board.o: ../Drivers/LoRaMAC/boards/pinName-board.h
 lora-stpm32\spi-board.o: ../Drivers/LoRaMAC/boards/pinName-ioe.h
 lora-stpm32\spi-board.o: ../Drivers/LoRaMAC/boards/spi-board.h
 lora-stpm32\spi-board.o: ../Drivers/LoRaMAC/system/spi.h
+lora-stpm32\spi-board.o: ../Inc/HAL_spi.h
+lora-stpm32\spi-board.o: ../Inc/main.h

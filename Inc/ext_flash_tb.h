@@ -1,3 +1,11 @@
+/**
+ * \addtogroup ext_flash_tb
+ * @{
+ * \file ext_flash_tb.h
+ * \author Hang Bobby Zou
+ * \brief External SPI flash testbench header file
+ */
+
 /*============================================================================*/
 /*                   STANDARD INCLUDE FILES                                   */
 /*============================================================================*/

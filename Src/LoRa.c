@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 /*============================================================================*/
-/*                   INCLUDE FILES                                            */
+/*                   PRIVATE INCLUDES                                         */
 /*============================================================================*/
 #include "FreeRTOS.h"
 #include "semphr.h"
@@ -27,12 +27,13 @@
 #include "usart.h"
 #include "HAL_spi.h"
 #include "LoRa.h"
+#include "HAL_LoRaMAC.h"
+#include "sx1276.h"
 
 uint8_t SPI2_RxBuffer[2] = {0};
 uint8_t SPI2_TxBuffer[2] = {0};
 
 bool LoRa_Init(void){
-	
 	/*
 		The first byte is the address byte. It is comprises:
 		` A wnr bit, which is 1 for write access and 0 for read access
@@ -51,7 +52,6 @@ bool LoRa_Init(void){
 	
 	
 	// Assmue read LoRa ID: 0(MSB)+0x42
-	USART3_PINSET_TX();
 	
 	// Wait until the ID of the LoRa chip is read from address 0x42
 	if (LoRa_is_detected() != true)
@@ -80,25 +80,17 @@ bool LoRa_Init(void){
 	//Set spreading factor ??
 	//LoRa_SetSpreadingFactor(0x07);
 	
-	uint8_t buffer[4] = {0};
-	
-	buffer[0] = 0x01;
-	buffer[1] = 0x01;
-	buffer[2] = 0x01;
-	buffer[3] = 0xAA;
-	
-	
-	for(int i = 0; i< 100; i++){
-		LoRa_SendData(buffer, 0, sizeof(buffer));
-		
-		HAL_Delay(100);
-		
-	}
-
-	USART3_PINSET_RX();
+	//LoRa_SetOpMode(TX);
 	
 	return true;
 }
+
+
+
+
+
+
+
 
 
 int LoRa_SendData(uint8_t* buffer, uint8_t offset, uint8_t size){
@@ -119,18 +111,18 @@ int LoRa_SendData(uint8_t* buffer, uint8_t offset, uint8_t size){
 	
 	
 	HAL_GPIO_WritePin(NRST_1278_GPIO_Port, NRST_1278_Pin, GPIO_PIN_RESET);
-		uint8_t buff[1] = {0x80};
-		if(HAL_SPI_Transmit(&hspi2, &buff[0], 1, 5) != HAL_OK){
+	uint8_t buff[1] = {0x80};
+	if(HAL_SPI_Transmit(&hspi2, &buff[0], 1, 5) != HAL_OK){
+		Error_Handler();
+	}
+		
+	for (int i = 0; i < size; i++) {
+		if(HAL_SPI_Transmit(&hspi2, &buffer[i+offset], 1, 5) != HAL_OK){
 			Error_Handler();
 		}
-		
-		for (int i = 0; i < size; i++) {
-			if(HAL_SPI_Transmit(&hspi2, &buffer[i+offset], 1, 5) != HAL_OK){
-				Error_Handler();
-			}
-		}
+	}
 
-		HAL_GPIO_WritePin(NRST_1278_GPIO_Port, NRST_1278_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(NRST_1278_GPIO_Port, NRST_1278_Pin, GPIO_PIN_SET);
 	
 	LoRa_SetOpMode(TX);
 	
@@ -390,6 +382,9 @@ bool LoRa_is_detected(void){
 		SPI2_TxBuffer[0] = RegVersion;
 		
 		SPI2_RxBuffer[0] = LoRa_ReadReg(SPI2_TxBuffer[0]);
+
+		
+		//SX1276ReadBuffer( RegVersion, SPI2_RxBuffer, 1 );
 		
 		myprintf("SPI2 ID: %x %x \r\n\r\n", SPI2_RxBuffer[0], SPI2_RxBuffer[1]);
 

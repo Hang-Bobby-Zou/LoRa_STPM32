@@ -34,6 +34,8 @@
 #include "sx1276.h"
 #include "sx1276-board.h"
 
+#include "LoRa.h"
+
 /*
  * Local types definition
  */
@@ -247,10 +249,13 @@ void SX1276Init( RadioEvents_t *events )
 
     SX1276Reset( );
 
+		uint8_t data = SX1276Read( 0x42 );
+		
+	
     RxChainCalibration( );
-
+		
     SX1276SetOpMode( RF_OPMODE_SLEEP );
-
+		
     SX1276IoIrqInit( DioIrq );
 
     for( i = 0; i < sizeof( RadioRegsInit ) / sizeof( RadioRegisters_t ); i++ )
@@ -258,8 +263,9 @@ void SX1276Init( RadioEvents_t *events )
         SX1276SetModem( RadioRegsInit[i].Modem );
         SX1276Write( RadioRegsInit[i].Addr, RadioRegsInit[i].Value );
     }
-
-    SX1276SetModem( MODEM_FSK );
+		
+		SX1276SetModem( MODEM_FSK );
+    //SX1276SetModem( MODEM_LORA );
 
     SX1276.Settings.State = RF_IDLE;
 }
@@ -1257,13 +1263,17 @@ void SX1276SetModem( RadioModems_t modem )
 void SX1276Write( uint16_t addr, uint8_t data )
 {
     SX1276WriteBuffer( addr, &data, 1 );
+		//LoRa_WriteReg(addr, data);
+	
 }
 
 uint8_t SX1276Read( uint16_t addr )
 {
     uint8_t data;
     SX1276ReadBuffer( addr, &data, 1 );
-    return data;
+    //data = LoRa_ReadReg( addr);
+	
+		return data;
 }
 
 void SX1276WriteBuffer( uint16_t addr, uint8_t *buffer, uint8_t size )
@@ -1281,6 +1291,7 @@ void SX1276WriteBuffer( uint16_t addr, uint8_t *buffer, uint8_t size )
 
     //NSS = 1;
     GpioWrite( &SX1276.Spi.Nss, 1 );
+		
 }
 
 void SX1276ReadBuffer( uint16_t addr, uint8_t *buffer, uint8_t size )
@@ -1834,4 +1845,39 @@ void SX1276OnDio5Irq( void )
     default:
         break;
     }
+}
+
+/*============================================================================*/
+/*                   USER CODE						                                    */
+/*============================================================================*/
+void SX1276Wakeup(void)  //meidongwen
+{
+    uint8_t i;
+    bool     PublicNetwork;	
+	
+    SX1276Reset( );
+
+    RxChainCalibration( );
+
+    SX1276SetOpMode( RF_OPMODE_SLEEP );
+
+    SX1276IoIrqInit( DioIrq );
+
+    for( i = 0; i < sizeof( RadioRegsInit ) / sizeof( RadioRegisters_t ); i++ )
+    {
+        SX1276SetModem( RadioRegsInit[i].Modem );
+        SX1276Write( RadioRegsInit[i].Addr, RadioRegsInit[i].Value );
+    }
+
+    SX1276SetModem( MODEM_FSK );
+
+    SX1276.Settings.State = RF_IDLE;	
+		
+	  // Random seed initialization
+    srand1( Radio.Random( ) );
+
+    PublicNetwork = true;
+    SX1276SetPublicNetwork( PublicNetwork );
+    SX1276SetSleep( );	
+		
 }

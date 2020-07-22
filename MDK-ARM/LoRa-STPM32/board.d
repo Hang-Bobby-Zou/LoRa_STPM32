@@ -64,3 +64,4 @@ lora-stpm32\board.o: ../Drivers/LoRaMAC/radio/radio.h
 lora-stpm32\board.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-Fsk.h
 lora-stpm32\board.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-LoRa.h
 lora-stpm32\board.o: ../Drivers/LoRaMAC/boards/board.h
+lora-stpm32\board.o: ../Inc/main.h

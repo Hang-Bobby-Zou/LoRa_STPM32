@@ -20,14 +20,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "HAL_gpio.h"
 /* USER CODE BEGIN 0 */
-
+#include "sx1276.h"
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
 /* Configure GPIO                                                             */
 /*----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
-
+GpioIrqHandler *GpioIrq[16] = {0};
 /* USER CODE END 1 */
 
 /** Configure pins as 
@@ -114,6 +114,111 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 2 */
+
+void GPIO_Wakeup(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+	GPIO_SX1276_RX_CLK_ENABLE();
+	GPIO_SX1276_TX_CLK_ENABLE();
+  //GPIO_SX1276_RESET_CLK_ENABLE();
+  //GPIO_SX1276_PWR_CLK_ENABLE();
+	//GPIO_PWR_SENSOR_CLK_ENABLE();
+
+	GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
+	GPIO_InitStruct.Mode      = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull      = GPIO_PULLUP;
+	
+	GPIO_InitStruct.Pin       = GPIO_SX1276_RESET_PIN;
+	HAL_GPIO_WritePin( GPIO_SX1276_RESET_PORT, GPIO_SX1276_RESET_PIN, ( GPIO_PinState )1 );	
+	HAL_GPIO_Init(GPIO_SX1276_RESET_PORT, &GPIO_InitStruct);	
+	
+	GPIO_InitStruct.Pin       = GPIO_SX1276_PWR_PIN;
+	HAL_GPIO_WritePin( GPIO_SX1276_PWR_PORT, GPIO_SX1276_PWR_PIN, ( GPIO_PinState )1 );	
+	HAL_GPIO_Init(GPIO_SX1276_PWR_PORT, &GPIO_InitStruct);	
+	
+	GPIO_InitStruct.Pin       = GPIO_SX1276_RX_PIN;
+	HAL_GPIO_WritePin( GPIO_SX1276_RX_PORT, GPIO_SX1276_RX_PIN, ( GPIO_PinState )1 );	
+	HAL_GPIO_Init(GPIO_SX1276_RX_PORT, &GPIO_InitStruct);		
+	
+  GPIO_InitStruct.Pin       = GPIO_SX1276_TX_PIN;
+	HAL_GPIO_WritePin( GPIO_SX1276_TX_PORT, GPIO_SX1276_TX_PIN, ( GPIO_PinState )0);	
+	HAL_GPIO_Init(GPIO_SX1276_TX_PORT, &GPIO_InitStruct);		
+}
+
+
+
+void SX1276IoIrqInit( DioIrqHandler **irqHandlers )
+{
+		GPIO_InitTypeDef   GPIO_InitStructure;
+    GPIO_SX1276_DIO0_CLK_ENABLE();
+    //GPIO_SX1276_DIO1_CLK_ENABLE();
+    //GPIO_SX1276_DIO2_CLK_ENABLE();
+    //GPIO_SX1276_DIO3_CLK_ENABLE();
+    //GPIO_SX1276_DIO4_CLK_ENABLE();
+	
+		GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+		GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING;
+		GPIO_InitStructure.Pull = GPIO_PULLUP;
+	
+		GPIO_InitStructure.Pin =  GPIO_SX1276_DIO0_PIN;
+		HAL_GPIO_Init( GPIO_SX1276_DIO0_PORT, &GPIO_InitStructure );
+
+		GPIO_InitStructure.Pin =  GPIO_SX1276_DIO1_PIN;
+		HAL_GPIO_Init( GPIO_SX1276_DIO1_PORT, &GPIO_InitStructure );
+	
+		GPIO_InitStructure.Pin =  GPIO_SX1276_DIO2_PIN;
+		HAL_GPIO_Init( GPIO_SX1276_DIO2_PORT, &GPIO_InitStructure );
+	
+		GPIO_InitStructure.Pin =  GPIO_SX1276_DIO3_PIN;
+		HAL_GPIO_Init( GPIO_SX1276_DIO3_PORT, &GPIO_InitStructure );	
+
+		GpioIrq[0] = irqHandlers[0] ;
+		HAL_NVIC_SetPriority( EXTI0_IRQn , 1, 0 );
+		HAL_NVIC_EnableIRQ( EXTI0_IRQn );	
+		
+		GpioIrq[1] = irqHandlers[1] ;
+		HAL_NVIC_SetPriority( EXTI1_IRQn , 1, 0 );
+		HAL_NVIC_EnableIRQ( EXTI1_IRQn );	
+
+		GpioIrq[2] = irqHandlers[2] ;
+		HAL_NVIC_SetPriority( EXTI2_IRQn , 1, 0 );
+		HAL_NVIC_EnableIRQ( EXTI2_IRQn );	
+		
+		GpioIrq[3] = irqHandlers[3] ;
+		HAL_NVIC_SetPriority( EXTI3_IRQn , 1, 0 );
+		HAL_NVIC_EnableIRQ( EXTI3_IRQn );			
+}
+
+void GPIO_SX1276_Tx(void)
+{
+	HAL_GPIO_WritePin( GPIO_SX1276_RX_PORT, GPIO_SX1276_RX_PIN, ( GPIO_PinState )0 );
+	HAL_GPIO_WritePin( GPIO_SX1276_TX_PORT, GPIO_SX1276_TX_PIN, ( GPIO_PinState )1 );
+}
+
+void GPIO_SX1276_Rx(void)
+{
+	HAL_GPIO_WritePin( GPIO_SX1276_RX_PORT, GPIO_SX1276_RX_PIN, ( GPIO_PinState )1 );
+	HAL_GPIO_WritePin( GPIO_SX1276_TX_PORT, GPIO_SX1276_TX_PIN, ( GPIO_PinState )0 );
+}
+void GPIO_SX1276_Reset(void)
+{
+	HAL_GPIO_WritePin( GPIO_SX1276_RESET_PORT, GPIO_SX1276_RESET_PIN, ( GPIO_PinState )0 );
+}
+
+void GPIO_SX1276_ResetOff(void)
+{
+	HAL_GPIO_WritePin( GPIO_SX1276_RESET_PORT, GPIO_SX1276_RESET_PIN, ( GPIO_PinState )1 );
+}
+
+void GPIO_SX1276_PowerOn(void)
+{
+	HAL_GPIO_WritePin( GPIO_SX1276_PWR_PORT, GPIO_SX1276_PWR_PIN, ( GPIO_PinState )1 );
+}
+
+void GPIO_SX1276_PowerOff(void)
+{
+	HAL_GPIO_WritePin( GPIO_SX1276_PWR_PORT, GPIO_SX1276_PWR_PIN, ( GPIO_PinState )0 );
+}
 
 /* USER CODE END 2 */
 

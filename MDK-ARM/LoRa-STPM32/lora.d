@@ -58,3 +58,12 @@ lora-stpm32\lora.o: ../Inc/usart.h
 lora-stpm32\lora.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 lora-stpm32\lora.o: ../Inc/HAL_spi.h
 lora-stpm32\lora.o: ../Inc/LoRa.h
+lora-stpm32\lora.o: ../Inc/HAL_LoRaMAC.h
+lora-stpm32\lora.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276.h
+lora-stpm32\lora.o: ../Drivers/LoRaMAC/system/gpio.h
+lora-stpm32\lora.o: ../Drivers/LoRaMAC/boards/pinName-board.h
+lora-stpm32\lora.o: ../Drivers/LoRaMAC/boards/pinName-ioe.h
+lora-stpm32\lora.o: ../Drivers/LoRaMAC/system/spi.h
+lora-stpm32\lora.o: ../Drivers/LoRaMAC/radio/radio.h
+lora-stpm32\lora.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-Fsk.h
+lora-stpm32\lora.o: ../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-LoRa.h

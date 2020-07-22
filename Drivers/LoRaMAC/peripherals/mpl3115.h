@@ -99,7 +99,7 @@
  */
 #define PTDR                  0x08
 #define PDR                   0x04
-#define TDR                   0x02
+//#define TDR                   0x02
 #define ALT                   0x80
 #define RAW                   0x40
 #define OS2                   0x20

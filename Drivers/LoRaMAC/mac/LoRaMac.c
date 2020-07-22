@@ -33,6 +33,7 @@
 #include "LoRaMacCrypto.h"
 #include "LoRaMacTest.h"
 #include "string.h"
+#include "radio.h"
 
 /*!
  * Maximum PHY layer payload size
@@ -3431,3 +3432,12 @@ void LoRaMacTestSetChannel( uint8_t channel )
 {
     Channel = channel;
 }
+
+/*============================================================================*/
+/*                   USER CODE						                                    */
+/*============================================================================*/
+uint32_t LoRaMacGetState(void)
+{
+    return (uint32_t)LoRaMacState;
+}
+

@@ -105,6 +105,12 @@
 #include "timer.h"
 #include "radio.h"
 
+/*============================================================================*/
+/*                   USER PROTOTYPES			                                    */
+/*============================================================================*/
+uint32_t LoRaMacGetState(void);
+
+
 /*!
  * Check the Mac layer state every MAC_STATE_CHECK_TIMEOUT in ms
  */

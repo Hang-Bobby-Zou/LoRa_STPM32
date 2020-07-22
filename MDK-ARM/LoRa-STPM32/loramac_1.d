@@ -1,0 +1,12 @@
+lora-stpm32\loramac_1.o: ..\Drivers\LoRaMAC\mac\LoRaMac.c
+lora-stpm32\loramac_1.o: ../Drivers/LoRaMAC/boards/utilities.h
+lora-stpm32\loramac_1.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+lora-stpm32\loramac_1.o: ..\Drivers\LoRaMAC\mac\LoRaMac.h
+lora-stpm32\loramac_1.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+lora-stpm32\loramac_1.o: ../Drivers/LoRaMAC/system/timer.h
+lora-stpm32\loramac_1.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+lora-stpm32\loramac_1.o: ../Drivers/LoRaMAC/radio/radio.h
+lora-stpm32\loramac_1.o: ..\Drivers\LoRaMAC\mac\region/Region.h
+lora-stpm32\loramac_1.o: ..\Drivers\LoRaMAC\mac\LoRaMacCrypto.h
+lora-stpm32\loramac_1.o: ..\Drivers\LoRaMAC\mac\LoRaMacTest.h
+lora-stpm32\loramac_1.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

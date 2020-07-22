@@ -51,15 +51,15 @@ uint8_t EepromMcuWriteBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
         /*!< If size < EE_PAGE_SIZE */
         if( nbPage == 0 )
         {
-            if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, size ) == FAIL )
+            if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, size ) == LoRa_FAIL )
             {
                 I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                return FAIL;
+                return LoRa_FAIL;
             }
-            if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == FAIL )
+            if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == LoRa_FAIL )
             {
                 I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                return FAIL;
+                return LoRa_FAIL;
             }
         }
         /*!< If size > EE_PAGE_SIZE */
@@ -67,15 +67,15 @@ uint8_t EepromMcuWriteBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
         {
             while( nbPage-- )
             {
-                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, EE_PAGE_SIZE ) == FAIL )
+                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, EE_PAGE_SIZE ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
-                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == FAIL )
+                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+									return LoRa_FAIL;
                 }
                 addr +=  EE_PAGE_SIZE;
                 buffer += EE_PAGE_SIZE;
@@ -83,15 +83,15 @@ uint8_t EepromMcuWriteBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
 
             if( nbBytes != 0 )
             {
-                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytes ) == FAIL )
+                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytes ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
-                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == FAIL )
+                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
             }
         }
@@ -106,41 +106,41 @@ uint8_t EepromMcuWriteBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
             in the current page: */
             if ( size > nbBytesRemaining )
             {
-                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytesRemaining ) == FAIL )
+                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytesRemaining ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
-                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == FAIL )
+                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
 
                 if( I2cWriteBuffer( &I2c, I2cDeviceAddr, ( addr + nbBytesRemaining ),
                                                    ( uint8_t* )( buffer + nbBytesRemaining ),
-                                                   ( size - nbBytesRemaining ) ) == FAIL )
+                                                   ( size - nbBytesRemaining ) ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
-                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == FAIL )
+                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
             }
             else
             {
-                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytes ) == FAIL )
+                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytes ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
-                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == FAIL )
+                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
             }
         }
@@ -153,15 +153,15 @@ uint8_t EepromMcuWriteBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
 
             if( nbBytesRemaining != 0 )
             {
-                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytesRemaining ) == FAIL )
+                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytesRemaining ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
-                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == FAIL )
+                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
                 addr += nbBytesRemaining;
                 buffer += nbBytesRemaining;
@@ -169,41 +169,41 @@ uint8_t EepromMcuWriteBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
 
             while( nbPage-- )
             {
-                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, EE_PAGE_SIZE ) == FAIL )
+                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, EE_PAGE_SIZE ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
-                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == FAIL )
+                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
                 addr +=  EE_PAGE_SIZE;
                 buffer += EE_PAGE_SIZE;
             }
             if( nbBytes != 0 )
             {
-                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytes ) == FAIL )
+                if( I2cWriteBuffer( &I2c, I2cDeviceAddr, addr, buffer, nbBytes ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
-                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == FAIL )
+                if( I2cMcuWaitStandbyState( &I2c, I2cDeviceAddr ) == LoRa_FAIL )
                 {
                     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-                    return FAIL;
+                    return LoRa_FAIL;
                 }
             }
         }
     }
     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_8 );
-    return SUCCESS;
+    return LoRa_SUCCESS;
 }
 
 uint8_t EepromMcuReadBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
 {
-    uint8_t status = FAIL;
+    uint8_t status = LoRa_FAIL;
 
     I2cSetAddrSize( &I2c, I2C_ADDR_SIZE_16 );
 

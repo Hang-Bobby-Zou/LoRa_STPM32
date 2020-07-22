@@ -47,3 +47,5 @@ lora-stpm32\rtc-board.o: ../Drivers/LoRaMAC/system/gpio.h
 lora-stpm32\rtc-board.o: ../Drivers/LoRaMAC/boards/pinName-board.h
 lora-stpm32\rtc-board.o: ../Drivers/LoRaMAC/boards/pinName-ioe.h
 lora-stpm32\rtc-board.o: ../Drivers/LoRaMAC/boards/rtc-board.h
+lora-stpm32\rtc-board.o: ../Inc/tim.h
+lora-stpm32\rtc-board.o: ../Inc/main.h

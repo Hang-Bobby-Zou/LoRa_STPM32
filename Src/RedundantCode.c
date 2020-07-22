@@ -1,8 +1,18 @@
-/*
-	Redundant Code that was used in the past
+/**
+ * \addtogroup Redundant Code
+ * @{
+ * \file RedundantCode.c
+ * \author Hang Bobby Zou
+ * \brief Redundant Code Library
+ */
 
-
-*/
+/*============================================================================*/
+/*										Explanations of RedundantCode.c													*/			
+/*----------------------------------------------------------------------------*/
+/*	This C file contains redundant Code that was used in the past							*/
+/*	It is intended to save a copy as these are mostly test files							*/
+/*	It also contains function prototypes that are easily forgotten						*/
+/*============================================================================*/
 
 #include "main.h"
 
@@ -144,18 +154,100 @@
 
 
 
+// bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddress, uint8_t* SendMessage) {
+// 	/* 
+// 		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
+// 		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
+// 	*/
+// 	uint8_t Buffer[5] = {0};
+// 	uint8_t CRCBuffer[5] = {0};
+	
+// 	Buffer[0] = ReadAddress;
+// 	Buffer[1] = SendAddress;
+// 	Buffer[2] = SendMessage[0];
+// 	Buffer[3] = SendMessage[1];
+		
+// 	CRCBuffer[0] = byteReverse(Buffer[0]);
+// 	CRCBuffer[1] = byteReverse(Buffer[1]);
+// 	CRCBuffer[2] = byteReverse(Buffer[2]);
+// 	CRCBuffer[3] = byteReverse(Buffer[3]);
+// 	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
+	
+// 	HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
+	
+// 	HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, 5,0xFFFF);
+	
+// 	//HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
+	
+	
+// 	USART3_PINSET_TX();
+// 	//myprintf("ReadMessage: %x | %x | %x | %x | %x  \r\n",ReadMessage[0], ReadMessage[1], ReadMessage[2], ReadMessage[3], ReadMessage[4]);
+// 	myprintf("Init register configured");
+// 	myprintf("\r\n");
+// 	USART3_PINSET_RX();
+	 
+	
+// 	return true;
+// }
+
+
+
+// USART3
+// USART3_PINSET_TX();
+			// 	if (aRxBuffer[0] == dsp_reg14){
+			// 		myprintf("Reading: CH1_RMS\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg1){
+			// 		myprintf("Reading: PH1_Active_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Energy[0],PH1_Active_Energy[1],PH1_Active_Energy[2],PH1_Active_Energy[3],PH1_Active_Energy[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg2){
+			// 		myprintf("Reading: PH1_Fundamental_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg3){
+			// 		myprintf("Reading: PH1_Reactive_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg4){
+			// 		myprintf("Reading: PH1_Apparent_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg5){
+			// 		myprintf("Reading: PH1_Active_Power\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg6){
+			// 		myprintf("Reading: PH1_Fundamental_Power\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg7){
+			// 		myprintf("Reading: PH1_Reactive_Power\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
+			// 	} else if (aRxBuffer[0] == ph1_reg8){
+			// 		myprintf("Reading: PH1_Apparent_RMS_Power\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
+			// 	} else if (aRxBuffer[0] == tot_reg1){
+			// 		myprintf("Reading: Total_Active_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
+			// 	} else if (aRxBuffer[0] == tot_reg2){
+			// 		myprintf("Reading: Total_Fundamental_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
+			// 	} else if (aRxBuffer[0] == tot_reg3){
+			// 		myprintf("Reading: Total_Reactive_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
+			// 	} else if (aRxBuffer[0] == tot_reg4){
+			// 		myprintf("Reading: Total_Apparent_Energy\r\n");
+			// 		myprintf("%x | %x | %x | %x | %x \r\n", Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
+			// 	} else {
+			// 		myprintf(" Not a valid address \r\n");
+			// 	}
+			// USART3_PINSET_RX();
+
+
+
+//USART3_PINSET_TX();
+		 	//myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
+		 	//USART3_PINSET_RX();
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
+/*============================================================================*/
+/*                   END OF FILE                                              */
+/*============================================================================*/

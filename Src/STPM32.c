@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 /*============================================================================*/
-/*                   INCLUDE FILES                                            */
+/*                   PRIVATE INCLUDES                                         */
 /*============================================================================*/
 #include "FreeRTOS.h"
 #include "semphr.h"
@@ -28,14 +28,18 @@
 #include "STPM32.h"
 #include "STPM32_AddressMap.h"
 
-//CRC calc defines
+/*============================================================================*/
+/*                   CRC DEFINES			                                    */
+/*============================================================================*/
 #define u8 unsigned char
 #define CRC_8 (0x07)
 #define STPM3x_FRAME_LEN (5)
 static char CRC_u8Checksum;
 
 
-
+/*============================================================================*/
+/*                   PRIVATE DEFINES			                                    */
+/*============================================================================*/
 //SYN timing defines, all Min.
 //#define t_ltch			20 	//ns, Time between de-selection and latch
 //#define t_lpw				4 	//us, Latch pulse width
@@ -48,12 +52,21 @@ static char CRC_u8Checksum;
 #define t_rpw				1		//ms, Reset pulse width
 #define t_scs				1		//ms, Delay from SYN to SCS
 
-//Function decleration
+
+/*============================================================================*/
+/*                   PRIVATE FUNCTION PROTOTYPES		                          */
+/*============================================================================*/
 static u8 CalcCRC8(u8 *pBuf);
 static void Crc8Calc (u8 u8Data);
 void FRAME_for_UART_mode(u8 *pBuf);
 static u8 byteReverse(u8 n);
 
+
+/**
+  * @brief  Initialize STPM32 by toggle GPIO
+	* @intval	NONE
+  * @retval NONE
+  */
 bool STPM32_Init(void) {
 		// Initializing STPM32
 		/* Sequence: 	0. Before initializing
@@ -134,10 +147,16 @@ bool STPM32_Init(void) {
 		return true;
 }
 
+/**
+  * @brief  SendMessage to STPM32 only
+	* @intval	Address in STPM32 register to be written
+	*					Message to be send to the register
+  * @retval True if success / False if fail
+  */
 bool SendMsgOnly (uint32_t SendAddress, uint8_t* SendMessage){
 	/* 
 		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
-		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
+		|		 0x00 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
 	*/
 	uint8_t ReadMessage[5] = {0};
 	uint8_t Buffer[5] = {0};
@@ -165,10 +184,16 @@ bool SendMsgOnly (uint32_t SendAddress, uint8_t* SendMessage){
 	return true;
 }
 
+/**
+  * @brief  ReadMessage from STPM32 only
+	* @intval	Address in STPM32 register to be read
+	*					Message read from the register
+  * @retval True if success / False if fail
+  */
 bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 	/* 
 		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
-		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
+		|		 0xFF 		|		  0xFF		 | 	 	 0xFF 		 |     0xFF				|    --    |
 	*/
 	uint8_t Buffer[5] = {0};
 	uint8_t CRCBuffer[5] = {0};
@@ -197,110 +222,9 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// bool SendMessage(uint32_t ReadAddress, uint8_t* ReadMessage ,uint32_t SendAddress, uint8_t* SendMessage) {
-// 	/* 
-// 		| ReadAddress | WriteAddress | LS Data [7:0] | MS Data [15:8] | CRC Byte |
-// 		|		 0xFF 		|		 Address	 | 	 Message[0]  |   Message[1]   |    --    |
-// 	*/
-// 	uint8_t Buffer[5] = {0};
-// 	uint8_t CRCBuffer[5] = {0};
-	
-// 	Buffer[0] = ReadAddress;
-// 	Buffer[1] = SendAddress;
-// 	Buffer[2] = SendMessage[0];
-// 	Buffer[3] = SendMessage[1];
-		
-// 	CRCBuffer[0] = byteReverse(Buffer[0]);
-// 	CRCBuffer[1] = byteReverse(Buffer[1]);
-// 	CRCBuffer[2] = byteReverse(Buffer[2]);
-// 	CRCBuffer[3] = byteReverse(Buffer[3]);
-// 	Buffer[4] = byteReverse(CalcCRC8(CRCBuffer));
-	
-// 	HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
-	
-// 	HAL_UART_Transmit(&huart1, (uint8_t*)Buffer, 5,0xFFFF);
-	
-// 	//HAL_UART_Receive_IT(&huart1, (uint8_t*) ReadMessage, 5);
-	
-	
-// 	USART3_PINSET_TX();
-// 	//myprintf("ReadMessage: %x | %x | %x | %x | %x  \r\n",ReadMessage[0], ReadMessage[1], ReadMessage[2], ReadMessage[3], ReadMessage[4]);
-// 	myprintf("Init register configured");
-// 	myprintf("\r\n");
-// 	USART3_PINSET_RX();
-	 
-	
-// 	return true;
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*===================================================================== */
 /*					CRC Calc 																										*/
 /*===================================================================== */
-
 static u8 CalcCRC8(u8 *pBuf)
 {
 	u8 i;
@@ -312,8 +236,7 @@ static u8 CalcCRC8(u8 *pBuf)
 	return CRC_u8Checksum;
 }
 
-static void Crc8Calc (u8 u8Data)
-{
+static void Crc8Calc (u8 u8Data){
 	u8 loc_u8Idx;
 	u8 loc_u8Temp;
 	loc_u8Idx=0;
@@ -330,21 +253,18 @@ static void Crc8Calc (u8 u8Data)
 	}
 }
 
-void FRAME_for_UART_mode(u8 *pBuf)
-{
-u8 temp[4],x,CRC_on_reversed_buf;
-for (x=0;x<(STPM3x_FRAME_LEN-1);x++)
-{
-temp[x] = byteReverse(pBuf[x]);
-}
-CRC_on_reversed_buf = CalcCRC8(temp);
-pBuf[4] = byteReverse(CRC_on_reversed_buf);
+void FRAME_for_UART_mode(u8 *pBuf){
+	u8 temp[4],x,CRC_on_reversed_buf;
+	for (x=0;x<(STPM3x_FRAME_LEN-1);x++){
+		temp[x] = byteReverse(pBuf[x]);
+	}
+	CRC_on_reversed_buf = CalcCRC8(temp);
+	pBuf[4] = byteReverse(CRC_on_reversed_buf);
 }
 
-static u8 byteReverse(u8 n)
-{
-n = ((n >> 1) & 0x55) | ((n << 1) & 0xaa);
-n = ((n >> 2) & 0x33) | ((n << 2) & 0xcc);
-n = ((n >> 4) & 0x0F) | ((n << 4) & 0xF0);
-return n;
+static u8 byteReverse(u8 n){
+	n = ((n >> 1) & 0x55) | ((n << 1) & 0xaa);
+	n = ((n >> 2) & 0x33) | ((n << 2) & 0xcc);
+	n = ((n >> 4) & 0x0F) | ((n << 4) & 0xF0);
+	return n;
 }

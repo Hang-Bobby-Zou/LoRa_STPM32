@@ -197,6 +197,8 @@ void HAL_UART_SendBytes(USART_TypeDef* usartx, char * str, uint16_t count){
 
 char string[512];
 void myprintf(char *fmt,...){
+	USART3_PINSET_TX();	//Bobby
+	
 	va_list ap;
 	
 	va_start(ap,fmt);
@@ -205,6 +207,8 @@ void myprintf(char *fmt,...){
 	
 	
 	HAL_UART_SendBytes(huart3.Instance, string, strlen(string));
+	
+	USART3_PINSET_RX();	//Bobby
 }
 
 #endif
