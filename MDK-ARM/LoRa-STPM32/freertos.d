@@ -67,3 +67,7 @@ lora-stpm32\freertos.o: ../Inc/STPM32_AddressMap.h
 lora-stpm32\freertos.o: ../Inc/LoRa.h
 lora-stpm32\freertos.o: ../Inc/HAL_LoRaMAC.h
 lora-stpm32\freertos.o: ../Inc/Commissioning.h
+lora-stpm32\freertos.o: ../Drivers/LoRaMAC/mac/LoRaMac.h
+lora-stpm32\freertos.o: ../Drivers/LoRaMAC/system/timer.h
+lora-stpm32\freertos.o: ../Drivers/LoRaMAC/radio/radio.h
+lora-stpm32\freertos.o: ../Drivers/LoRaMAC/mac/region/Region.h

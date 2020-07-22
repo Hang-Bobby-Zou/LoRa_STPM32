@@ -14,7 +14,8 @@
 /*	It also contains function prototypes that are easily forgotten						*/
 /*============================================================================*/
 
-#include "main.h"
+//#include "main.h"
+#include <stdlib.h>
 
 //__HAL_UART_FLUSH_DRREGISTER(&huart3);
 

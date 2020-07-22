@@ -1,4 +1,16 @@
 
+#include <stdint.h>
+
+/*!
+ * User application data buffer size
+ */
+#define LORAWAN_APP_DATA_MAX_SIZE                           242
+
+/*!
+ * User application data
+ */
+static uint8_t AppData[LORAWAN_APP_DATA_MAX_SIZE];
+
 
 /*!
  * Device states

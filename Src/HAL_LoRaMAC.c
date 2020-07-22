@@ -106,15 +106,6 @@ static uint8_t AppPort = LORAWAN_APP_PORT;
  */
 static uint8_t AppDataSize = 16;
 static uint8_t AppDataSizeBackup = 16;
-/*!
- * User application data buffer size
- */
-#define LORAWAN_APP_DATA_MAX_SIZE                           242
-
-/*!
- * User application data
- */
-static uint8_t AppData[LORAWAN_APP_DATA_MAX_SIZE];
 
 /*!
  * Indicates if the node is sending confirmed or unconfirmed messages
@@ -824,7 +815,7 @@ int LoRaMAC_Send(void){
 
 		AppData[0] = 0xFF;
 		AppData[1] = 0xFF;
-		AppData[2] = 0x05;
+		AppData[2] = 0x09;
 		AppData[3] = 0xFF;
 		AppData[4] = 0xAA;
 		
@@ -863,16 +854,16 @@ if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
 		
 		if (status == LORAMAC_STATUS_OK ){
 			frame_count++; 
-			myprintf("Frame %lu Sent Success\r\n", (unsigned long) frame_count);
+			//myprintf("Frame %lu Sent Success\r\n", (unsigned long) frame_count);
 			DelayMsPoll(1000);
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){
-			myprintf("LoRaMAC Status Busy\r\n");
+			//myprintf("LoRaMAC Status Busy\r\n");
 			return -1;
 		}
 		else
 		{
-			myprintf("Frame ERROR (%d)(/%u)\r\n", status, frame_count);
+			//myprintf("Frame ERROR (%d)(/%u)\r\n", status, frame_count);
 			return -1;
 		}
 		

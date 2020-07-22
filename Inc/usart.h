@@ -45,7 +45,7 @@ void USART3_PINSET_S4(void);
 void USART3_PINSET_RX(void);
 void USART3_PINSET_TX(void);
 
-#define LOGLEVEL LOGINFO
+//#define LOGLEVEL LOGINFO
 
 enum log_levels{
 		LOGERROR 		= 3,

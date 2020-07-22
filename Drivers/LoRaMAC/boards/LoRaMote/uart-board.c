@@ -47,58 +47,59 @@ uint8_t UartMcuGetBuffer( Uart_t *obj, uint8_t *buffer, uint16_t size, uint16_t 
 /*                   USER FUNCTIONS				                                    */
 /*============================================================================*/
 //Migrated form freertos.c
-void HAL_UART_TxCpltCallback( UART_HandleTypeDef *handle )
-{
-	if (handle == &huart1){
-		USART1_TxFlag = 1;
-	}
-	
-	if (handle == &huart3){
-		USART3_TxFlag = 1;
-	}
-	
-	/*
-	if( IsFifoEmpty( &Uart1.FifoTx ) == false )
-    {
-        TxData = FifoPop( &Uart1.FifoTx );
-        //  Write one byte to the transmit data register
-        HAL_UART_Transmit_IT( &UartHandle, &TxData, 1 );
-    }
 
-    if( Uart1.IrqNotify != NULL )
-    {
-        Uart1.IrqNotify( UART_NOTIFY_TX );
-    }
-	*/
-}
-
-void HAL_UART_RxCpltCallback( UART_HandleTypeDef *handle )
-{
-		//Migrated from freertos.c
-		if (handle == &huart1){
-			USART1_RxFlag = 1;
-		}
+// void HAL_UART_TxCpltCallback( UART_HandleTypeDef *handle )
+// {
+// 	if (handle == &huart1){
+// 		USART1_TxFlag = 1;
+// 	}
 	
-		if (handle == &huart3){
-			USART3_RxFlag = 1;
-		}
+// 	if (handle == &huart3){
+// 		USART3_TxFlag = 1;
+// 	}
+	
+// 	/*
+// 	if( IsFifoEmpty( &Uart1.FifoTx ) == false )
+//     {
+//         TxData = FifoPop( &Uart1.FifoTx );
+//         //  Write one byte to the transmit data register
+//         HAL_UART_Transmit_IT( &UartHandle, &TxData, 1 );
+//     }
+
+//     if( Uart1.IrqNotify != NULL )
+//     {
+//         Uart1.IrqNotify( UART_NOTIFY_TX );
+//     }
+// 	*/
+// }
+
+// void HAL_UART_RxCpltCallback( UART_HandleTypeDef *handle )
+// {
+// 		//Migrated from freertos.c
+// 		if (handle == &huart1){
+// 			USART1_RxFlag = 1;
+// 		}
+	
+// 		if (handle == &huart3){
+// 			USART3_RxFlag = 1;
+// 		}
 	
 	
-	/*
-	if( IsFifoFull( &Uart1.FifoRx ) == false )
-    {
-        // Read one byte from the receive data register
-        FifoPush( &Uart1.FifoRx, RxData );
-    }
+// 	/*
+// 	if( IsFifoFull( &Uart1.FifoRx ) == false )
+//     {
+//         // Read one byte from the receive data register
+//         FifoPush( &Uart1.FifoRx, RxData );
+//     }
 
-    if( Uart1.IrqNotify != NULL )
-    {
-        Uart1.IrqNotify( UART_NOTIFY_RX );
-    }
+//     if( Uart1.IrqNotify != NULL )
+//     {
+//         Uart1.IrqNotify( UART_NOTIFY_RX );
+//     }
 
-    HAL_UART_Receive_IT( &UartHandle, &RxData, 1 );
-	*/
-}
+//     HAL_UART_Receive_IT( &UartHandle, &RxData, 1 );
+// 	*/
+// }
 
 //void HAL_UART_ErrorCallback( UART_HandleTypeDef *handle )
 //{

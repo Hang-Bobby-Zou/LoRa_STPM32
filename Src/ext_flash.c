@@ -116,7 +116,7 @@ do {												\
 #define MANUFACTURER_MXIC     	0xC2
 
 // Configure info name "LOGELEVEL"
-#define LOGLEVEL LOGINFO
+//#define LOGLEVEL LOGINFO
 
 /*============================================================================*/
 /*                   TYPE DEFINITION                                          */
