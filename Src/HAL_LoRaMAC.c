@@ -23,6 +23,7 @@ LoRaMacCallback_t LoRaMacCallbacks;
 MibRequestConfirm_t mibReq;
 
 uint32_t frame_count = 0;
+extern uint8_t aRxBuffer[8];
 
 #define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
 
@@ -812,13 +813,13 @@ int LoRaMAC_Send(void){
   //{
 		
 		//PrepareTxFrame( AppPort );
-
-		AppData[0] = 0xFF;
-		AppData[1] = 0xFF;
-		AppData[2] = 0x09;
-		AppData[3] = 0xFF;
+	
+		AppData[0] = aRxBuffer[0];
+		AppData[1] = aRxBuffer[1];
+		AppData[2] = aRxBuffer[2];
+		AppData[3] = aRxBuffer[3];
 		AppData[4] = 0xAA;
-		
+	
 		AppDataSize = 5;
 		
 if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )

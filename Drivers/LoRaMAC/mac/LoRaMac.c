@@ -3441,3 +3441,7 @@ uint32_t LoRaMacGetState(void)
     return (uint32_t)LoRaMacState;
 }
 
+void LoRa_ForceSetIDLE(void){
+		LoRaMacState = LORAMAC_IDLE;
+}
+

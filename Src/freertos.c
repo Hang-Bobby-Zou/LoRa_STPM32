@@ -91,6 +91,8 @@ uint8_t i[1] = {0x2E};
 int count = 0;
 uint16_t FlashPointer = 0x00;
 
+uint8_t aRxBuffer[8];
+
 //Raw data from STPM32 defines
 uint8_t PH_Period								[5] = {0};
 uint8_t CH1_RMS									[5] = {0};
@@ -400,9 +402,7 @@ void StartUSART1(void const * argument)
 		
 		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));		//Runing delay
 */
-		USART3_PINSET_TX();
-		myprintf("STPM32 Running\r\n");
-		USART3_PINSET_RX();
+		
 		vTaskDelay (pdMS_TO_TICKS( 1000 ));
 
 		osDelay(1);
@@ -421,7 +421,7 @@ void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
   USART3_Priority = uxTaskPriorityGet( NULL );
-	uint8_t aRxBuffer[8];
+
 	/* Infinite loop */
   for(;;)
   {		
@@ -454,14 +454,15 @@ void StartUSART3(void const * argument)
 			USART3_PINSET_TX();
 			HAL_UART_Transmit(&huart3, aRxBuffer, 4, 0xFFFF);
 			USART3_PINSET_RX();
-			//myprintf("Saving to AppData for LoRa...\r\n");
 			
+			/*
 			AppData[0] = aRxBuffer[0];
 			AppData[1] = aRxBuffer[1];
 			AppData[2] = aRxBuffer[2];
 			AppData[3] = aRxBuffer[3];
+			*/
 			
-			//LoRaMacState = LORAMAC_IDLE;
+			LoRa_ForceSetIDLE();
 			
 			USART3_RxFlag = 0;
 		}
@@ -492,11 +493,13 @@ void StartSPI2(void const * argument)
 	LoRaMAC_Join();
 	myprintf("LoRaMAC Join Done. \r\n");
 
+
+	
 	/* Infinite loop */
   for(;;)
   {
 		//if (loramac_send_retry_count == LORAMAC_SEND_RETRY_COUNT_MAX){
-		//	myprintf("LoRa tried %d times. \r\n",LORAMAC_SEND_RETRY_COUNT_MAX);
+		//	loramac_send_retry_count = 0;
 		//}
 		
 		if(LoRaMAC_Send() == -1){ //If send was not successful
