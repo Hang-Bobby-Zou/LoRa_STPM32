@@ -22,7 +22,7 @@
  */
 #include "uart-board.h"
 #include "uart.h"
-
+/*
 void UartInit( Uart_t *obj, UartId_t uartId, PinNames tx, PinNames rx )
 {
     if( obj->IsInitialized == false )
@@ -62,3 +62,4 @@ uint8_t UartGetBuffer( Uart_t *obj, uint8_t *buffer, uint16_t size, uint16_t *nb
 {
     return UartMcuGetBuffer( obj, buffer, size, nbReadBytes );
 }
+*/

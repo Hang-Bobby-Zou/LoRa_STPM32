@@ -72,7 +72,7 @@
 uint8_t loramac_send_retry_count = 0;
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
 
-int LoRa_Block_Time = 1000;
+int LoRa_Block_Time = 5000;
 
 
 /* USER CODE END PD */
@@ -274,6 +274,7 @@ void StartUSART1(void const * argument)
 {
   /* USER CODE BEGIN StartUSART1 */
   USART1_Priority = uxTaskPriorityGet( NULL );
+	myprintf("Task - USART1\r\n");
 	/* Infinite loop */
   for(;;)
   {		
@@ -282,9 +283,7 @@ void StartUSART1(void const * argument)
 			i[0] = 0x2E;
 			
 			FlashPointer += 0x08;
-			USART3_PINSET_TX();
 			myprintf("Blocking USART1 for 3 seconds\r\n\r\n");
-			USART3_PINSET_RX();
 			
 			vTaskDelay (pdMS_TO_TICKS( 3000 ));	//If walks around for 1 term, then block itself for 1 sec for users to read something
 		}
@@ -416,6 +415,7 @@ void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
   USART3_Priority = uxTaskPriorityGet( NULL );
+	myprintf("Task - USART3\r\n");
 	uint8_t aRxBuffer[8];
 	/* Infinite loop */
   for(;;)
@@ -460,6 +460,8 @@ void StartSPI2(void const * argument)
 {
   /* USER CODE BEGIN StartSPI2 */
   SPI2_Priority = uxTaskPriorityGet( NULL );
+	myprintf("Task - SPI2\r\n");
+	
 	myprintf("LoRaMAC Init...\r\n");
 	LoRaMAC_Init();
 	myprintf("LoRaMAC Init Done. \r\n");
@@ -483,10 +485,13 @@ void StartSPI2(void const * argument)
 			loramac_send_retry_count = 0;
 		}
 		
-		HAL_Delay(5000);
-		osDelay(1);
+		HAL_Delay(100);
 		
 		//vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time ));
+		
+		osDelay(1);
+		
+		
   }
   /* USER CODE END StartSPI2 */
 }

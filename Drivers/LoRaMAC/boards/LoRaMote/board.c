@@ -72,7 +72,7 @@ Uart_t UartUsb;
 /*!
  * System Clock Re-Configuration when waking up from STOP mode
  */
-static void SystemClockReConfig( void );
+void SystemClockReConfig( void );
 
 /*!
  * Timer used at first boot to calibrate the SystemWakeupTime
@@ -92,7 +92,7 @@ static bool SystemWakeupTimeCalibrated = false;
 /*!
  * Callback indicating the end of the system wake-up time calibration
  */
-static void OnCalibrateSystemWakeupTimeTimerEvent( void )
+void OnCalibrateSystemWakeupTimeTimerEvent( void )
 {
     SystemWakeupTimeCalibrated = true;
 }
@@ -119,10 +119,7 @@ void BoardEnableIrq( void )
     }
 }
 
-void BoardInitPeriph( void )
-{
-
-}
+void BoardInitPeriph( void ){ }
 
 void BoardInitMcu( void )
 {
@@ -156,15 +153,9 @@ void BoardInitMcu( void )
 	
 }
 
-void BoardResetMcu( void )
-{
-    
-}
+void BoardResetMcu( void ){ }
 
-void BoardDeInitMcu( void )
-{
-
-}
+void BoardDeInitMcu( void ){ }
 
 uint32_t BoardGetRandomSeed( void )
 {
@@ -207,25 +198,13 @@ void BoardGetUniqueId( uint8_t *id )
 
 //static uint16_t BatteryVoltage = BATTERY_MAX_LEVEL;
 
-uint16_t BoardBatteryMeasureVolage( void )
-{
-    return 0;
-}
+uint16_t BoardBatteryMeasureVolage( void ){return 0;}
 
-uint32_t BoardGetBatteryVoltage( void )
-{
-    return 0;
-}
+uint32_t BoardGetBatteryVoltage( void ){return 0;}
 
-uint8_t BoardGetBatteryLevel( void )
-{
-    return 0;
-}
+uint8_t BoardGetBatteryLevel( void ){return 0;}
 
-void SystemClockReConfig( void )
-{
-
-}
+void SystemClockReConfig( void ){ }
 
 //void SysTick_Handler( void )
 //{
@@ -233,21 +212,7 @@ void SystemClockReConfig( void )
 //    HAL_SYSTICK_IRQHandler( );
 //}
 
-uint8_t GetBoardPowerSource( void )
-{
-#if defined( USE_USB_CDC )
-    if( UartUsbIsUsbCableConnected( ) == 0 )
-    {
-        return BATTERY_POWER;
-    }
-    else
-    {
-        return USB_POWER;
-    }
-#else
-    return BATTERY_POWER;
-#endif
-}
+uint8_t GetBoardPowerSource( void ){return 0;}
 
 
 

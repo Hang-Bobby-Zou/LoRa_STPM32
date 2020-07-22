@@ -28,24 +28,20 @@
 #if defined( BOARD_IOE_EXT )
 #include "gpio-ioe.h"
 #endif
+#include "HAL_gpio.h"
 
 static GpioIrqHandler *GpioIrq[16];
 
-void GpioMcuInit( Gpio_t *obj, PinNames pin, PinModes mode, PinConfigs config, PinTypes type, uint32_t value )
-{
+/*============================================================================*/
+/*                   UNUSED FUNCTIONS			                                    */
+/*============================================================================*/
+void GpioMcuInit( Gpio_t *obj, PinNames pin, PinModes mode, PinConfigs config, PinTypes type, uint32_t value ){ }
+void GpioMcuSetInterrupt( Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler ){ }
+void GpioMcuRemoveInterrupt( Gpio_t *obj ){ }
 
-}
-
-void GpioMcuSetInterrupt( Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler )
-{
-
-}
-
-void GpioMcuRemoveInterrupt( Gpio_t *obj )
-{
-
-}
-
+/*============================================================================*/
+/*                   USER FUNCTIONS																						*/
+/*============================================================================*/
 void GpioMcuWrite( Gpio_t *obj, uint32_t value )
 {
         if( ( obj == NULL ) || ( obj->port == NULL ) )
@@ -97,74 +93,79 @@ uint32_t GpioMcuRead( Gpio_t *obj )
     }
 }
 
+
 void EXTI0_IRQHandler( void )
 {
-#if !defined( USE_NO_TIMER )
-    RtcRecoverMcuStatus( );
-#endif
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_0 );
+//#if !defined( USE_NO_TIMER )
+//    RtcRecoverMcuStatus( );
+//#endif
+    HAL_GPIO_EXTI_IRQHandler(GPIO_SX1276_DIO0_PIN);
 }
 
 void EXTI1_IRQHandler( void )
 {
-#if !defined( USE_NO_TIMER )
-    RtcRecoverMcuStatus( );
-#endif
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_1 );
+//#if !defined( USE_NO_TIMER )
+//    RtcRecoverMcuStatus( );
+//#endif
+    HAL_GPIO_EXTI_IRQHandler(GPIO_SX1276_DIO1_PIN);
 }
 
 void EXTI2_IRQHandler( void )
 {
-#if !defined( USE_NO_TIMER )
-    RtcRecoverMcuStatus( );
-#endif
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_2 );
+//#if !defined( USE_NO_TIMER )
+//    RtcRecoverMcuStatus( );
+//#endif
+    HAL_GPIO_EXTI_IRQHandler(GPIO_SX1276_DIO2_PIN);
 }
 
 void EXTI3_IRQHandler( void )
 {
-#if !defined( USE_NO_TIMER )
-    RtcRecoverMcuStatus( );
-#endif
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_3 );
+//#if !defined( USE_NO_TIMER )
+//    RtcRecoverMcuStatus( );
+//#endif
+    HAL_GPIO_EXTI_IRQHandler(GPIO_SX1276_DIO3_PIN);
 }
 
 void EXTI4_IRQHandler( void )
 {
-#if !defined( USE_NO_TIMER )
-    RtcRecoverMcuStatus( );
-#endif
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_4 );
+//#if !defined( USE_NO_TIMER )
+//    RtcRecoverMcuStatus( );
+//#endif
+    HAL_GPIO_EXTI_IRQHandler(GPIO_SX1276_DIO4_PIN);
 }
 
 void EXTI9_5_IRQHandler( void )
 {
-#if !defined( USE_NO_TIMER )
-    RtcRecoverMcuStatus( );
-#endif
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_5 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_6 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_7 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_8 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_9 );
+//#if !defined( USE_NO_TIMER )
+//    RtcRecoverMcuStatus( );
+//#endif
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_5 );
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_6 );
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_7 );
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_8 );
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_9 );
 }
 
 void EXTI15_10_IRQHandler( void )
 {
-#if !defined( USE_NO_TIMER )
-    RtcRecoverMcuStatus( );
-#endif
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_10 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_11 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_12 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_13 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_14 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_15 );
+//#if !defined( USE_NO_TIMER )
+//    RtcRecoverMcuStatus( );
+//#endif
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_10 );
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_11 );
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_12 );
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_13 );
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_14 );
+//    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_15 );
+	HAL_GPIO_EXTI_IRQHandler(GPIO_SWITCH_PIN);
 }
+
+
 
 void HAL_GPIO_EXTI_Callback( uint16_t gpioPin )
 {
-    uint8_t callbackIndex = 0;
+
+	uint8_t callbackIndex = 0;
 
     if( gpioPin > 0 )
     {
@@ -179,4 +180,35 @@ void HAL_GPIO_EXTI_Callback( uint16_t gpioPin )
     {
         GpioIrq[callbackIndex]( );
     }
+
+/*
+switch(gpioPin)
+	{
+		case(GPIO_SX1276_DIO0_PIN):
+		{
+      GpioIrq[0]();
+			break;
+		}
+		case(GPIO_SX1276_DIO1_PIN):
+		{
+      GpioIrq[1]();
+			break;
+		}
+		case(GPIO_SX1276_DIO2_PIN):
+		{
+      GpioIrq[2]();
+			break;
+		}
+		case(GPIO_SX1276_DIO3_PIN):
+		{
+      GpioIrq[3]();
+			break;
+		}
+		case(GPIO_SX1276_DIO4_PIN):
+		{
+      GpioIrq[4]();
+			break;
+		}	
+	}
+*/
 }

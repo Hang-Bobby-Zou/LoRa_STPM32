@@ -77,6 +77,12 @@
 #define GPIO_SX1276_DIO5_PORT                   GPIOA
 #define GPIO_SX1276_DIO5_CLK_ENABLE()           __HAL_RCC_GPIOA_CLK_ENABLE()
 #define GPIO_SX1276_DIO5_IRQn                   EXTI5_IRQn
+
+#define GPIO_SWITCH_PIN                         GPIO_PIN_15
+#define GPIO_SWITCH_PORT                        GPIOA
+#define GPIO_SWITCH_CLK_ENABLE()                __HAL_RCC_GPIOA_CLK_ENABLE()
+#define GPIO_SWITCH_CLK_DISABLE()               __HAL_RCC_GPIOA_CLK_DISABLE()
+#define GPIO_SWITCH_IRQn                        EXTI15_10_IRQn
 /* USER CODE END Private defines */
 
 void MX_GPIO_Init(void);

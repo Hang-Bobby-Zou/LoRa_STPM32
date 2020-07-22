@@ -134,17 +134,7 @@ static TimerEvent_t TxNextPacketTimer;
 /*!
  * Specifies the state of the application LED
  */
-static bool AppLedStateOn = false;
-
-/*!
- * Timer to handle the state of LED1
- */
-//static TimerEvent_t Led1Timer;
-
-/*!
- * Timer to handle the state of LED2
- */
-//static TimerEvent_t Led2Timer;
+bool AppLedStateOn = false;
 
 /*!
  * Indicates if a new packet can be sent
@@ -175,10 +165,13 @@ struct ComplianceTest_s
 //extern Gpio_t Led2;
 //extern Gpio_t Led3;
 
+static LoRaMacStatus_t status;
+
+
 /*!
  * \brief   Prepares the payload of the frame
  */
-static void PrepareTxFrame( uint8_t port )
+void PrepareTxFrame( uint8_t port )
 {
     const LoRaMacRegion_t region = ACTIVE_REGION;
 
@@ -235,7 +228,7 @@ static void PrepareTxFrame( uint8_t port )
  *
  * \retval  [0: frame could be send, 1: error]
  */
-static bool SendFrame( void )
+bool SendFrame( void )
 {
     McpsReq_t mcpsReq;
     LoRaMacTxInfo_t txInfo;
@@ -695,8 +688,6 @@ void LoRaMAC_Init(void){
 
   //TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );	//Not added in Mei
 	
-	LoRaMacStatus_t status;
-	
 	mibReq.Type = MIB_ADR;
 	mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
 	status = LoRaMacMibSetRequestConfirm( &mibReq );
@@ -778,7 +769,7 @@ void LoRaMAC_Join(void){
 			DevAddr = randr( 0, 0x01FFFFFF );
     }
 
-		LoRaMacStatus_t status;
+		//static LoRaMacStatus_t status;
 		
     mibReq.Type = MIB_NET_ID;
     mibReq.Param.NetID = LORAWAN_NETWORK_ID;
@@ -833,7 +824,7 @@ int LoRaMAC_Send(void){
 
 		AppData[0] = 0xFF;
 		AppData[1] = 0xFF;
-		AppData[2] = 0x04;
+		AppData[2] = 0x05;
 		AppData[3] = 0xFF;
 		AppData[4] = 0xAA;
 		

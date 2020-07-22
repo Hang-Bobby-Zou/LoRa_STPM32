@@ -718,11 +718,6 @@
               <FilePath>..\Drivers\LoRaMAC\system\timer.c</FilePath>
             </File>
             <File>
-              <FileName>uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Drivers\LoRaMAC\system\uart.c</FilePath>
-            </File>
-            <File>
               <FileName>aes.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Drivers\LoRaMAC\system\crypto\aes.c</FilePath>

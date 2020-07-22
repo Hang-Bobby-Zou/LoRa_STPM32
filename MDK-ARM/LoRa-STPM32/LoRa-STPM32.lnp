@@ -61,7 +61,6 @@
 "lora-stpm32\fifo.o"
 "lora-stpm32\gpio.o"
 "lora-stpm32\timer.o"
-"lora-stpm32\uart.o"
 "lora-stpm32\aes.o"
 "lora-stpm32\cmac.o"
 "lora-stpm32\board.o"
