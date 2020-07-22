@@ -303,26 +303,26 @@ void RegionCN470InitDefaults( InitType_t type )
 //            ChannelsDefaultMask[4] = 0xFFFF;
 //            ChannelsDefaultMask[5] = 0xFFFF;
 #ifdef LORA_KIWI_MODE
-  ChannelsDefaultMask[0] = 0x00FF;  \\00-15
-  ChannelsDefaultMask[1] = 0x0000;  \\16-31 
-  ChannelsDefaultMask[2] = 0x0000;  \\32-47 
-  ChannelsDefaultMask[3] = 0x0000;  \\48-63 
-  ChannelsDefaultMask[4] = 0x0000;  \\64-79
-  ChannelsDefaultMask[5] = 0x0000;  \\80-95
+  ChannelsDefaultMask[0] = 0x00FF;  //00-15
+  ChannelsDefaultMask[1] = 0x0000;  //16-31 
+  ChannelsDefaultMask[2] = 0x0000;  //32-47 
+  ChannelsDefaultMask[3] = 0x0000;  //48-63 
+  ChannelsDefaultMask[4] = 0x0000;  //64-79
+  ChannelsDefaultMask[5] = 0x0000;  //80-95
 #elif defined( LORA_PICO_MODE )
-  ChannelsDefaultMask[0] = 0x0003;  \\00-15
-  ChannelsDefaultMask[1] = 0x0000;  \\16-31 
-  ChannelsDefaultMask[2] = 0x0000;  \\32-47 
-  ChannelsDefaultMask[3] = 0x0000;  \\48-63 
-  ChannelsDefaultMask[4] = 0x0000;  \\64-79
-  ChannelsDefaultMask[5] = 0x0000;  \\80-95						
+  ChannelsDefaultMask[0] = 0x0003;  //00-15
+  ChannelsDefaultMask[1] = 0x0000;  //16-31 
+  ChannelsDefaultMask[2] = 0x0000;  //32-47 
+  ChannelsDefaultMask[3] = 0x0000;  //48-63 
+  ChannelsDefaultMask[4] = 0x0000;  //64-79
+  ChannelsDefaultMask[5] = 0x0000;  //80-95						
 #elif defined( LORA_CLAA_MODE )
-  ChannelsDefaultMask[0] = 0x0000;  \\00-15
-  ChannelsDefaultMask[1] = 0x0000;  \\16-31 
-  ChannelsDefaultMask[2] = 0x0000;  \\32-47 
-	ChannelsDefaultMask[3] = 0xF000;  \\48-63 
-  ChannelsDefaultMask[4] = 0x000F;  \\64-79
-  ChannelsDefaultMask[5] = 0x0000;  \\80-95							
+  ChannelsDefaultMask[0] = 0x0000;  //00-15
+  ChannelsDefaultMask[1] = 0x0000;  //16-31 
+  ChannelsDefaultMask[2] = 0x0000;  //32-47 
+	ChannelsDefaultMask[3] = 0xF000;  //48-63 
+  ChannelsDefaultMask[4] = 0x000F;  //64-79
+  ChannelsDefaultMask[5] = 0x0000;  //80-95							
 #else						
   ChannelsDefaultMask[0] = 0xFFFF;
   ChannelsDefaultMask[1] = 0xFFFF;

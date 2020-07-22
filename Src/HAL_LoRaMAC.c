@@ -17,7 +17,6 @@
 #define REGION_CN470
 #define ACTIVE_REGION	LORAMAC_REGION_CN470
 #define LORAWAN_DEVICE_CLASS         CLASS_A
-#define LORA_KIWI_MODE
 
 LoRaMacPrimitives_t LoRaMacPrimitives;
 LoRaMacCallback_t LoRaMacCallbacks;
@@ -834,7 +833,7 @@ int LoRaMAC_Send(void){
 
 		AppData[0] = 0xFF;
 		AppData[1] = 0xFF;
-		AppData[2] = 0x01;
+		AppData[2] = 0x04;
 		AppData[3] = 0xFF;
 		AppData[4] = 0xAA;
 		

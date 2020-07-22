@@ -336,7 +336,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32L433xx</Define>
+              <Define>USE_HAL_DRIVER,STM32L433xx,LORA_KIWI_MODE</Define>
               <Undefine></Undefine>
               <IncludePath>../Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/LoRaMAC/boards;../Drivers/LoRaMAC/mac;../Drivers/LoRaMAC/radio;../Drivers/LoRaMAC/system;../Drivers/LoRaMAC/system/crypto;../Drivers/LoRaMAC/peripherals;../Drivers/LoRaMAC/radio/sx1276</IncludePath>
             </VariousControls>

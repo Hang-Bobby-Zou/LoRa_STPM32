@@ -170,7 +170,30 @@
           <ExecCommand></ExecCommand>
           <Expression>\\LoRa_STPM32\../Src/freertos.c\464</Expression>
         </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>544</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134251688</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Drivers\LoRaMAC\mac\region\RegionCN470.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/mac/region/RegionCN470.c\544</Expression>
+        </Bp>
       </Breakpoint>
+      <WatchWindow1>
+        <Ww>
+          <count>0</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>txConfig</ItemText>
+        </Ww>
+      </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
