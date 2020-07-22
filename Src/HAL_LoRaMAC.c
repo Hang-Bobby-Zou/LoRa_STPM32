@@ -834,7 +834,7 @@ int LoRaMAC_Send(void){
 
 		AppData[0] = 0xFF;
 		AppData[1] = 0xFF;
-		AppData[2] = 0x00;
+		AppData[2] = 0x01;
 		AppData[3] = 0xFF;
 		AppData[4] = 0xAA;
 		

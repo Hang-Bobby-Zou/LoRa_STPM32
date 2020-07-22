@@ -251,7 +251,6 @@ void SX1276Init( RadioEvents_t *events )
 
 		uint8_t data = SX1276Read( 0x42 );
 		
-	
     RxChainCalibration( );
 		
     SX1276SetOpMode( RF_OPMODE_SLEEP );
