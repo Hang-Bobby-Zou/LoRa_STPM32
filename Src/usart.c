@@ -235,7 +235,7 @@ void HAL_UART_SendBytes(USART_TypeDef* usartx, char * str, uint16_t count){
 
 
 void myprintf(char *fmt,...){
-	char string[2048];
+	char string[512];
 	
 	va_list ap;
 	
@@ -244,7 +244,10 @@ void myprintf(char *fmt,...){
 	va_end(ap);
 	
 	
+	
+	USART3_PINSET_TX();
 	HAL_UART_SendBytes(huart3.Instance, string, strlen(string));
+	USART3_PINSET_RX();
 	
 	HAL_Delay(1);
 

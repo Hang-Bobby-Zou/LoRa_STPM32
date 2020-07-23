@@ -3445,3 +3445,10 @@ void LoRa_ForceSetIDLE(void){
 		LoRaMacState = LORAMAC_IDLE;
 }
 
+bool LoRa_CheckStateIDLE(void){
+	if (LoRaMacGetState() == LORAMAC_IDLE)
+		return true;
+	else 
+		return false;
+}
+

@@ -110,6 +110,7 @@
 /*============================================================================*/
 uint32_t LoRaMacGetState(void);
 void LoRa_ForceSetIDLE(void);
+bool LoRa_CheckStateIDLE(void);
 /*!
  * Check the Mac layer state every MAC_STATE_CHECK_TIMEOUT in ms
  */

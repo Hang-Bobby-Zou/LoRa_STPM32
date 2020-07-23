@@ -19,6 +19,8 @@
 
 //__HAL_UART_FLUSH_DRREGISTER(&huart3);
 
+//HAL_NVIC_DisableIRQ(USART3_IRQn);
+
 //if (huart1.Instance == USART1){
 
 //vTaskSuspend(USART1Handle);

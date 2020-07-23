@@ -99,24 +99,24 @@ uint8_t loramac_send_retry_count = 0;
 int LoRa_Block_Time = 5000;
 
 //Raw data from STPM32 defines
-uint8_t PH_Period								[5] = {0};
-uint8_t CH1_RMS									[5] = {0};
-uint8_t C1_PHA									[5] = {0};
+static uint8_t PH_Period								[5] = {0};
+static uint8_t CH1_RMS									[5] = {0};
+static uint8_t C1_PHA									[5] = {0};
 
-uint8_t PH1_Active_Energy				[5] = {0};
-uint8_t PH1_Fundamental_Energy	[5] = {0};
-uint8_t PH1_Reactive_Energy			[5] = {0};
-uint8_t PH1_Apparent_Energy			[5] = {0};
+static uint8_t PH1_Active_Energy				[5] = {0};
+static uint8_t PH1_Fundamental_Energy	[5] = {0};
+static uint8_t PH1_Reactive_Energy			[5] = {0};
+static uint8_t PH1_Apparent_Energy			[5] = {0};
 		
-uint8_t PH1_Active_Power				[5] = {0};
-uint8_t PH1_Fundamental_Power		[5] = {0};
-uint8_t PH1_Reactive_Power			[5] = {0};
-uint8_t	PH1_Apparent_RMS_Power	[5] = {0};
+static uint8_t PH1_Active_Power				[5] = {0};
+static uint8_t PH1_Fundamental_Power		[5] = {0};
+static uint8_t PH1_Reactive_Power			[5] = {0};
+static uint8_t	PH1_Apparent_RMS_Power	[5] = {0};
 
-uint8_t Total_Active_Energy			[5] = {0};
-uint8_t Total_Fundamental_Energy[5] = {0};
-uint8_t Total_Reactive_Energy		[5] = {0};
-uint8_t Total_Apparent_Energy		[5] = {0};
+static uint8_t Total_Active_Energy			[5] = {0};
+static uint8_t Total_Fundamental_Energy[5] = {0};
+static uint8_t Total_Reactive_Energy		[5] = {0};
+static uint8_t Total_Apparent_Energy		[5] = {0};
 
 UBaseType_t USART1_Priority;
 UBaseType_t USART3_Priority;
@@ -221,11 +221,11 @@ void MX_FREERTOS_Init(void) {
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
-  osThreadDef(USART3, StartUSART3, osPriorityAboveNormal, 0, 128);
+  osThreadDef(USART3, StartUSART3, osPriorityAboveNormal, 0, 256);
   USART3Handle = osThreadCreate(osThread(USART3), NULL);
 
   /* definition and creation of SPI2 */
-  osThreadDef(SPI2, StartSPI2, osPriorityHigh, 0, 128);
+  osThreadDef(SPI2, StartSPI2, osPriorityHigh, 0, 256);
   SPI2Handle = osThreadCreate(osThread(SPI2), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -265,7 +265,7 @@ void defaultIDLE(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    //Do nothing
+
 		osDelay(1);
   }
   /* USER CODE END defaultIDLE */
@@ -425,11 +425,11 @@ void StartUSART1(void const * argument)
 void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
-	HAL_UART_Receive_IT(&huart3, aRxBuffer, 4);
+	HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
 	/* Infinite loop */
   for(;;)
   {		
-/*
+		/*
 		if (USART3_RxFlag == 1){
 
 			char data[8] = {0};
@@ -453,6 +453,7 @@ void StartUSART3(void const * argument)
 		}
 */
 		if (USART3_RxFlag == 1){
+			vTaskSuspend(SPI2Handle);
 			
 			USART3_PINSET_TX();
 			HAL_UART_Transmit(&huart3, aRxBuffer, 4, 0xFFFF);
@@ -461,7 +462,9 @@ void StartUSART3(void const * argument)
 			LoRa_ForceSetIDLE();
 			
 			USART3_RxFlag = 0;
-			HAL_UART_Receive_IT(&huart3, aRxBuffer, 4);
+			HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
+			
+			vTaskResume(SPI2Handle);
 		}
 
 		osDelay(1); //This delay is in ms
@@ -481,46 +484,46 @@ void StartSPI2(void const * argument)
   /* USER CODE BEGIN StartSPI2 */
   SPI2_Priority = uxTaskPriorityGet( NULL );
 	
-	USART3_PINSET_TX();
 	myprintf("Task - SPI2\r\n");
 	myprintf("LoRaMAC Init...\r\n");
-	USART3_PINSET_RX();
+
 	
 	LoRaMAC_Init();
 	
-	USART3_PINSET_TX();
 	myprintf("LoRaMAC Init Done. \r\n");
 	myprintf("LoRaMAC Join...\r\n");
-	USART3_PINSET_RX();
-	
+
 	LoRaMAC_Join();
 	
-	USART3_PINSET_TX();
 	myprintf("LoRaMAC Join Done. \r\n");
-	USART3_PINSET_RX();
 
 	/* Infinite loop */
   for(;;)
   {
-		if(LoRaMAC_Send() == -1){ //If send was not successful
-		//if ( 1 ){
-			if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
-				loramac_send_retry_count ++;
-				USART3_PINSET_TX();
-				myprintf("\r\n LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
-				USART3_PINSET_RX();
-			}
+		if (LoRa_CheckStateIDLE() == true){
+				if(LoRaMAC_Send() == -1){ //If send was not successful
+				//if ( 1 ){
+					if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
+						loramac_send_retry_count ++;
+
+						myprintf("\r\n LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
+
+					}
+				} else {
+
+					myprintf("\r\n LoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
+
+					loramac_send_retry_count = 0;
+				
+				}
 		} else {
-			USART3_PINSET_TX();
-			myprintf("\r\n LoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
-			USART3_PINSET_RX();
-			loramac_send_retry_count = 0;
+
+			myprintf("USART3 has no new message. \r\n");
+
 		}
 		
-		//osDelay(1);
-		//vTaskDelay(pdMS_TO_TICKS( 5000 ));
-		vTaskDelay(10000);
-
+		vTaskDelay(pdMS_TO_TICKS( 5000 ));
+		
   }
   /* USER CODE END StartSPI2 */
 }
