@@ -24,6 +24,7 @@ MibRequestConfirm_t mibReq;
 
 uint32_t frame_count = 0;
 extern uint8_t aRxBuffer[8];
+extern uint32_t UpLinkCounter;
 
 #define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
 
@@ -126,7 +127,7 @@ static TimerEvent_t TxNextPacketTimer;
 /*!
  * Specifies the state of the application LED
  */
-bool AppLedStateOn = false;
+static bool AppLedStateOn = false;
 
 /*!
  * Indicates if a new packet can be sent
@@ -809,8 +810,8 @@ int LoRaMAC_Send(void){
 	}
 	
 	
-	//if( NextTx == true )
-  //{
+	if( NextTx == true )
+  {
 		
 		//PrepareTxFrame( AppPort );
 	
@@ -854,9 +855,9 @@ if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
 		status = LoRaMacMcpsRequest( &mcpsReq ); 
 		
 		if (status == LORAMAC_STATUS_OK ){
-			frame_count++; 
+			frame_count++;
+			UpLinkCounter++;
 			//myprintf("Frame %lu Sent Success\r\n", (unsigned long) frame_count);
-			DelayMsPoll(1000);
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){
 			//myprintf("LoRaMAC Status Busy\r\n");
@@ -868,6 +869,6 @@ if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
 			return -1;
 		}
 		
-  //}
+  }
 }
 

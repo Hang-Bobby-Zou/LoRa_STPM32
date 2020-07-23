@@ -70,10 +70,9 @@
 #define V1_Low_Threshold 		200.0
 #define V1_High_Threshold		270.0
 
-uint8_t loramac_send_retry_count = 0;
+
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
 
-int LoRa_Block_Time = 5000;
 
 #define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
 /* USER CODE END PD */
@@ -91,7 +90,13 @@ uint8_t i[1] = {0x2E};
 int count = 0;
 uint16_t FlashPointer = 0x00;
 
-uint8_t aRxBuffer[8];
+uint8_t aRxBuffer[8] = {0};
+
+static int USART3_RxFlag = 0;
+static int USART3_TxFlag = 0;
+
+uint8_t loramac_send_retry_count = 0;
+int LoRa_Block_Time = 5000;
 
 //Raw data from STPM32 defines
 uint8_t PH_Period								[5] = {0};
@@ -403,7 +408,7 @@ void StartUSART1(void const * argument)
 		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));		//Runing delay
 */
 		
-		vTaskDelay (pdMS_TO_TICKS( 1000 ));
+		//vTaskDelay (pdMS_TO_TICKS( 1000 ));
 
 		osDelay(1);
   	}
@@ -420,12 +425,10 @@ void StartUSART1(void const * argument)
 void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
-  USART3_Priority = uxTaskPriorityGet( NULL );
-
+	HAL_UART_Receive_IT(&huart3, aRxBuffer, 4);
 	/* Infinite loop */
   for(;;)
   {		
-		HAL_UART_Receive_IT(&huart3, aRxBuffer, 4);
 /*
 		if (USART3_RxFlag == 1){
 
@@ -455,16 +458,10 @@ void StartUSART3(void const * argument)
 			HAL_UART_Transmit(&huart3, aRxBuffer, 4, 0xFFFF);
 			USART3_PINSET_RX();
 			
-			/*
-			AppData[0] = aRxBuffer[0];
-			AppData[1] = aRxBuffer[1];
-			AppData[2] = aRxBuffer[2];
-			AppData[3] = aRxBuffer[3];
-			*/
-			
 			LoRa_ForceSetIDLE();
 			
 			USART3_RxFlag = 0;
+			HAL_UART_Receive_IT(&huart3, aRxBuffer, 4);
 		}
 
 		osDelay(1); //This delay is in ms
@@ -483,51 +480,126 @@ void StartSPI2(void const * argument)
 {
   /* USER CODE BEGIN StartSPI2 */
   SPI2_Priority = uxTaskPriorityGet( NULL );
-
+	
+	USART3_PINSET_TX();
 	myprintf("Task - SPI2\r\n");
 	myprintf("LoRaMAC Init...\r\n");
-	LoRaMAC_Init();
-	myprintf("LoRaMAC Init Done. \r\n");
-		
-	myprintf("LoRaMAC Join...\r\n");
-	LoRaMAC_Join();
-	myprintf("LoRaMAC Join Done. \r\n");
-
-
+	USART3_PINSET_RX();
 	
+	LoRaMAC_Init();
+	
+	USART3_PINSET_TX();
+	myprintf("LoRaMAC Init Done. \r\n");
+	myprintf("LoRaMAC Join...\r\n");
+	USART3_PINSET_RX();
+	
+	LoRaMAC_Join();
+	
+	USART3_PINSET_TX();
+	myprintf("LoRaMAC Join Done. \r\n");
+	USART3_PINSET_RX();
+
 	/* Infinite loop */
   for(;;)
   {
-		//if (loramac_send_retry_count == LORAMAC_SEND_RETRY_COUNT_MAX){
-		//	loramac_send_retry_count = 0;
-		//}
-		
 		if(LoRaMAC_Send() == -1){ //If send was not successful
 		//if ( 1 ){
 			if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
 				loramac_send_retry_count ++;
 				USART3_PINSET_TX();
-				myprintf("LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
+				myprintf("\r\n LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
 				USART3_PINSET_RX();
 			}
 		} else {
 			USART3_PINSET_TX();
-			myprintf("LoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
+			myprintf("\r\n LoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
 			USART3_PINSET_RX();
 			loramac_send_retry_count = 0;
 		}
 		
-		DelayMsPoll(1000); // ms
-		
-		osDelay(1);
-		vTaskDelay (pdMS_TO_TICKS( 5000 ));
+		//osDelay(1);
+		//vTaskDelay(pdMS_TO_TICKS( 5000 ));
+		vTaskDelay(10000);
+
   }
   /* USER CODE END StartSPI2 */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+/**
+  * @brief Rx Transfer completed callbacks
+  * @param huart: uart handle
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  /* Prevent unused argument(s) compilation warning */
+  //UNUSED(huart);
+	
+	if (huart == &huart1){
+		USART1_RxFlag = 1;
+	}
+	
+	if (huart == &huart3){
+		USART3_RxFlag = 1;
+	}
+}
 
+/**
+  * @brief Tx Transfer completed callbacks
+  * @param huart: uart handle
+  * @retval None
+  */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+  /* Prevent unused argument(s) compilation warning */
+  //UNUSED(huart);
+	
+	if (huart == &huart1){
+		USART1_TxFlag = 1;
+	}
+	
+	if (huart == &huart3){
+		USART3_TxFlag = 1;
+	}
+	
+}
+
+/**
+  * @brief Tx Transfer completed callbacks
+  * @param hspi: spi handle
+  * @retval None
+  */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
+	/* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+	
+	if (hspi == &hspi1){
+		SPI1_TxFlag = 1;
+	}
+	
+	if (hspi == &hspi2){
+		SPI2_TxFlag = 1;
+	}
+}
+
+/**
+  * @brief Tx Rransfer completed callbacks
+  * @param hspi: spi handle
+  * @retval None
+  */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
+	/* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+	
+	if (hspi == &hspi1){
+		SPI1_RxFlag = 1;
+	}
+	
+	if (hspi == &hspi2){
+		SPI2_RxFlag = 1;
+	}
+	
+}
 
 /**
 * @brief Calculate and Print the Freq of the power line.
@@ -1098,91 +1170,6 @@ void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
 		dest[i] = src[i];
 	}
 }
-
-
-
-
-
-
-
-
-
-
-/**
-  * @brief Rx Transfer completed callbacks
-  * @param huart: uart handle
-  * @retval None
-  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-	
-	if (huart == &huart1){
-		USART1_RxFlag = 1;
-	}
-	
-	if (huart == &huart3){
-		USART3_RxFlag = 1;
-	}
-}
-
-/**
-  * @brief Tx Transfer completed callbacks
-  * @param huart: uart handle
-  * @retval None
-  */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-	
-	if (huart == &huart1){
-		USART1_TxFlag = 1;
-	}
-	
-	if (huart == &huart3){
-		USART3_TxFlag = 1;
-	}
-	
-}
-
-/**
-  * @brief Tx Transfer completed callbacks
-  * @param hspi: spi handle
-  * @retval None
-  */
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
-	/* Prevent unused argument(s) compilation warning */
-  UNUSED(hspi);
-	
-	if (hspi == &hspi1){
-		SPI1_TxFlag = 1;
-	}
-	
-	if (hspi == &hspi2){
-		SPI2_TxFlag = 1;
-	}
-}
-
-/**
-  * @brief Tx Rransfer completed callbacks
-  * @param hspi: spi handle
-  * @retval None
-  */
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
-	/* Prevent unused argument(s) compilation warning */
-  UNUSED(hspi);
-	
-	if (hspi == &hspi1){
-		SPI1_RxFlag = 1;
-	}
-	
-	if (hspi == &hspi2){
-		SPI2_RxFlag = 1;
-	}
-	
-}
-
-
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

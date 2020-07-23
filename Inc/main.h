@@ -106,9 +106,6 @@ static uint8_t UART1_Buffer[2];
 static int USART1_RxFlag = 0;
 static int USART1_TxFlag = 0;
 
-static int USART3_RxFlag = 0;
-static int USART3_TxFlag = 0;
-
 static int SPI1_RxFlag = 0;
 static int SPI1_TxFlag = 0;
 

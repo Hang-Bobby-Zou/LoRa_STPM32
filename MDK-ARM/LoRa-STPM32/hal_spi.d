@@ -40,3 +40,7 @@ lora-stpm32\hal_spi.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex
 lora-stpm32\hal_spi.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd.h
 lora-stpm32\hal_spi.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_usb.h
 lora-stpm32\hal_spi.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd_ex.h
+lora-stpm32\hal_spi.o: ../Inc/LoRa.h
+lora-stpm32\hal_spi.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+lora-stpm32\hal_spi.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+lora-stpm32\hal_spi.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

@@ -21,7 +21,7 @@
 #include "HAL_spi.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "LoRa.h"
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi1;
@@ -182,6 +182,7 @@ uint16_t SPI2_InOut(uint16_t data )
     uint8_t txData = 0;	  
 	  txData = (uint8_t)data;
     HAL_SPI_TransmitReceive(&hspi2,&txData,&rxData,1,1000);
+		//rxData = LoRa_ReadReg(txData);
     return( (uint16_t)rxData );	
 }
 

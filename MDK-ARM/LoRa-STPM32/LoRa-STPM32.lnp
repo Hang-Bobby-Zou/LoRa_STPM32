@@ -51,7 +51,7 @@
 "lora-stpm32\cmsis_os.o"
 "lora-stpm32\heap_4.o"
 "lora-stpm32\port.o"
-"lora-stpm32\loramac_1.o"
+"lora-stpm32\loramac.o"
 "lora-stpm32\loramaccrypto.o"
 "lora-stpm32\region.o"
 "lora-stpm32\regioncn470.o"

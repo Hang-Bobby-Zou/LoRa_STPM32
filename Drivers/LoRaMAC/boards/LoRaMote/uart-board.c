@@ -50,14 +50,6 @@ uint8_t UartMcuGetBuffer( Uart_t *obj, uint8_t *buffer, uint16_t size, uint16_t 
 
 // void HAL_UART_TxCpltCallback( UART_HandleTypeDef *handle )
 // {
-// 	if (handle == &huart1){
-// 		USART1_TxFlag = 1;
-// 	}
-	
-// 	if (handle == &huart3){
-// 		USART3_TxFlag = 1;
-// 	}
-	
 // 	/*
 // 	if( IsFifoEmpty( &Uart1.FifoTx ) == false )
 //     {
@@ -75,16 +67,6 @@ uint8_t UartMcuGetBuffer( Uart_t *obj, uint8_t *buffer, uint16_t size, uint16_t 
 
 // void HAL_UART_RxCpltCallback( UART_HandleTypeDef *handle )
 // {
-// 		//Migrated from freertos.c
-// 		if (handle == &huart1){
-// 			USART1_RxFlag = 1;
-// 		}
-	
-// 		if (handle == &huart3){
-// 			USART3_RxFlag = 1;
-// 		}
-	
-	
 // 	/*
 // 	if( IsFifoFull( &Uart1.FifoRx ) == false )
 //     {

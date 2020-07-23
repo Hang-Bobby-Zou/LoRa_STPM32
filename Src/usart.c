@@ -181,34 +181,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 /* USER CODE BEGIN 1 */
 //#ifdef LOGLEVEL
 
-uint8_t HAL_USART_GET_FLAG(USART_TypeDef* usartx, uint32_t flag){
-		if ((usartx->ISR & flag) == flag)
-			return 	SET;
-		else 
-			return 	RESET;
-}
-
-void HAL_UART_SendBytes(USART_TypeDef* usartx, char * str, uint16_t count){
-		uint16_t i = 0;
-		for (i = 0; i < count; i++){
-			usartx->TDR = (uint8_t)(str[i]);
-			while(HAL_USART_GET_FLAG(usartx,UART_FLAG_TC) == RESET);
-		}
-}
-
-static char string[2048];
-void myprintf(char *fmt,...){
-	va_list ap;
-	
-	va_start(ap,fmt);
-	vsprintf(string,fmt,ap);
-	va_end(ap);
-	
-	
-	//HAL_UART_SendBytes(huart3.Instance, string, strlen(string));
-
-}
-
 //#endif
 
 void USART3_PINSET_S1(void){
@@ -240,6 +212,45 @@ void USART3_PINSET_TX(void){
 		HAL_GPIO_WritePin(USART3__RE_GPIO_Port, USART3__RE_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(USART3_DE_GPIO_Port, USART3_DE_Pin, GPIO_PIN_SET);
 }
+
+
+uint8_t HAL_USART_GET_FLAG(USART_TypeDef* usartx, uint32_t flag){
+		if ((usartx->ISR & flag) == flag)
+			return 	SET;
+		else 
+			return 	RESET;
+}
+
+void HAL_UART_SendBytes(USART_TypeDef* usartx, char * str, uint16_t count){
+		uint16_t i = 0;
+		for (i = 0; i < count; i++){
+			usartx->TDR = (uint8_t)(str[i]);
+			while(HAL_USART_GET_FLAG(usartx,UART_FLAG_TC) == RESET);
+		}
+	
+		//USART3_PINSET_TX();
+		//HAL_UART_Transmit(&huart3, (uint8_t*)str, count, 0xFFFF);
+		//USART3_PINSET_RX();
+}
+
+
+void myprintf(char *fmt,...){
+	char string[2048];
+	
+	va_list ap;
+	
+	va_start(ap,fmt);
+	vsprintf(string,fmt,ap);
+	va_end(ap);
+	
+	
+	HAL_UART_SendBytes(huart3.Instance, string, strlen(string));
+	
+	HAL_Delay(1);
+
+	
+}
+
 
 /* USER CODE END 1 */
 
