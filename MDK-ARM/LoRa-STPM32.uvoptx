@@ -157,6 +157,38 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
+          <LineNumber>219</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134261868</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Drivers\LoRaMAC\system\timer.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/system/timer.c\219</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>232</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134261916</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Drivers\LoRaMAC\system\timer.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/system/timer.c\232</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
           <LineNumber>94</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>134232214</Address>
@@ -169,6 +201,38 @@
           <Filename>../Src/stm32l4xx_it.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\LoRa_STPM32\../Src/stm32l4xx_it.c\94</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>1254</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134239248</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Drivers\LoRaMAC\mac\LoRaMac.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/mac/LoRaMac.c\1254</Expression>
+        </Bp>
+        <Bp>
+          <Number>4</Number>
+          <Type>0</Type>
+          <LineNumber>1146</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134242666</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Drivers\LoRaMAC\mac\LoRaMac.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/mac/LoRaMac.c\1146</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -216,6 +280,21 @@
           <count>8</count>
           <WinNumber>1</WinNumber>
           <ItemText>aRxBuffer[3]</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>TimerListHead</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>LoRaMacFlags.Bits</ItemText>
+        </Ww>
+        <Ww>
+          <count>11</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>LoRaMacState</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -844,7 +923,7 @@
 
   <Group>
     <GroupName>Middlewares/FreeRTOS</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

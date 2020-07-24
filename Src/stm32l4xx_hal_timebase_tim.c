@@ -21,7 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_hal_tim.h"
- 
+#include "tim.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -73,11 +73,28 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   + ClockDivision = 0
   + Counter direction = Up
   */
+	
+	//
+	//TIM7_Clock = SystemCoreClock *2 / 8;
+	
   htim1.Init.Period = (1000000 / 1000) - 1;
-  htim1.Init.Prescaler = uwPrescalerValue;
+	//htim1.Init.Period = (uint32_t)TIM7_PERIOD; 
+	
+	htim1.Init.Prescaler = uwPrescalerValue;
+	//htim1.Init.Prescaler = (uint32_t)(TIM7_Clock / TIM7_COUNT_CLOCK) - 1;
+	
   htim1.Init.ClockDivision = 0;
+	//htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  if(HAL_TIM_Base_Init(&htim1) == HAL_OK)
+  
+	//
+	//TIM7_Irq_Num = 0;
+	//__HAL_TIM_CLEAR_IT(&htim1,TIM_IT_UPDATE);
+	//__HAL_TIM_SET_COUNTER(&htim1,0);
+	//
+	
+	if(HAL_TIM_Base_Init(&htim1) == HAL_OK)
   {
     /* Start the TIM time Base generation in interrupt mode */
     return HAL_TIM_Base_Start_IT(&htim1);

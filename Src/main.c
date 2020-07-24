@@ -35,6 +35,7 @@
 #include "LoRa.h"
 #include "stm32l4xx_it.h"
 #include "HAL_LoRaMAC.h"
+#include "timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -322,12 +323,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {
     HAL_IncTick();
+		
+		//TIM7_Irq_Num++;
+		//TimerIrqHandler();		
   }
   /* USER CODE BEGIN Callback 1 */
 	if(htim->Instance == TIM7)
 	{
 		TIM7_Irq_Num++;
-		TIM7_IRQHandler();	
+		//TIM7_IRQHandler();
+		TimerIrqHandler();		
 	}	
   /* USER CODE END Callback 1 */
 }

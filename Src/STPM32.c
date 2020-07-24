@@ -91,7 +91,7 @@ bool STPM32_Init(void) {
 		//First set everything low.
 		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_SET);				// EN	High
 		
-		HAL_Delay(3000);
+		HAL_Delay(500);
 		
 		HAL_GPIO_WritePin(CTRL_EN_GPIO_Port, CTRL_EN_Pin, GPIO_PIN_RESET);			// EN	Low
 		HAL_GPIO_WritePin(CTRL_SYNC_GPIO_Port, CTRL_SYNC_Pin, GPIO_PIN_RESET);	// SYNC Low

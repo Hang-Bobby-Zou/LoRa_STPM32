@@ -679,7 +679,7 @@ void LoRaMAC_Init(void){
 
   LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_CN470 );
 
-  //TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );	//Not added in Mei
+  TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );	//Not added in Mei
 	
 	mibReq.Type = MIB_ADR;
 	mibReq.Param.AdrEnable = LORAWAN_ADR_ON;

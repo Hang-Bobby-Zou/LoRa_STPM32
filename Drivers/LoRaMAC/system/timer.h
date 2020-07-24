@@ -124,10 +124,5 @@ void TimerLowPowerHandler( void );
  */
 void TimerProcess( void );
 
-/*!
- * Timer IRQ event handler
- */
-void TimerIrqHandler( void );
-
 
 #endif // __TIMER_H__

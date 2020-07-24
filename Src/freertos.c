@@ -453,18 +453,18 @@ void StartUSART3(void const * argument)
 		}
 */
 		if (USART3_RxFlag == 1){
-			vTaskSuspend(SPI2Handle);
+			//vTaskSuspend(SPI2Handle);
 			
 			USART3_PINSET_TX();
 			HAL_UART_Transmit(&huart3, aRxBuffer, 4, 0xFFFF);
 			USART3_PINSET_RX();
 			
-			LoRa_ForceSetIDLE();
+			//LoRa_ForceSetIDLE();
 			
 			USART3_RxFlag = 0;
 			HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
 			
-			vTaskResume(SPI2Handle);
+			//vTaskResume(SPI2Handle);
 		}
 
 		osDelay(1); //This delay is in ms
@@ -483,11 +483,9 @@ void StartSPI2(void const * argument)
 {
   /* USER CODE BEGIN StartSPI2 */
   SPI2_Priority = uxTaskPriorityGet( NULL );
-	
-	myprintf("Task - SPI2\r\n");
+
 	myprintf("LoRaMAC Init...\r\n");
 
-	
 	LoRaMAC_Init();
 	
 	myprintf("LoRaMAC Init Done. \r\n");
@@ -502,7 +500,6 @@ void StartSPI2(void const * argument)
   {
 		if (LoRa_CheckStateIDLE() == true){
 				if(LoRaMAC_Send() == -1){ //If send was not successful
-				//if ( 1 ){
 					if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
 						loramac_send_retry_count ++;
 

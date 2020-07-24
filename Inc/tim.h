@@ -29,7 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "stdbool.h"
 /* USER CODE END Includes */
-
+extern TIM_HandleTypeDef htim1; 
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim7;
 

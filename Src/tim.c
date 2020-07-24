@@ -23,7 +23,6 @@
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
-
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 
@@ -52,7 +51,6 @@ void MX_TIM6_Init(void)
 /* TIM7 init function */
 void MX_TIM7_Init(void)
 {
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
 
 	TIM7_Clock = SystemCoreClock *2 / 8;
 	
@@ -64,13 +62,6 @@ void MX_TIM7_Init(void)
   htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  
-	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
@@ -152,7 +143,10 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 uint32_t TIM7_GetTimeMs(void)
 {
 	uint32_t TimeValue = 0;
-  TimeValue = (uint32_t)(__HAL_TIM_GET_COUNTER(&htim7));
+  
+	TimeValue = (uint32_t)(__HAL_TIM_GET_COUNTER(&htim7));
+	//TimeValue = (uint32_t)(__HAL_TIM_GET_COUNTER(&htim1));
+	
 	TimeValue = TimeValue & 0xffff;
 	TimeValue = TimeValue + TIM7_Irq_Num * TIM7_PERIOD;
 	TimeValue *= 1000u;	//Convert in ms

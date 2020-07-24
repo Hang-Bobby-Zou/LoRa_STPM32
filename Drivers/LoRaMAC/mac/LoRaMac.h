@@ -114,7 +114,7 @@ bool LoRa_CheckStateIDLE(void);
 /*!
  * Check the Mac layer state every MAC_STATE_CHECK_TIMEOUT in ms
  */
-#define MAC_STATE_CHECK_TIMEOUT                     1000
+#define MAC_STATE_CHECK_TIMEOUT                     100
 
 /*!
  * Maximum number of times the MAC layer tries to get an acknowledge.
