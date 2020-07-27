@@ -1110,6 +1110,9 @@ void SX1276SetTx( uint32_t timeout )
     SX1276.Settings.State = RF_TX_RUNNING;
     TimerStart( &TxTimeoutTimer );
     SX1276SetOpMode( RF_OPMODE_TRANSMITTER );
+		
+		//HAL_Delay(1000);
+		
 }
 
 void SX1276StartCad( void )

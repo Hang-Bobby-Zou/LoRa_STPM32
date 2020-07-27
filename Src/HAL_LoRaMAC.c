@@ -25,6 +25,7 @@ MibRequestConfirm_t mibReq;
 uint32_t frame_count = 0;
 extern uint8_t aRxBuffer[8];
 extern uint32_t UpLinkCounter;
+extern LoRaMacFlags_t LoRaMacFlags;
 
 #define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
 
@@ -872,7 +873,6 @@ if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
     } 
 		
 		status = LoRaMacMcpsRequest( &mcpsReq ); 
-		
 		if (status == LORAMAC_STATUS_OK ){
 			frame_count++;
 			//UpLinkCounter++;

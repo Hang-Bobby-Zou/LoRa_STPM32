@@ -446,7 +446,7 @@ static void OnRadioRxTimeout( void );
 /*!
  * \brief Function executed on Resend Frame timer event.
  */
-static void OnMacStateCheckTimerEvent( void );
+void OnMacStateCheckTimerEvent( void );
 
 /*!
  * \brief Function executed on duty cycle delayed Tx  timer event
@@ -653,7 +653,8 @@ static void OpenContinuousRx2Window( void );
 
 static void OnRadioTxDone( void )
 {
-		DEBUG("OnRadioTxDone Event \r\n");
+		
+		DEBUG("OnRadioTxDone\r\n");
 	
 		GetPhyParams_t getPhy;
     PhyParam_t phyParam;
@@ -697,6 +698,8 @@ static void OnRadioTxDone( void )
             LoRaMacFlags.Bits.McpsReq = 1;
         }
         LoRaMacFlags.Bits.MacDone = 1;
+				
+				//TimerIrqHandler();
     }
 
     // Verify if the last uplink was a join request
@@ -724,7 +727,12 @@ static void OnRadioTxDone( void )
         McpsConfirm.Status = LORAMAC_EVENT_INFO_STATUS_OK;
         ChannelsNbRepCounter++;
     }
+		
+		//DEBUG("Entering OnMacStateCheckTimerEvent from OnRadioTxDone\r\n");
+		OnMacStateCheckTimerEvent();
+		//DEBUG("Exiting OnMacStateCheckTimerEvent from OnRadioTxDone\r\n");
 }
+
 
 static void PrepareRxDoneAbort( void )
 {
@@ -745,7 +753,8 @@ static void PrepareRxDoneAbort( void )
 
 static void OnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    LoRaMacHeader_t macHdr;
+    DEBUG("OnRadioRxDone\r\n");
+		LoRaMacHeader_t macHdr;
     LoRaMacFrameCtrl_t fCtrl;
     ApplyCFListParams_t applyCFList;
     GetPhyParams_t getPhy;
@@ -1148,7 +1157,8 @@ static void OnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t
 
 static void OnRadioTxTimeout( void )
 {
-    if( LoRaMacDeviceClass != CLASS_C )
+    DEBUG("OnRadioTxTimeout\r\n");
+		if( LoRaMacDeviceClass != CLASS_C )
     {
         Radio.Sleep( );
     }
@@ -1159,12 +1169,16 @@ static void OnRadioTxTimeout( void )
 
     McpsConfirm.Status = LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT;
     MlmeConfirm.Status = LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT;
-    LoRaMacFlags.Bits.MacDone = 1;
+		
+		LoRaMacState = LORAMAC_IDLE;
+		
+    //LoRaMacFlags.Bits.MacDone = 1;
 }
 
 static void OnRadioRxError( void )
 {
-    if( LoRaMacDeviceClass != CLASS_C )
+    DEBUG("OnRadioRxError\r\n");
+		if( LoRaMacDeviceClass != CLASS_C )
     {
         Radio.Sleep( );
     }
@@ -1208,7 +1222,8 @@ static void OnRadioRxError( void )
 
 static void OnRadioRxTimeout( void )
 {
-    if( LoRaMacDeviceClass != CLASS_C )
+    DEBUG("OnRadioRxTimeout\r\n");
+		if( LoRaMacDeviceClass != CLASS_C )
     {
         Radio.Sleep( );
     }
@@ -1250,16 +1265,22 @@ static void OnRadioRxTimeout( void )
     }
 }
 
-static void OnMacStateCheckTimerEvent( void )
+void OnMacStateCheckTimerEvent( void )
 {
-    GetPhyParams_t getPhy;
+		TimerStop( &MacStateCheckTimer );
+	
+		GetPhyParams_t getPhy;
     PhyParam_t phyParam;
     bool txTimeout = false;
 
-    TimerStop( &MacStateCheckTimer );
 
+		//HAL_Delay(1000);
+	
     if( LoRaMacFlags.Bits.MacDone == 1 ){
-        if( ( LoRaMacState & LORAMAC_RX_ABORT ) == LORAMAC_RX_ABORT ){
+			
+		DEBUG("LoRaMacFlags.Bits.MacDone == 1\r\n");	
+			
+			if( ( LoRaMacState & LORAMAC_RX_ABORT ) == LORAMAC_RX_ABORT ){
             LoRaMacState &= ~LORAMAC_RX_ABORT;
             LoRaMacState &= ~LORAMAC_TX_RUNNING;
         }
@@ -1454,7 +1475,8 @@ static void OnMacStateCheckTimerEvent( void )
 
 static void OnTxDelayedTimerEvent( void )
 {
-    TimerStop( &TxDelayedTimer );
+   	DEBUG("OnTxDelayedTimerEvent\r\n");
+		TimerStop( &TxDelayedTimer );
     LoRaMacState &= ~LORAMAC_TX_DELAYED;
 
     // Schedule frame, allow delayed frame transmissions
@@ -1463,7 +1485,8 @@ static void OnTxDelayedTimerEvent( void )
 
 static void OnRxWindow1TimerEvent( void )
 {
-    TimerStop( &RxWindowTimer1 );
+    DEBUG("OnRxWindow1TimerEvent\r\n");
+		TimerStop( &RxWindowTimer1 );
     RxSlot = RX_SLOT_WIN_1;
 
     RxWindow1Config.Channel = Channel;
@@ -1484,7 +1507,9 @@ static void OnRxWindow1TimerEvent( void )
 
 static void OnRxWindow2TimerEvent( void )
 {
-    TimerStop( &RxWindowTimer2 );
+		DEBUG("OnRxWindow2TimerEvent\r\n");
+	
+		TimerStop( &RxWindowTimer2 );
 
     RxWindow2Config.Channel = Channel;
     RxWindow2Config.Frequency = LoRaMacParams.Rx2Channel.Frequency;
@@ -1546,7 +1571,9 @@ static void CheckToDisableAckTimeout( bool nodeAckRequested, DeviceClass_t devCl
 
 static void OnAckTimeoutTimerEvent( void )
 {
-    TimerStop( &AckTimeoutTimer );
+    DEBUG("OnAckTimeoutTimerEvent\r\n");
+	
+		TimerStop( &AckTimeoutTimer );
 
     if( NodeAckRequested == true )
     {
@@ -3459,5 +3486,13 @@ bool LoRa_CheckStateIDLE(void){
 		return true;
 	else 
 		return false;
+}
+
+void TimerSuspend(void){
+		TimerStop(&MacStateCheckTimer);
+}
+
+void TimerResume(void){
+		TimerStart(&MacStateCheckTimer);
 }
 

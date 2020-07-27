@@ -96,6 +96,7 @@ static int USART3_RxFlag = 0;
 static int USART3_TxFlag = 0;
 
 uint8_t loramac_send_retry_count = 0;
+
 int LoRa_Block_Time = 5000;
 
 //Raw data from STPM32 defines
@@ -122,6 +123,10 @@ UBaseType_t USART1_Priority;
 UBaseType_t USART3_Priority;
 UBaseType_t SPI1_Priority;
 UBaseType_t SPI2_Priority;
+
+
+extern LoRaMacFlags_t LoRaMacFlags;
+
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -498,30 +503,20 @@ void StartSPI2(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
-		if (LoRa_CheckStateIDLE() == true){
+			
 				if(LoRaMAC_Send() == -1){ //If send was not successful
 					if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
 						loramac_send_retry_count ++;
-
 						myprintf("\r\n LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
-
 					}
-				} else {
-
+					
+				} else {	
 					myprintf("\r\n LoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
-
-					loramac_send_retry_count = 0;
-				
+					loramac_send_retry_count = 0;					
+					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time ));
 				}
-		} else {
-
-			myprintf("USART3 has no new message. \r\n");
-
-		}
-		
-		vTaskDelay(pdMS_TO_TICKS( 5000 ));
-		
-  }
+	}
+		//osDelay(1);	
   /* USER CODE END StartSPI2 */
 }
 

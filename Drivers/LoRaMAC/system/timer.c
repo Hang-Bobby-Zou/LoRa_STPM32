@@ -243,11 +243,11 @@ void TimerIrqHandler( void )
     // start the next TimerListHead if it exists
     if( TimerListHead != NULL )
     {
-//        if( TimerListHead->IsRunning != true )
-//        {
+        if( TimerListHead->IsRunning != true )
+        {
             TimerListHead->IsRunning = true;
             TimerSetTimeout( TimerListHead );
-//				}
+				}
     }
 }
 

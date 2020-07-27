@@ -111,10 +111,15 @@
 uint32_t LoRaMacGetState(void);
 void LoRa_ForceSetIDLE(void);
 bool LoRa_CheckStateIDLE(void);
+void OnMacStateCheckTimerEvent( void );
+void TimerSuspend(void);
+void TimerResume(void);
+
+
 /*!
  * Check the Mac layer state every MAC_STATE_CHECK_TIMEOUT in ms
  */
-#define MAC_STATE_CHECK_TIMEOUT                     100
+#define MAC_STATE_CHECK_TIMEOUT                     1000
 
 /*!
  * Maximum number of times the MAC layer tries to get an acknowledge.
