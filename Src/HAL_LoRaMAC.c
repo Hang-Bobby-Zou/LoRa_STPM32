@@ -332,37 +332,37 @@ static void OnTxNextPacketTimerEvent( void )
  */
 static void McpsConfirm( McpsConfirm_t *mcpsConfirm )
 {
-    // if( mcpsConfirm->Status == LORAMAC_EVENT_INFO_STATUS_OK )
-    // {
-    //     switch( mcpsConfirm->McpsRequest )
-    //     {
-    //         case MCPS_UNCONFIRMED:
-    //         {
-    //             // Check Datarate
-    //             // Check TxPower
-    //             break;
-    //         }
-    //         case MCPS_CONFIRMED:
-    //         {
-    //             // Check Datarate
-    //             // Check TxPower
-    //             // Check AckReceived
-    //             // Check NbTrials
-    //             break;
-    //         }
-    //         case MCPS_PROPRIETARY:
-    //         {
-    //             break;
-    //         }
-    //         default:
-    //             break;
-    //     }
+    if( mcpsConfirm->Status == LORAMAC_EVENT_INFO_STATUS_OK )
+    {
+        switch( mcpsConfirm->McpsRequest )
+        {
+            case MCPS_UNCONFIRMED:
+            {
+                // Check Datarate
+                // Check TxPower
+                break;
+            }
+            case MCPS_CONFIRMED:
+            {
+                // Check Datarate
+                // Check TxPower
+                // Check AckReceived
+                // Check NbTrials
+                break;
+            }
+            case MCPS_PROPRIETARY:
+            {
+                break;
+            }
+            default:
+                break;
+        }
 
     //     // Switch LED 1 ON
     //     //GpioWrite( &Led1, 0 );
     //     //TimerStart( &Led1Timer );
-    // }
-    // NextTx = true;
+    }
+    NextTx = true;
 }
 
 /*!
@@ -382,34 +382,42 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
     {
         case MCPS_UNCONFIRMED:
         {
-            break;
+          DEBUG("Indication : MCPS_UNCONFIRMED\r\n");
+					break;
         }
         case MCPS_CONFIRMED:
         {
-            break;
+          DEBUG("Indication : MCPS_CONFIRMED\r\n");
+					break;
         }
         case MCPS_PROPRIETARY:
         {
-            break;
+          DEBUG("Indication : MCPS_PROPRIETARY\r\n");
+					break;
         }
         case MCPS_MULTICAST:
         {
-            break;
+          DEBUG("Indication : MCPS_MULTICAST\r\n");
+					break;
         }
         default:
-            break;
+					break;
     }
 
     // Check Multicast
     // Check Port
     // Check Datarate
     // Check FramePending
-    if( mcpsIndication->FramePending == true )
-    {
+		
+		// Check Multicast, Port, Datarate, FramePending, Buffer, BufferSize, Rssi, Snr, RxSlot
+		DEBUG("Indication : Rssi: %d  SNR: %d dB\r\n", mcpsIndication->Rssi, (signed char)(mcpsIndication->Snr));
+		
+    //if( mcpsIndication->FramePending == true )
+    //{
         // The server signals that it has pending data to be sent.
         // We schedule an uplink as soon as possible to flush the server.
-        OnTxNextPacketTimerEvent( );
-    }
+    //    OnTxNextPacketTimerEvent( );
+    //}
     // Check Buffer
     // Check BufferSize
     // Check Rssi
@@ -462,12 +470,12 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 #if defined( REGION_EU868 )
                     LoRaMacTestSetDutyCycleOn( false );
 #endif
-                    //GpsStop( );
                 }
             }
             else
             {
-                ComplianceTest.State = mcpsIndication->Buffer[0];
+              DEBUG("ComplianceTest running");  
+							ComplianceTest.State = mcpsIndication->Buffer[0];
                 switch( ComplianceTest.State )
                 {
                 case 0: // Check compliance test disable command (ii)
@@ -484,7 +492,6 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 #if defined( REGION_EU868 )
                     LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
 #endif
-                    //GpsStart( );
                     break;
                 case 1: // (iii, iv)
                     AppDataSize = 2;
@@ -531,7 +538,6 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 #if defined( REGION_EU868 )
                         LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
 #endif
-                        //GpsStart( );
 
                         mlmeReq.Type = MLME_JOIN;
 
@@ -539,7 +545,8 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                         mlmeReq.Req.Join.AppEui = AppEui;
                         mlmeReq.Req.Join.AppKey = AppKey;
                         mlmeReq.Req.Join.Datarate = LORAWAN_DEFAULT_DATARATE;
-
+												
+												/*
                         if( LoRaMacMlmeRequest( &mlmeReq ) == LORAMAC_STATUS_OK )
                         {
                             DeviceState = DEVICE_STATE_SLEEP;
@@ -548,9 +555,12 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                         {
                             DeviceState = DEVICE_STATE_CYCLE;
                         }
+												*/
+												LoRaMacMlmeRequest( &mlmeReq );
                     }
                     break;
-                case 7: // (x)
+                /*
+								case 7: // (x)
                     {
                         if( mcpsIndication->BufferSize == 3 )
                         {
@@ -571,6 +581,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                         ComplianceTest.State = 1;
                     }
                     break;
+								*/
                 default:
                     break;
                 }
@@ -656,7 +667,7 @@ static void MlmeIndication( MlmeIndication_t *mlmeIndication )
     {
         case MLME_SCHEDULE_UPLINK:
         {// The MAC signals that we shall provide an uplink as soon as possible
-            OnTxNextPacketTimerEvent( );
+            //OnTxNextPacketTimerEvent( );
             break;
         }
         default:
@@ -679,7 +690,7 @@ void LoRaMAC_Init(void){
 
   LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_CN470 );
 
-  TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );	//Not added in Mei
+  //TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );	//Not added in Mei
 	
 	mibReq.Type = MIB_ADR;
 	mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
@@ -739,16 +750,16 @@ void LoRaMAC_Join(void){
 		if( ret == LORAMAC_STATUS_OK )
 		{
 			// Join request was send successfully
-			myprintf("OTAA-LoRaMAC join request SUCCESS\r\n");
+			DEBUG("OTAA-LoRaMAC join request SUCCESS\r\n");
 			//leds_play_sequence(&led_state_JOIN, 1);
 		}
 		else if (ret == LORAMAC_STATUS_BUSY)
 		{
-			myprintf("OTAA-Join request ERROR : LoRaMAC is BUSY\r\n");
+			DEBUG("OTAA-Join request ERROR : LoRaMAC is BUSY\r\n");
 		}
 		else
 		{
-			myprintf("OTAA-Join request ERROR : %d\r\n", ret);
+			DEBUG("OTAA-Join request ERROR : %d\r\n", ret);
 		}
 	}
 #else
@@ -864,7 +875,7 @@ if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
 		
 		if (status == LORAMAC_STATUS_OK ){
 			frame_count++;
-			UpLinkCounter++;
+			//UpLinkCounter++;
 			//myprintf("Frame %lu Sent Success\r\n", (unsigned long) frame_count);
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){

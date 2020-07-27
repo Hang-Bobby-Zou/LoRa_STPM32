@@ -216,25 +216,25 @@ void TimerIrqHandler( void )
         return;
     }
 
-    elapsedTime = TimerGetValue( );
+    elapsedTime = TimerGetValue( );										// Get TIM7 value
 
-    if( elapsedTime >= TimerListHead->Timestamp )
+    if( elapsedTime >= TimerListHead->Timestamp )			// If tick in TIM7 exceeds the set time stamp for the specific listhead
     {
-        TimerListHead->Timestamp = 0;
+        TimerListHead->Timestamp = 0;									// Then clear the time stamp in the list head and do a callback
     }
     else
     {
-        TimerListHead->Timestamp -= elapsedTime;
+        TimerListHead->Timestamp -= elapsedTime;			// Else, keep reducting the timstamp in the listhead
     }
 
-    TimerListHead->IsRunning = false;
+    TimerListHead->IsRunning = false;									// Stop the list head
 
-    while( ( TimerListHead != NULL ) && ( TimerListHead->Timestamp == 0 ) )
+    while( ( TimerListHead != NULL ) && ( TimerListHead->Timestamp == 0 ) )				// If the listhead exist and it is ready to do a call back
     {
-        TimerEvent_t* elapsedTimer = TimerListHead;
+        TimerEvent_t* elapsedTimer = TimerListHead;		// Change the timer list head to the next one
         TimerListHead = TimerListHead->Next;
 
-        if( elapsedTimer->Callback != NULL )
+        if( elapsedTimer->Callback != NULL )					// Trigger the call backs for the pervious one
         {
             elapsedTimer->Callback( );
         }
@@ -243,11 +243,11 @@ void TimerIrqHandler( void )
     // start the next TimerListHead if it exists
     if( TimerListHead != NULL )
     {
-        if( TimerListHead->IsRunning != true )
-        {
+//        if( TimerListHead->IsRunning != true )
+//        {
             TimerListHead->IsRunning = true;
             TimerSetTimeout( TimerListHead );
-        }
+//				}
     }
 }
 

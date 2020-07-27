@@ -155,7 +155,7 @@ int main(void)
 				|-----------------------------------|
 		*/
 		// Here set UART3 to be in S4 mode, Tx is on
-		myprintf("Test\r\n");
+		DEBUG("Test\r\n");
 		
 		//Initialize STPM32
 		USART3_PINSET_TX();

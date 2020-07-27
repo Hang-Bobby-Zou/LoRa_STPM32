@@ -159,7 +159,8 @@ void SX1276IoIrqInit( DioIrqHandler **irqHandlers )
 		GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
 		GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING;
 		GPIO_InitStructure.Pull = GPIO_PULLUP;
-	
+		
+		////
 		GPIO_InitStructure.Pin =  GPIO_SX1276_DIO0_PIN;
 		HAL_GPIO_Init( GPIO_SX1276_DIO0_PORT, &GPIO_InitStructure );
 

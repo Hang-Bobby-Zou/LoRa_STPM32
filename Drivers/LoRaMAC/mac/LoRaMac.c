@@ -34,6 +34,7 @@
 #include "LoRaMacTest.h"
 #include "string.h"
 #include "radio.h"
+#include "usart.h"
 
 /*!
  * Maximum PHY layer payload size
@@ -180,7 +181,9 @@ static bool IsUpLinkCounterFixed = false;
 /*!
  * Used for test purposes. Disables the opening of the reception windows.
  */
-static bool IsRxWindowsEnabled = true;
+//static bool IsRxWindowsEnabled = true;
+static bool IsRxWindowsEnabled = false;
+
 
 /*!
  * Indicates if the MAC layer has already joined a network.
@@ -650,7 +653,9 @@ static void OpenContinuousRx2Window( void );
 
 static void OnRadioTxDone( void )
 {
-    GetPhyParams_t getPhy;
+		DEBUG("OnRadioTxDone Event \r\n");
+	
+		GetPhyParams_t getPhy;
     PhyParam_t phyParam;
     SetBandTxDoneParams_t txDone;
     TimerTime_t curTime = TimerGetCurrentTime( );
@@ -665,7 +670,7 @@ static void OnRadioTxDone( void )
     }
 
     // Setup timers
-    if( IsRxWindowsEnabled == true )
+		if( IsRxWindowsEnabled == true )
     {
         TimerSetValue( &RxWindowTimer1, RxWindow1Delay );
         TimerStart( &RxWindowTimer1 );
@@ -1253,19 +1258,16 @@ static void OnMacStateCheckTimerEvent( void )
 
     TimerStop( &MacStateCheckTimer );
 
-    if( LoRaMacFlags.Bits.MacDone == 1 )
-    {
-        if( ( LoRaMacState & LORAMAC_RX_ABORT ) == LORAMAC_RX_ABORT )
-        {
+    if( LoRaMacFlags.Bits.MacDone == 1 ){
+        if( ( LoRaMacState & LORAMAC_RX_ABORT ) == LORAMAC_RX_ABORT ){
             LoRaMacState &= ~LORAMAC_RX_ABORT;
             LoRaMacState &= ~LORAMAC_TX_RUNNING;
         }
 
-        if( ( LoRaMacFlags.Bits.MlmeReq == 1 ) || ( ( LoRaMacFlags.Bits.McpsReq == 1 ) ) )
-        {
+				
+        if( ( LoRaMacFlags.Bits.MlmeReq == 1 ) || ( ( LoRaMacFlags.Bits.McpsReq == 1 ) ) ) {
             if( ( McpsConfirm.Status == LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT ) ||
-                ( MlmeConfirm.Status == LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT ) )
-            {
+                ( MlmeConfirm.Status == LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT ) ) {
                 // Stop transmit cycle due to tx timeout.
                 LoRaMacState &= ~LORAMAC_TX_RUNNING;
                 MacCommandsBufferIndex = 0;
@@ -1276,6 +1278,7 @@ static void OnMacStateCheckTimerEvent( void )
             }
         }
 
+				
         if( ( NodeAckRequested == false ) && ( txTimeout == false ) )
         {
             if( ( LoRaMacFlags.Bits.MlmeReq == 1 ) || ( ( LoRaMacFlags.Bits.McpsReq == 1 ) ) )
@@ -1319,6 +1322,7 @@ static void OnMacStateCheckTimerEvent( void )
             }
         }
 
+				
         if( LoRaMacFlags.Bits.McpsInd == 1 )
         {// Procedure if we received a frame
             if( ( McpsConfirm.AckReceived == true ) || ( AckTimeoutRetriesCounter > AckTimeoutRetries ) )
@@ -1335,6 +1339,7 @@ static void OnMacStateCheckTimerEvent( void )
             }
         }
 
+				
         if( ( AckTimeoutRetry == true ) && ( ( LoRaMacState & LORAMAC_TX_DELAYED ) == 0 ) )
         {// Retransmissions procedure for confirmed uplinks
             AckTimeoutRetry = false;
@@ -2103,7 +2108,8 @@ static void ResetMacParameters( void )
     MacCommandsBufferIndex = 0;
     MacCommandsBufferToRepeatIndex = 0;
 
-    IsRxWindowsEnabled = true;
+    //IsRxWindowsEnabled = true;
+		IsRxWindowsEnabled = false;
 
     LoRaMacParams.ChannelsTxPower = LoRaMacParamsDefaults.ChannelsTxPower;
     LoRaMacParams.ChannelsDatarate = LoRaMacParamsDefaults.ChannelsDatarate;
@@ -2508,9 +2514,12 @@ LoRaMacStatus_t LoRaMacInitialization( LoRaMacPrimitives_t *primitives, LoRaMacC
     TimerSetValue( &MacStateCheckTimer, MAC_STATE_CHECK_TIMEOUT );
 
     TimerInit( &TxDelayedTimer, OnTxDelayedTimerEvent );
+		
     TimerInit( &RxWindowTimer1, OnRxWindow1TimerEvent );
+		
     TimerInit( &RxWindowTimer2, OnRxWindow2TimerEvent );
-    TimerInit( &AckTimeoutTimer, OnAckTimeoutTimerEvent );
+    
+		TimerInit( &AckTimeoutTimer, OnAckTimeoutTimerEvent );
 
     // Store the current initialization time
     LoRaMacInitializationTime = TimerGetCurrentTime( );

@@ -157,57 +157,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>219</LineNumber>
+          <LineNumber>1148</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134261868</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Drivers\LoRaMAC\system\timer.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/system/timer.c\219</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>232</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134261916</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Drivers\LoRaMAC\system\timer.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/system/timer.c\232</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>94</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134232214</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>../Src/stm32l4xx_it.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\LoRa_STPM32\../Src/stm32l4xx_it.c\94</Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
-          <LineNumber>1254</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134239248</Address>
+          <Address>134242774</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -216,85 +168,54 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\Drivers\LoRaMAC\mac\LoRaMac.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/mac/LoRaMac.c\1254</Expression>
-        </Bp>
-        <Bp>
-          <Number>4</Number>
-          <Type>0</Type>
-          <LineNumber>1146</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134242666</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Drivers\LoRaMAC\mac\LoRaMac.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/mac/LoRaMac.c\1146</Expression>
+          <Expression>\\LoRa_STPM32\../Drivers/LoRaMAC/mac/LoRaMac.c\1148</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>txConfig</ItemText>
+          <ItemText>TimerListHead</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>AppData[0]</ItemText>
+          <ItemText>RxTimeoutSyncWord</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>mcpsReq.Req.Unconfirmed.fBuffer</ItemText>
+          <ItemText>LoRaMacState</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>fBuffer</ItemText>
+          <ItemText>LoRaMacFlags.Bits.MacDone</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>1</WinNumber>
-          <ItemText>AppData[0]</ItemText>
+          <ItemText>LoRaMacFlags.Bits.McpsInd</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>1</WinNumber>
-          <ItemText>aRxBuffer[0]</ItemText>
+          <ItemText>LoRaMacFlags.Bits.MlmeInd</ItemText>
         </Ww>
         <Ww>
           <count>6</count>
           <WinNumber>1</WinNumber>
-          <ItemText>aRxBuffer[1]</ItemText>
+          <ItemText>txTimeout</ItemText>
         </Ww>
         <Ww>
           <count>7</count>
           <WinNumber>1</WinNumber>
-          <ItemText>aRxBuffer[2]</ItemText>
+          <ItemText>GpioIrq[0]</ItemText>
         </Ww>
         <Ww>
           <count>8</count>
           <WinNumber>1</WinNumber>
-          <ItemText>aRxBuffer[3]</ItemText>
-        </Ww>
-        <Ww>
-          <count>9</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>TimerListHead</ItemText>
-        </Ww>
-        <Ww>
-          <count>10</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>LoRaMacFlags.Bits</ItemText>
-        </Ww>
-        <Ww>
-          <count>11</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>LoRaMacState</ItemText>
+          <ItemText>GpioIrq[0]</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -369,12 +290,6 @@
       <pszMrulep></pszMrulep>
       <pSingCmdsp></pSingCmdsp>
       <pMultCmdsp></pMultCmdsp>
-      <SystemViewers>
-        <Entry>
-          <Name>System Viewer\USART3</Name>
-          <WinId>35905</WinId>
-        </Entry>
-      </SystemViewers>
       <DebugDescription>
         <Enable>1</Enable>
         <EnableFlashSeq>1</EnableFlashSeq>
@@ -407,7 +322,7 @@
 
   <Group>
     <GroupName>Application/User</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -923,7 +838,7 @@
 
   <Group>
     <GroupName>Middlewares/FreeRTOS</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

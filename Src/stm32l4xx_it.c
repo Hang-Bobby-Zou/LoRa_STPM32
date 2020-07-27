@@ -97,7 +97,7 @@ void HardFault_Handler(void)
 		//USART3_PINSET_TX();
 		//myprintf("!!!HARD FAULT!!!\r\n\r\n");
 		//USART3_PINSET_RX();
-		
+		DEBUG("Hard Fault\r\n");
 		HAL_Delay(1);
     /* USER CODE END W1_HardFault_IRQn 0 */
   }

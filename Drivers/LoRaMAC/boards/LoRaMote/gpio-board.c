@@ -30,7 +30,7 @@
 #endif
 #include "HAL_gpio.h"
 
-static GpioIrqHandler *GpioIrq[16];
+extern GpioIrqHandler *GpioIrq[16];
 
 /*============================================================================*/
 /*                   UNUSED FUNCTIONS			                                    */
@@ -162,8 +162,7 @@ void EXTI15_10_IRQHandler( void )
 
 
 
-void HAL_GPIO_EXTI_Callback( uint16_t gpioPin )
-{
+void HAL_GPIO_EXTI_Callback( uint16_t gpioPin ){
 
 	uint8_t callbackIndex = 0;
 

@@ -45,32 +45,6 @@ void USART3_PINSET_S4(void);
 void USART3_PINSET_RX(void);
 void USART3_PINSET_TX(void);
 
-//#define LOGLEVEL LOGINFO
-
-enum log_levels{
-		LOGERROR 		= 3,
-		LOGWARNING 	= 4,
-		LOGINFO 		= 6,
-};
-
-#ifdef LOGLEVEL
-#define ERROR(format,...)\
-if (LOGLEVEL >= LOGERROR) {\
-	myprintf("/r/n>>ERROR: "format, ##__VA_ARGS___);\
-}
-#define WARN(format,...)\
-if (LOGLEVEL >= LOGWARNING) {\
-	myprintf("/r/n>>WATNING: "format, ##__VA_ARGS___);\
-}
-#define INFO(format,...)\
-if (LOGLEVEL >= LOGINFO) {\
-	myprintf("/r/n>>INFO: "format, ##__VA_ARGS___);\
-}
-#else		//Not LOGLEVEL
-#define ERROR(args...) do {;} while(0)
-#define WARN(args...) do {;} while(0)
-#define INFO(args...) do {;} while(0)
-#endif //LOGLEVEL
 /* USER CODE END Private defines */
 
 void MX_USART1_UART_Init(void);

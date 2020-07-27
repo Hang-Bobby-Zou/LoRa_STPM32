@@ -112,6 +112,73 @@ static int SPI1_TxFlag = 0;
 static int SPI2_RxFlag = 0;
 static int SPI2_TxFlag = 0;
 
+#define DEBUG_ON		1
+
+#define DEBUG(format,...) \
+if (DEBUG_ON) {\
+	myprintf(""format, ##__VA_ARGS__);\
+}
+
+//
+//
+//#define LOGLEVEL LOGINFO
+
+enum log_levels {
+	LOGERROR   = 3,	/**< Error which can stop the system */
+	LOGWARNING = 4,	/**< Anormal/strange behaviour message */
+	LOGINFO    = 6,	/**< High level information */
+};
+#ifdef LOGLEVEL
+#define ERROR(format,...) \
+if (LOGLEVEL >= LOGERROR) {\
+	myprintf(">>ERROR: "format, ##__VA_ARGS__);\
+	myprintf("\r\n");\
+}
+#define WARN(format,...) \
+if (LOGLEVEL >= LOGWARNING) {\
+	myprintf(">>WARNING: "format, ##__VA_ARGS__);\
+	myprintf("\r\n");\
+}
+#define INFO(format,...) \
+if (LOGLEVEL >= LOGINFO) {\
+	myprintf(">>INFO: "format, ##__VA_ARGS__);\
+	myprintf("\r\n");\
+}
+#else	// not LOGLEVEL
+# define ERROR(args...) do {;} while(0)
+# define WARN(args...) do {;} while(0)
+# define INFO(args...) do {;} while(0)
+#endif	// LOGLEVEL
+
+/*
+//#define LOGLEVEL LOGINFO
+
+enum log_levels{
+		LOGERROR 		= 3,
+		LOGWARNING 	= 4,
+		LOGINFO 		= 6,
+};
+
+#ifdef LOGLEVEL
+#define ERROR(format,...)\
+if (LOGLEVEL >= LOGERROR) {\
+	myprintf("/r/n>>ERROR: "format, ##__VA_ARGS___);\
+}
+#define WARN(format,...)\
+if (LOGLEVEL >= LOGWARNING) {\
+	myprintf("/r/n>>WATNING: "format, ##__VA_ARGS___);\
+}
+#define INFO(format,...)\
+if (LOGLEVEL >= LOGINFO) {\
+	myprintf("/r/n>>INFO: "format, ##__VA_ARGS___);\
+}
+#else		//Not LOGLEVEL
+#define ERROR(args...) do {;} while(0)
+#define WARN(args...) do {;} while(0)
+#define INFO(args...) do {;} while(0)
+#endif //LOGLEVEL
+*/
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
