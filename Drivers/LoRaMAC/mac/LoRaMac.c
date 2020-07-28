@@ -181,8 +181,8 @@ static bool IsUpLinkCounterFixed = false;
 /*!
  * Used for test purposes. Disables the opening of the reception windows.
  */
-//static bool IsRxWindowsEnabled = true;
-static bool IsRxWindowsEnabled = false;
+static bool IsRxWindowsEnabled = true;
+//static bool IsRxWindowsEnabled = false;
 
 
 /*!
@@ -698,8 +698,6 @@ static void OnRadioTxDone( void )
             LoRaMacFlags.Bits.McpsReq = 1;
         }
         LoRaMacFlags.Bits.MacDone = 1;
-				
-				//TimerIrqHandler();
     }
 
     // Verify if the last uplink was a join request
@@ -753,7 +751,7 @@ static void PrepareRxDoneAbort( void )
 
 static void OnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    DEBUG("OnRadioRxDone\r\n");
+    //DEBUG("OnRadioRxDone\r\n");
 		LoRaMacHeader_t macHdr;
     LoRaMacFrameCtrl_t fCtrl;
     ApplyCFListParams_t applyCFList;
@@ -1157,7 +1155,7 @@ static void OnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t
 
 static void OnRadioTxTimeout( void )
 {
-    DEBUG("OnRadioTxTimeout\r\n");
+    //DEBUG("OnRadioTxTimeout\r\n");
 		if( LoRaMacDeviceClass != CLASS_C )
     {
         Radio.Sleep( );
@@ -1170,14 +1168,14 @@ static void OnRadioTxTimeout( void )
     McpsConfirm.Status = LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT;
     MlmeConfirm.Status = LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT;
 		
-		LoRaMacState = LORAMAC_IDLE;
+		//LoRaMacState = LORAMAC_IDLE;
 		
-    //LoRaMacFlags.Bits.MacDone = 1;
+    LoRaMacFlags.Bits.MacDone = 1;
 }
 
 static void OnRadioRxError( void )
 {
-    DEBUG("OnRadioRxError\r\n");
+    //DEBUG("OnRadioRxError\r\n");
 		if( LoRaMacDeviceClass != CLASS_C )
     {
         Radio.Sleep( );
@@ -1485,8 +1483,10 @@ static void OnTxDelayedTimerEvent( void )
 
 static void OnRxWindow1TimerEvent( void )
 {
-    DEBUG("OnRxWindow1TimerEvent\r\n");
-		TimerStop( &RxWindowTimer1 );
+    TimerStop( &RxWindowTimer1 );
+	
+		DEBUG("OnRxWindow1TimerEvent\r\n");
+		
     RxSlot = RX_SLOT_WIN_1;
 
     RxWindow1Config.Channel = Channel;
@@ -1507,10 +1507,10 @@ static void OnRxWindow1TimerEvent( void )
 
 static void OnRxWindow2TimerEvent( void )
 {
+		TimerStop( &RxWindowTimer2 );
+	
 		DEBUG("OnRxWindow2TimerEvent\r\n");
 	
-		TimerStop( &RxWindowTimer2 );
-
     RxWindow2Config.Channel = Channel;
     RxWindow2Config.Frequency = LoRaMacParams.Rx2Channel.Frequency;
     RxWindow2Config.DownlinkDwellTime = LoRaMacParams.DownlinkDwellTime;
@@ -1588,7 +1588,8 @@ static void OnAckTimeoutTimerEvent( void )
 
 static void RxWindowSetup( bool rxContinuous, uint32_t maxRxWindow )
 {
-    if( rxContinuous == false )
+  DEBUG("\r\nRxWindowSetup\r\n");
+	if( rxContinuous == false )
     {
         Radio.Rx( maxRxWindow );
     }
@@ -2135,8 +2136,8 @@ static void ResetMacParameters( void )
     MacCommandsBufferIndex = 0;
     MacCommandsBufferToRepeatIndex = 0;
 
-    //IsRxWindowsEnabled = true;
-		IsRxWindowsEnabled = false;
+    IsRxWindowsEnabled = true;
+		//IsRxWindowsEnabled = false;
 
     LoRaMacParams.ChannelsTxPower = LoRaMacParamsDefaults.ChannelsTxPower;
     LoRaMacParams.ChannelsDatarate = LoRaMacParamsDefaults.ChannelsDatarate;

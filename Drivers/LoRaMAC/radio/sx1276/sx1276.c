@@ -35,6 +35,7 @@
 #include "sx1276-board.h"
 
 #include "LoRa.h"
+#include "usart.h"
 
 /*
  * Local types definition
@@ -885,7 +886,8 @@ void SX1276SetStby( void )
 
 void SX1276SetRx( uint32_t timeout )
 {
-    bool rxContinuous = false;
+    DEBUG("SX1276SetRx\r\n");
+		bool rxContinuous = false;
 
     switch( SX1276.Settings.Modem )
     {
@@ -1051,7 +1053,9 @@ void SX1276SetRx( uint32_t timeout )
 
 void SX1276SetTx( uint32_t timeout )
 {
-    TimerSetValue( &TxTimeoutTimer, timeout );
+    //DEBUG("SX1276SetTx\r\n");
+		
+		//TimerSetValue( &TxTimeoutTimer, timeout );
 
     switch( SX1276.Settings.Modem )
     {
@@ -1108,10 +1112,12 @@ void SX1276SetTx( uint32_t timeout )
     }
 
     SX1276.Settings.State = RF_TX_RUNNING;
-    TimerStart( &TxTimeoutTimer );
-    SX1276SetOpMode( RF_OPMODE_TRANSMITTER );
 		
-		//HAL_Delay(1000);
+		TimerStop( &TxTimeoutTimer );
+		TimerSetValue( &TxTimeoutTimer, timeout );
+		TimerStart( &TxTimeoutTimer );
+		
+    SX1276SetOpMode( RF_OPMODE_TRANSMITTER );
 		
 }
 
@@ -1364,7 +1370,8 @@ uint32_t SX1276GetWakeupTime( void )
 
 void SX1276OnTimeoutIrq( void )
 {
-    switch( SX1276.Settings.State )
+    DEBUG("SX1276OnTimeoutIrq\r\n");
+		switch( SX1276.Settings.State )
     {
     case RF_RX_RUNNING:
         if( SX1276.Settings.Modem == MODEM_FSK )
@@ -1439,7 +1446,8 @@ void SX1276OnTimeoutIrq( void )
 
 void SX1276OnDio0Irq( void )
 {
-    volatile uint8_t irqFlags = 0;
+    //DEBUG("SX1276OnDio0Irq\r\n");
+		volatile uint8_t irqFlags = 0;
 
     switch( SX1276.Settings.State )
     {
@@ -1640,7 +1648,8 @@ void SX1276OnDio0Irq( void )
 
 void SX1276OnDio1Irq( void )
 {
-    switch( SX1276.Settings.State )
+    //DEBUG("SX1276OnDio1Irq\r\n");
+		switch( SX1276.Settings.State )
     {
         case RF_RX_RUNNING:
             switch( SX1276.Settings.Modem )

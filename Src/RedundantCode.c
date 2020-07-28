@@ -17,6 +17,11 @@
 //#include "main.h"
 #include <stdlib.h>
 
+/*
+		TimerStop( &TxTimeoutTimer );
+		TimerSetValue( &TxTimeoutTimer, timeout );
+		TimerStart( &TxTimeoutTimer );
+*/
 //__HAL_UART_FLUSH_DRREGISTER(&huart3);
 
 //HAL_NVIC_DisableIRQ(USART3_IRQn);

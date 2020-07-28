@@ -503,16 +503,20 @@ void StartSPI2(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
-			
 				if(LoRaMAC_Send() == -1){ //If send was not successful
 					if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
 						loramac_send_retry_count ++;
 						myprintf("\r\n LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
+						TimerIrqHandler();
 					}
 					
 				} else {	
 					myprintf("\r\n LoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
-					loramac_send_retry_count = 0;					
+					loramac_send_retry_count = 0;
+					
+					HAL_Delay(10000);
+					TimerIrqHandler();
+					
 					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time ));
 				}
 	}

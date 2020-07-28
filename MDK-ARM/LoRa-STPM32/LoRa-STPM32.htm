@@ -3,7 +3,7 @@
 <title>Static Call Graph - [LoRa-STPM32\LoRa-STPM32.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image LoRa-STPM32\LoRa-STPM32.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Mon Jul 27 16:36:02 2020
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Tue Jul 28 15:34:50 2020
 <BR><P>
 <H3>Maximum Stack Usage =        760 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -848,6 +848,7 @@ Global Symbols
 <LI><a href="#[182]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;STPM32_Init
 <LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
 <LI><a href="#[1bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ext_flash_power_on
+<LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartSPI2
 <LI><a href="#[7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HardFault_Handler
 <LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DelayMsMcu
 </UL>
@@ -1199,8 +1200,8 @@ Global Symbols
 <P><STRONG><a name="[ed]"></a>HAL_TIM_PeriodElapsedCallback</STRONG> (Thumb, 40 bytes, Stack size 8 bytes, main.o(i.HAL_TIM_PeriodElapsedCallback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = HAL_TIM_PeriodElapsedCallback &rArr; TimerIrqHandler &rArr; TimerGetValue &rArr; RtcGetElapsedAlarmTime &rArr; RtcGetTimerValue
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerIrqHandler
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_IncTick
+<BR>[Calls]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_IncTick
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerIrqHandler
 </UL>
 <BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_IRQHandler
 </UL>
@@ -1302,7 +1303,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32l433xx.o(RESET)
 </UL>
 <P><STRONG><a name="[103]"></a>LoRaMAC_Init</STRONG> (Thumb, 98 bytes, Stack size 8 bytes, hal_loramac.o(i.LoRaMAC_Init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 624<LI>Call Chain = LoRaMAC_Init &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 640<LI>Call Chain = LoRaMAC_Init &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMacMibSetRequestConfirm
 <LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMacInitialization
@@ -1312,7 +1313,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[107]"></a>LoRaMAC_Join</STRONG> (Thumb, 134 bytes, Stack size 8 bytes, hal_loramac.o(i.LoRaMAC_Join))
-<BR><BR>[Stack]<UL><LI>Max Depth = 624<LI>Call Chain = LoRaMAC_Join &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 640<LI>Call Chain = LoRaMAC_Join &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;srand1
 <LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;randr
@@ -1323,10 +1324,13 @@ Global Symbols
 <LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMAC_Send
 </UL>
 
-<P><STRONG><a name="[10b]"></a>LoRaMAC_Send</STRONG> (Thumb, 240 bytes, Stack size 40 bytes, hal_loramac.o(i.LoRaMAC_Send))
-<BR><BR>[Stack]<UL><LI>Max Depth = 664<LI>Call Chain = LoRaMAC_Send &rArr; LoRaMAC_Join &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<P><STRONG><a name="[10b]"></a>LoRaMAC_Send</STRONG> (Thumb, 260 bytes, Stack size 40 bytes, hal_loramac.o(i.LoRaMAC_Send))
+<BR><BR>[Stack]<UL><LI>Max Depth = 680<LI>Call Chain = LoRaMAC_Send &rArr; LoRaMAC_Join &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMacQueryTxPossible
+<BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerIrqHandler
+<LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMacQueryTxPossible
 <LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMacMibGetRequestConfirm
 <LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMacMcpsRequest
 <LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMAC_Join
@@ -1414,7 +1418,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[106]"></a>LoRaMacMibSetRequestConfirm</STRONG> (Thumb, 760 bytes, Stack size 32 bytes, loramac.o(i.LoRaMacMibSetRequestConfirm))
-<BR><BR>[Stack]<UL><LI>Max Depth = 616<LI>Call Chain = LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 632<LI>Call Chain = LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RegionVerify
 <LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RegionComputeRxWindowParameters
@@ -1644,7 +1648,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32l433xx.o(RESET)
 </UL>
 <P><STRONG><a name="[5c]"></a>OnMacStateCheckTimerEvent</STRONG> (Thumb, 886 bytes, Stack size 16 bytes, loramac.o(i.OnMacStateCheckTimerEvent))
-<BR><BR>[Stack]<UL><LI>Max Depth = 600<LI>Call Chain = OnMacStateCheckTimerEvent &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 616<LI>Call Chain = OnMacStateCheckTimerEvent &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
 <LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
@@ -2311,10 +2315,11 @@ Global Symbols
 <P><STRONG><a name="[4]"></a>SX1276OnDio4Irq</STRONG> (Thumb, 40 bytes, Stack size 0 bytes, sx1276.o(i.SX1276OnDio4Irq))
 <BR>[Address Reference Count : 1]<UL><LI> sx1276.o(.data)
 </UL>
-<P><STRONG><a name="[66]"></a>SX1276OnTimeoutIrq</STRONG> (Thumb, 252 bytes, Stack size 8 bytes, sx1276.o(i.SX1276OnTimeoutIrq))
-<BR><BR>[Stack]<UL><LI>Max Depth = 256<LI>Call Chain = SX1276OnTimeoutIrq &rArr; RxChainCalibration &rArr; SX1276SetChannel &rArr; SX1276Write &rArr; SX1276WriteBuffer &rArr; SpiInOut &rArr; SPI2_InOut &rArr; HAL_SPI_TransmitReceive &rArr; SPI_EndRxTxTransaction &rArr; SPI_WaitFlagStateUntilTimeout
+<P><STRONG><a name="[66]"></a>SX1276OnTimeoutIrq</STRONG> (Thumb, 258 bytes, Stack size 8 bytes, sx1276.o(i.SX1276OnTimeoutIrq))
+<BR><BR>[Stack]<UL><LI>Max Depth = 576<LI>Call Chain = SX1276OnTimeoutIrq &rArr; myprintf &rArr; vsprintf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
+<BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
 <LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStart
 <LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276Reset
 <LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276Write
@@ -2518,10 +2523,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276SetTxConfig
 </UL>
 
-<P><STRONG><a name="[7c]"></a>SX1276SetRx</STRONG> (Thumb, 638 bytes, Stack size 16 bytes, sx1276.o(i.SX1276SetRx))
-<BR><BR>[Stack]<UL><LI>Max Depth = 224<LI>Call Chain = SX1276SetRx &rArr; SX1276SetChannel &rArr; SX1276Write &rArr; SX1276WriteBuffer &rArr; SpiInOut &rArr; SPI2_InOut &rArr; HAL_SPI_TransmitReceive &rArr; SPI_EndRxTxTransaction &rArr; SPI_WaitFlagStateUntilTimeout
+<P><STRONG><a name="[7c]"></a>SX1276SetRx</STRONG> (Thumb, 644 bytes, Stack size 16 bytes, sx1276.o(i.SX1276SetRx))
+<BR><BR>[Stack]<UL><LI>Max Depth = 584<LI>Call Chain = SX1276SetRx &rArr; myprintf &rArr; vsprintf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;memset1
+<BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
+<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;memset1
 <LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStart
 <LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerSetValue
 <LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276Write
@@ -2567,10 +2573,11 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> sx1276-board.o(.constdata)
 </UL>
-<P><STRONG><a name="[190]"></a>SX1276SetTx</STRONG> (Thumb, 182 bytes, Stack size 16 bytes, sx1276.o(i.SX1276SetTx))
+<P><STRONG><a name="[190]"></a>SX1276SetTx</STRONG> (Thumb, 188 bytes, Stack size 16 bytes, sx1276.o(i.SX1276SetTx))
 <BR><BR>[Stack]<UL><LI>Max Depth = 216<LI>Call Chain = SX1276SetTx &rArr; SX1276SetOpMode &rArr; SX1276Write &rArr; SX1276WriteBuffer &rArr; SpiInOut &rArr; SPI2_InOut &rArr; HAL_SPI_TransmitReceive &rArr; SPI_EndRxTxTransaction &rArr; SPI_WaitFlagStateUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStart
+<BR>[Calls]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
+<LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStart
 <LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerSetValue
 <LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276Write
 <LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276SetOpMode
@@ -2732,12 +2739,14 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(.constdata)
 </UL>
-<P><STRONG><a name="[6e]"></a>StartSPI2</STRONG> (Thumb, 120 bytes, Stack size 0 bytes, freertos.o(i.StartSPI2))
-<BR><BR>[Stack]<UL><LI>Max Depth = 664<LI>Call Chain = StartSPI2 &rArr; LoRaMAC_Send &rArr; LoRaMAC_Join &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<P><STRONG><a name="[6e]"></a>StartSPI2</STRONG> (Thumb, 136 bytes, Stack size 0 bytes, freertos.o(i.StartSPI2))
+<BR><BR>[Stack]<UL><LI>Max Depth = 680<LI>Call Chain = StartSPI2 &rArr; LoRaMAC_Send &rArr; LoRaMAC_Join &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
+<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
 <LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
 <LI><a href="#[19a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxTaskPriorityGet
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerIrqHandler
 <LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMAC_Send
 <LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMAC_Join
 <LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMAC_Init
@@ -2840,8 +2849,8 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[17b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RtcGetElapsedAlarmTime
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerIrqHandler
-<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
+<BR>[Called By]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerIrqHandler
 <LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStart
 </UL>
 
@@ -2856,7 +2865,9 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[1a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerGetValue
 <LI><a href="#[1a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerSetTimeout
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PeriodElapsedCallback
+<BR>[Called By]<UL><LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartSPI2
+<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PeriodElapsedCallback
+<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMAC_Send
 </UL>
 
 <P><STRONG><a name="[115]"></a>TimerSetValue</STRONG> (Thumb, 18 bytes, Stack size 16 bytes, timer.o(i.TimerSetValue))
@@ -2911,7 +2922,8 @@ Global Symbols
 <LI><a href="#[1a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerGetValue
 <LI><a href="#[1a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerSetTimeout
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CheckToDisableAckTimeout
+<BR>[Called By]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMAC_Send
+<LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CheckToDisableAckTimeout
 <LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerSetValue
 <LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnMacStateCheckTimerEvent
 <LI><a href="#[5d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnTxDelayedTimerEvent
@@ -2921,6 +2933,7 @@ Global Symbols
 <LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRadioRxError
 <LI><a href="#[62]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRadioRxDone
 <LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnAckTimeoutTimerEvent
+<LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276SetTx
 <LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276SetStby
 <LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276SetSleep
 <LI><a href="#[66]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276OnTimeoutIrq
@@ -3141,7 +3154,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[51]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[51]"></a>main</STRONG> (Thumb, 190 bytes, Stack size 0 bytes, main.o(i.main))
+<P><STRONG><a name="[51]"></a>main</STRONG> (Thumb, 182 bytes, Stack size 0 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 760<LI>Call Chain = main &rArr; SystemClock_Config &rArr; Error_Handler &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Error_Handler
@@ -3214,17 +3227,18 @@ Global Symbols
 <LI><a href="#[1bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ext_flash_power_on
 <LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartSPI2
 <LI><a href="#[51]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMAC_Send
 <LI><a href="#[7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HardFault_Handler
 <LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnMacStateCheckTimerEvent
+<LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RxWindowSetup
 <LI><a href="#[5d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnTxDelayedTimerEvent
 <LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRxWindow2TimerEvent
 <LI><a href="#[5e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRxWindow1TimerEvent
-<LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRadioTxTimeout
 <LI><a href="#[61]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRadioTxDone
 <LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRadioRxTimeout
-<LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRadioRxError
-<LI><a href="#[62]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRadioRxDone
 <LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnAckTimeoutTimerEvent
+<LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276SetRx
+<LI><a href="#[66]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SX1276OnTimeoutIrq
 </UL>
 
 <P><STRONG><a name="[199]"></a>osDelay</STRONG> (Thumb, 24 bytes, Stack size 16 bytes, cmsis_os.o(i.osDelay))
@@ -3613,7 +3627,7 @@ Local Symbols
 <BR>[Address Reference Count : 1]<UL><LI> hal_loramac.o(i.LoRaMAC_Init)
 </UL>
 <P><STRONG><a name="[58]"></a>McpsIndication</STRONG> (Thumb, 532 bytes, Stack size 56 bytes, hal_loramac.o(i.McpsIndication))
-<BR><BR>[Stack]<UL><LI>Max Depth = 672<LI>Call Chain = McpsIndication &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 688<LI>Call Chain = McpsIndication &rArr; LoRaMacMibSetRequestConfirm &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
 <LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMacMlmeRequest
@@ -3909,11 +3923,10 @@ Local Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> loramac.o(i.LoRaMacInitialization)
 </UL>
-<P><STRONG><a name="[62]"></a>OnRadioRxDone</STRONG> (Thumb, 1696 bytes, Stack size 136 bytes, loramac.o(i.OnRadioRxDone))
+<P><STRONG><a name="[62]"></a>OnRadioRxDone</STRONG> (Thumb, 1684 bytes, Stack size 136 bytes, loramac.o(i.OnRadioRxDone))
 <BR><BR>[Stack]<UL><LI>Max Depth = 720<LI>Call Chain = OnRadioRxDone &rArr; PrepareRxDoneAbort &rArr; OnAckTimeoutTimerEvent &rArr; myprintf &rArr; vsprintf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
-<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
+<BR>[Calls]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
 <LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CheckToDisableAckTimeout
 <LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStart
 <LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerSetValue
@@ -3930,18 +3943,17 @@ Local Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> loramac.o(i.LoRaMacInitialization)
 </UL>
-<P><STRONG><a name="[63]"></a>OnRadioRxError</STRONG> (Thumb, 150 bytes, Stack size 8 bytes, loramac.o(i.OnRadioRxError))
-<BR><BR>[Stack]<UL><LI>Max Depth = 592<LI>Call Chain = OnRadioRxError &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<P><STRONG><a name="[63]"></a>OnRadioRxError</STRONG> (Thumb, 144 bytes, Stack size 8 bytes, loramac.o(i.OnRadioRxError))
+<BR><BR>[Stack]<UL><LI>Max Depth = 608<LI>Call Chain = OnRadioRxError &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
-<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
+<BR>[Calls]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
 <LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerGetElapsedTime
 <LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OpenContinuousRx2Window
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> loramac.o(i.LoRaMacInitialization)
 </UL>
 <P><STRONG><a name="[65]"></a>OnRadioRxTimeout</STRONG> (Thumb, 150 bytes, Stack size 8 bytes, loramac.o(i.OnRadioRxTimeout))
-<BR><BR>[Stack]<UL><LI>Max Depth = 592<LI>Call Chain = OnRadioRxTimeout &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 608<LI>Call Chain = OnRadioRxTimeout &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
 <LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
@@ -3951,7 +3963,7 @@ Local Symbols
 <BR>[Address Reference Count : 1]<UL><LI> loramac.o(i.LoRaMacInitialization)
 </UL>
 <P><STRONG><a name="[61]"></a>OnRadioTxDone</STRONG> (Thumb, 282 bytes, Stack size 24 bytes, loramac.o(i.OnRadioTxDone))
-<BR><BR>[Stack]<UL><LI>Max Depth = 624<LI>Call Chain = OnRadioTxDone &rArr; OnMacStateCheckTimerEvent &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 640<LI>Call Chain = OnRadioTxDone &rArr; OnMacStateCheckTimerEvent &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
 <LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStart
@@ -3964,16 +3976,15 @@ Local Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> loramac.o(i.LoRaMacInitialization)
 </UL>
-<P><STRONG><a name="[64]"></a>OnRadioTxTimeout</STRONG> (Thumb, 46 bytes, Stack size 8 bytes, loramac.o(i.OnRadioTxTimeout))
-<BR><BR>[Stack]<UL><LI>Max Depth = 592<LI>Call Chain = OnRadioTxTimeout &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<P><STRONG><a name="[64]"></a>OnRadioTxTimeout</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, loramac.o(i.OnRadioTxTimeout))
+<BR><BR>[Stack]<UL><LI>Max Depth = 608<LI>Call Chain = OnRadioTxTimeout &rArr; OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
-<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OpenContinuousRx2Window
+<BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OpenContinuousRx2Window
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> loramac.o(i.LoRaMacInitialization)
 </UL>
 <P><STRONG><a name="[5e]"></a>OnRxWindow1TimerEvent</STRONG> (Thumb, 102 bytes, Stack size 8 bytes, loramac.o(i.OnRxWindow1TimerEvent))
-<BR><BR>[Stack]<UL><LI>Max Depth = 576<LI>Call Chain = OnRxWindow1TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 592<LI>Call Chain = OnRxWindow1TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
 <LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
@@ -3983,7 +3994,7 @@ Local Symbols
 <BR>[Address Reference Count : 1]<UL><LI> loramac.o(i.LoRaMacInitialization)
 </UL>
 <P><STRONG><a name="[5f]"></a>OnRxWindow2TimerEvent</STRONG> (Thumb, 100 bytes, Stack size 8 bytes, loramac.o(i.OnRxWindow2TimerEvent))
-<BR><BR>[Stack]<UL><LI>Max Depth = 576<LI>Call Chain = OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 592<LI>Call Chain = OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
 <LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
@@ -4006,7 +4017,7 @@ Local Symbols
 <BR>[Address Reference Count : 1]<UL><LI> loramac.o(i.LoRaMacInitialization)
 </UL>
 <P><STRONG><a name="[11e]"></a>OpenContinuousRx2Window</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, loramac.o(i.OpenContinuousRx2Window))
-<BR><BR>[Stack]<UL><LI>Max Depth = 584<LI>Call Chain = OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; myprintf &rArr; vsprintf
+<BR><BR>[Stack]<UL><LI>Max Depth = 600<LI>Call Chain = OpenContinuousRx2Window &rArr; OnRxWindow2TimerEvent &rArr; RxWindowSetup &rArr; myprintf &rArr; vsprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRxWindow2TimerEvent
 </UL>
@@ -4047,7 +4058,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[62]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRadioRxDone
 </UL>
 
-<P><STRONG><a name="[113]"></a>ResetMacParameters</STRONG> (Thumb, 202 bytes, Stack size 8 bytes, loramac.o(i.ResetMacParameters))
+<P><STRONG><a name="[113]"></a>ResetMacParameters</STRONG> (Thumb, 204 bytes, Stack size 8 bytes, loramac.o(i.ResetMacParameters))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = ResetMacParameters &rArr; RegionInitDefaults &rArr; RegionCN470InitDefaults &rArr; RegionCommonChanMaskCopy
 </UL>
 <BR>[Calls]<UL><LI><a href="#[112]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RegionInitDefaults
@@ -4056,8 +4067,10 @@ Local Symbols
 <LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LoRaMacInitialization
 </UL>
 
-<P><STRONG><a name="[144]"></a>RxWindowSetup</STRONG> (Thumb, 28 bytes, Stack size 16 bytes, loramac.o(i.RxWindowSetup))
-<BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = RxWindowSetup
+<P><STRONG><a name="[144]"></a>RxWindowSetup</STRONG> (Thumb, 34 bytes, Stack size 16 bytes, loramac.o(i.RxWindowSetup))
+<BR><BR>[Stack]<UL><LI>Max Depth = 584<LI>Call Chain = RxWindowSetup &rArr; myprintf &rArr; vsprintf
+</UL>
+<BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;myprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRxWindow2TimerEvent
 <LI><a href="#[5e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OnRxWindow1TimerEvent
@@ -4165,8 +4178,8 @@ Local Symbols
 <BR>[Calls]<UL><LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RtcSetTimeout
 <LI><a href="#[1a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RtcGetAdjustedTimeoutValue
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerIrqHandler
-<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
+<BR>[Called By]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerStop
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerIrqHandler
 <LI><a href="#[1a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerInsertNewHeadTimer
 </UL>
 

@@ -158,9 +158,7 @@ int main(void)
 		DEBUG("Test\r\n");
 		
 		//Initialize STPM32
-		USART3_PINSET_TX();
 		myprintf("Initializing STPM32...\r\n");
-		USART3_PINSET_RX();
 		
 		if (STPM32_Init() != true)
 				Error_Handler();

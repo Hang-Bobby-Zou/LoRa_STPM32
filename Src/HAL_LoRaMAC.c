@@ -26,6 +26,7 @@ uint32_t frame_count = 0;
 extern uint8_t aRxBuffer[8];
 extern uint32_t UpLinkCounter;
 extern LoRaMacFlags_t LoRaMacFlags;
+extern TimerEvent_t TxTimeoutTimer;
 
 #define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
 
@@ -843,7 +844,7 @@ int LoRaMAC_Send(void){
 		
 		AppDataSize = 5;
 		
-if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
+		if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
     {
         // Send empty frame in order to flush MAC commands
         mcpsReq.Type = MCPS_UNCONFIRMED;
@@ -874,9 +875,12 @@ if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
 		
 		status = LoRaMacMcpsRequest( &mcpsReq ); 
 		if (status == LORAMAC_STATUS_OK ){
+			TimerStop( &TxTimeoutTimer );
+			TimerIrqHandler();
+			
 			frame_count++;
 			//UpLinkCounter++;
-			//myprintf("Frame %lu Sent Success\r\n", (unsigned long) frame_count);
+			myprintf("Frame %d Sent Success\r\n", UpLinkCounter);
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){
 			//myprintf("LoRaMAC Status Busy\r\n");
@@ -887,7 +891,7 @@ if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
 			//myprintf("Frame ERROR (%d)(/%u)\r\n", status, frame_count);
 			return -1;
 		}
-		
   }
+	return 1;
 }
 
