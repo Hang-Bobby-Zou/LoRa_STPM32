@@ -1220,7 +1220,7 @@ static void OnRadioRxError( void )
 
 static void OnRadioRxTimeout( void )
 {
-    DEBUG("OnRadioRxTimeout\r\n");
+    //DEBUG("OnRadioRxTimeout\r\n");
 		if( LoRaMacDeviceClass != CLASS_C )
     {
         Radio.Sleep( );
@@ -1588,7 +1588,7 @@ static void OnAckTimeoutTimerEvent( void )
 
 static void RxWindowSetup( bool rxContinuous, uint32_t maxRxWindow )
 {
-  DEBUG("\r\nRxWindowSetup\r\n");
+  //DEBUG("\r\nRxWindowSetup\r\n");
 	if( rxContinuous == false )
     {
         Radio.Rx( maxRxWindow );

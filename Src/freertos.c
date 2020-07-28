@@ -430,10 +430,12 @@ void StartUSART1(void const * argument)
 void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
-	HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
+	//HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
+	myprintf("USART3 Running\r\n");
 	/* Infinite loop */
   for(;;)
   {		
+		//HAL_NVIC_EnableIRQ(TIM7_IRQn);
 		/*
 		if (USART3_RxFlag == 1){
 
@@ -457,6 +459,8 @@ void StartUSART3(void const * argument)
 			USART3_RxFlag = 0;
 		}
 */
+
+/*
 		if (USART3_RxFlag == 1){
 			//vTaskSuspend(SPI2Handle);
 			
@@ -471,7 +475,7 @@ void StartUSART3(void const * argument)
 			
 			//vTaskResume(SPI2Handle);
 		}
-
+*/
 		osDelay(1); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
@@ -494,6 +498,7 @@ void StartSPI2(void const * argument)
 	LoRaMAC_Init();
 	
 	myprintf("LoRaMAC Init Done. \r\n");
+	
 	myprintf("LoRaMAC Join...\r\n");
 
 	LoRaMAC_Join();
@@ -516,8 +521,10 @@ void StartSPI2(void const * argument)
 					
 					HAL_Delay(10000);
 					TimerIrqHandler();
+
+					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 					
-					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time ));
+
 				}
 	}
 		//osDelay(1);	

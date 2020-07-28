@@ -886,7 +886,7 @@ void SX1276SetStby( void )
 
 void SX1276SetRx( uint32_t timeout )
 {
-    DEBUG("SX1276SetRx\r\n");
+    //DEBUG("SX1276SetRx\r\n");
 		bool rxContinuous = false;
 
     switch( SX1276.Settings.Modem )
