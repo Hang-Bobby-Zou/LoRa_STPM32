@@ -200,6 +200,16 @@
           <WinNumber>1</WinNumber>
           <ItemText>LoRaMacFlags.Bits.MacDone</ItemText>
         </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>TimerGetElapsedTime</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>AggregatedLastTxDoneTime</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>

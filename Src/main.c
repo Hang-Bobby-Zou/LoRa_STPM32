@@ -84,7 +84,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -156,32 +156,27 @@ int main(void)
 		*/
 		// Here set UART3 to be in S4 mode, Tx is on
 		DEBUG("Test\r\n");
+		HAL_Delay(3 * 1000);
+		
 		
 		//Initialize STPM32
-		myprintf("Initializing STPM32...\r\n");
+		myprintf("\r\nInitializing STPM32...\r\n");
 		
 		if (STPM32_Init() != true)
 				Error_Handler();
 		
-		USART3_PINSET_TX();
-		myprintf("STPM32 Initialization Done!\r\n");
-		USART3_PINSET_RX();
+		myprintf("\r\nSTPM32 Initialization Done!\r\n");
 		
 		
 		//Initialize LoRa
-		myprintf("Initializing LoRa...\r\n");
-		
+		myprintf("\r\nInitializing LoRa...\r\n");
 		if (LoRa_Init() != true)
 				Error_Handler();
+		myprintf("\r\nLoRa Initialization Done!\r\n");
 		
-		myprintf("LoRa Initialization Done!\r\n");
 		
-		
-
 		/* Initialize external flash and TEST if flash is okay */
-		USART3_PINSET_TX();
-		myprintf("Initializing External Flash...\r\n");
-		USART3_PINSET_RX();
+		myprintf("\r\nInitializing External Flash...\r\n");
 		
 		ext_flash_init();
 		ext_flash_power_on();
@@ -197,19 +192,13 @@ int main(void)
 		//		ext_flash_erase_block(i);
 		//		ext_flash_last_write_or_erase_done();
 		//}
-		//USART3_PINSET_TX();
 		//myprintf("External Flash Initialization Done!\r\n");
-		//USART3_PINSET_RX();
 		
 		
 		
 		//Finishing up by printing "Starting FreeRTOS System..."
-		USART3_PINSET_TX();
-		myprintf("Starting FreeRTOC System...\r\n");
+		myprintf("\r\nStarting FreeRTOC System...\r\n");
 		myprintf("\r\n");
-		USART3_PINSET_RX();
-		
-		
 		
   /* USER CODE END 2 */
 
@@ -321,9 +310,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {
     HAL_IncTick();
-		
-		//TIM7_Irq_Num++;
-		//TimerIrqHandler();		
   }
   /* USER CODE BEGIN Callback 1 */
 	if(htim->Instance == TIM7)

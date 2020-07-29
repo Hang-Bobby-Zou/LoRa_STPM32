@@ -751,7 +751,7 @@ static void PrepareRxDoneAbort( void )
 
 static void OnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    //DEBUG("OnRadioRxDone\r\n");
+    DEBUG("OnRadioRxDone\r\n");
 		LoRaMacHeader_t macHdr;
     LoRaMacFrameCtrl_t fCtrl;
     ApplyCFListParams_t applyCFList;
@@ -1220,7 +1220,7 @@ static void OnRadioRxError( void )
 
 static void OnRadioRxTimeout( void )
 {
-    //DEBUG("OnRadioRxTimeout\r\n");
+    DEBUG("OnRadioRxTimeout\r\n");
 		if( LoRaMacDeviceClass != CLASS_C )
     {
         Radio.Sleep( );
@@ -1239,7 +1239,8 @@ static void OnRadioRxTimeout( void )
             if( TimerGetElapsedTime( AggregatedLastTxDoneTime ) >= RxWindow2Delay )
             {
                 TimerStop( &RxWindowTimer2 );
-                LoRaMacFlags.Bits.MacDone = 1;
+                DEBUG("Incorrect timing occured\r\n");
+								LoRaMacFlags.Bits.MacDone = 1;
             }
         }
     }
@@ -1270,9 +1271,6 @@ void OnMacStateCheckTimerEvent( void )
 		GetPhyParams_t getPhy;
     PhyParam_t phyParam;
     bool txTimeout = false;
-
-
-		//HAL_Delay(1000);
 	
     if( LoRaMacFlags.Bits.MacDone == 1 ){
 			
@@ -1473,7 +1471,7 @@ void OnMacStateCheckTimerEvent( void )
 
 static void OnTxDelayedTimerEvent( void )
 {
-   	DEBUG("OnTxDelayedTimerEvent\r\n");
+   	//DEBUG("OnTxDelayedTimerEvent\r\n");
 		TimerStop( &TxDelayedTimer );
     LoRaMacState &= ~LORAMAC_TX_DELAYED;
 
@@ -1485,7 +1483,7 @@ static void OnRxWindow1TimerEvent( void )
 {
     TimerStop( &RxWindowTimer1 );
 	
-		DEBUG("OnRxWindow1TimerEvent\r\n");
+		//DEBUG("OnRxWindow1TimerEvent\r\n");
 		
     RxSlot = RX_SLOT_WIN_1;
 
@@ -1509,7 +1507,7 @@ static void OnRxWindow2TimerEvent( void )
 {
 		TimerStop( &RxWindowTimer2 );
 	
-		DEBUG("OnRxWindow2TimerEvent\r\n");
+		//DEBUG("OnRxWindow2TimerEvent\r\n");
 	
     RxWindow2Config.Channel = Channel;
     RxWindow2Config.Frequency = LoRaMacParams.Rx2Channel.Frequency;
@@ -1571,7 +1569,7 @@ static void CheckToDisableAckTimeout( bool nodeAckRequested, DeviceClass_t devCl
 
 static void OnAckTimeoutTimerEvent( void )
 {
-    DEBUG("OnAckTimeoutTimerEvent\r\n");
+    //DEBUG("OnAckTimeoutTimerEvent\r\n");
 	
 		TimerStop( &AckTimeoutTimer );
 

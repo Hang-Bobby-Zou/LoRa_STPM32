@@ -34,6 +34,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l4xx_hal.h"
+#include "usart.h"
 
 /** @addtogroup STM32L4xx_HAL_Driver
   * @{

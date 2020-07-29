@@ -97,7 +97,7 @@ static int USART3_TxFlag = 0;
 
 uint8_t loramac_send_retry_count = 0;
 
-int LoRa_Block_Time = 5000;
+int LoRa_Block_Time = 10000;
 
 //Raw data from STPM32 defines
 static uint8_t PH_Period								[5] = {0};
@@ -270,7 +270,7 @@ void defaultIDLE(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-
+		//DEBUG("IDLE\r\n");
 		osDelay(1);
   }
   /* USER CODE END defaultIDLE */
@@ -431,7 +431,7 @@ void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
 	//HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
-	myprintf("USART3 Running\r\n");
+	//myprintf("USART3 Running\r\n");
 	/* Infinite loop */
   for(;;)
   {		
@@ -508,24 +508,25 @@ void StartSPI2(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
+			if (LoRa_CheckStateIDLE() == true){
 				if(LoRaMAC_Send() == -1){ //If send was not successful
 					if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
 						loramac_send_retry_count ++;
-						myprintf("\r\n LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
+						myprintf("LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
 						TimerIrqHandler();
 					}
 					
 				} else {	
-					myprintf("\r\n LoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
+					myprintf("\r\nLoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
 					loramac_send_retry_count = 0;
 					
-					HAL_Delay(10000);
-					TimerIrqHandler();
-
-					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
+					//TimerIrqHandler();					
 					
-
 				}
+			}
+			osDelay(5000);
+			//HAL_Delay(5000);
+			//vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 	}
 		//osDelay(1);	
   /* USER CODE END StartSPI2 */

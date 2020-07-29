@@ -886,7 +886,7 @@ void SX1276SetStby( void )
 
 void SX1276SetRx( uint32_t timeout )
 {
-    //DEBUG("SX1276SetRx\r\n");
+		//DEBUG("SX1276SetRx, RxTimeOut: %d\r\n",timeout);
 		bool rxContinuous = false;
 
     switch( SX1276.Settings.Modem )
@@ -1024,7 +1024,10 @@ void SX1276SetRx( uint32_t timeout )
     SX1276.Settings.State = RF_RX_RUNNING;
     if( timeout != 0 )
     {
-        TimerSetValue( &RxTimeoutTimer, timeout );
+        //
+				TimerStop( &RxTimeoutTimer );
+				//
+				TimerSetValue( &RxTimeoutTimer, timeout );
         TimerStart( &RxTimeoutTimer );
     }
 
@@ -1156,7 +1159,8 @@ void SX1276StartCad( void )
 
 void SX1276SetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )
 {
-    uint32_t timeout = ( uint32_t )( time * 1000 );
+    DEBUG("SX1276SetTxContinuousWave\r\n");
+		uint32_t timeout = ( uint32_t )( time * 1000 );
 
     SX1276SetChannel( freq );
 
@@ -1370,7 +1374,7 @@ uint32_t SX1276GetWakeupTime( void )
 
 void SX1276OnTimeoutIrq( void )
 {
-    DEBUG("SX1276OnTimeoutIrq\r\n");
+    DEBUG("SX1276OnTimeoutTimerIrq\r\n");
 		switch( SX1276.Settings.State )
     {
     case RF_RX_RUNNING:

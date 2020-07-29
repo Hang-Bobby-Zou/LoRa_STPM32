@@ -880,7 +880,7 @@ int LoRaMAC_Send(void){
 			
 			frame_count++;
 			//UpLinkCounter++;
-			myprintf("Frame %d Sent Success\r\n", UpLinkCounter);
+			myprintf("\r\nFrame %d Sent Success\r\n", UpLinkCounter);
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){
 			//myprintf("LoRaMAC Status Busy\r\n");
