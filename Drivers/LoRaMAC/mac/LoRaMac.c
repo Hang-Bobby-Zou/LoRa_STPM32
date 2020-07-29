@@ -673,11 +673,13 @@ static void OnRadioTxDone( void )
     // Setup timers
 		if( IsRxWindowsEnabled == true )
     {
-        TimerSetValue( &RxWindowTimer1, RxWindow1Delay );
+        TimerStop( &RxWindowTimer1 );
+				TimerSetValue( &RxWindowTimer1, RxWindow1Delay );
         TimerStart( &RxWindowTimer1 );
         if( LoRaMacDeviceClass != CLASS_C )
         {
-            TimerSetValue( &RxWindowTimer2, RxWindow2Delay );
+            TimerStop( &RxWindowTimer2 );
+						TimerSetValue( &RxWindowTimer2, RxWindow2Delay );
             TimerStart( &RxWindowTimer2 );
         }
         if( ( LoRaMacDeviceClass == CLASS_C ) || ( NodeAckRequested == true ) )
@@ -1239,7 +1241,8 @@ static void OnRadioRxTimeout( void )
             if( TimerGetElapsedTime( AggregatedLastTxDoneTime ) >= RxWindow2Delay )
             {
                 TimerStop( &RxWindowTimer2 );
-                DEBUG("Incorrect timing occured\r\n");
+                TimerSetValue( &RxWindowTimer2, RxWindow2Delay);
+								DEBUG("Incorrect timing occured\r\n");
 								LoRaMacFlags.Bits.MacDone = 1;
             }
         }
