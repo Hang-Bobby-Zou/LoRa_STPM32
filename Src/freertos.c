@@ -524,8 +524,8 @@ void StartSPI2(void const * argument)
 					
 				}
 			}
-			osDelay(5000);
-			//HAL_Delay(5000);
+			//osDelay(5000);
+			HAL_Delay(5000);
 			//vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 	}
 		//osDelay(1);	

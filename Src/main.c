@@ -310,13 +310,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {
     HAL_IncTick();
+
   }
   /* USER CODE BEGIN Callback 1 */
 	if(htim->Instance == TIM7)
-	{	
-		TIM7_IRQHandler();
+	{
 		TIM7_Irq_Num++;
-		TimerIrqHandler();		
+		TimerIrqHandler();
 	}	
   /* USER CODE END Callback 1 */
 }
