@@ -249,7 +249,7 @@ void myprintf(char *fmt,...){
 	HAL_UART_SendBytes(huart3.Instance, string, strlen(string));
 	USART3_PINSET_RX();
 	
-	HAL_Delay(1);
+	//HAL_Delay(1);
 
 	
 }

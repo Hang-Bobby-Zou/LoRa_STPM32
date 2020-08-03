@@ -29,8 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "stdbool.h"
 /* USER CODE END Includes */
-extern TIM_HandleTypeDef htim1; 
-extern TIM_HandleTypeDef htim6;
+
 extern TIM_HandleTypeDef htim7;
 
 /* USER CODE BEGIN Private defines */
@@ -43,10 +42,9 @@ static uint32_t TIM7_Point2 = 0;
 #define TIM7_IRQ_CLOCK        (20)
 #define TIM7_PERIOD           (TIM7_COUNT_CLOCK / TIM7_IRQ_CLOCK);
 
-
+void DelayMsPoll(int x);
 /* USER CODE END Private defines */
 
-void MX_TIM6_Init(void);
 void MX_TIM7_Init(void);
 
 /* USER CODE BEGIN Prototypes */

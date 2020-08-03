@@ -28,8 +28,6 @@ extern uint32_t UpLinkCounter;
 extern LoRaMacFlags_t LoRaMacFlags;
 extern TimerEvent_t TxTimeoutTimer;
 
-#define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
-
 #ifndef ACTIVE_REGION
 
 #warning "No active region defined, LORAMAC_REGION_EU868 will be used as default."
@@ -881,6 +879,9 @@ int LoRaMAC_Send(void){
 			frame_count++;
 			//UpLinkCounter++;
 			myprintf("\r\nFrame %d Sent Success\r\n", UpLinkCounter);
+			
+			DelayMsPoll(1000);
+			
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){
 			//myprintf("LoRaMAC Status Busy\r\n");

@@ -55,7 +55,7 @@
 
 #include <string.h>
 #include "cmsis_os.h"
-
+#include "stm32l4xx_hal.h"
 /*
  * ARM Compiler 4/5
  */
@@ -1361,7 +1361,8 @@ osStatus osMailFree (osMailQId queue_id, void *mail)
 */
 void osSystickHandler(void)
 {
-
+HAL_IncTick();
+	
 #if (INCLUDE_xTaskGetSchedulerState  == 1 )
   if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
   {

@@ -53,7 +53,7 @@ void MemManage_Handler(void);
 void BusFault_Handler(void);
 void UsageFault_Handler(void);
 void DebugMon_Handler(void);
-void TIM1_UP_TIM16_IRQHandler(void);
+void SysTick_Handler(void);
 void USART1_IRQHandler(void);
 void USART3_IRQHandler(void);
 void TIM7_IRQHandler(void);

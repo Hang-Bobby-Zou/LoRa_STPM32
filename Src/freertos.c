@@ -37,6 +37,7 @@
 #include "HAL_LoRaMAC.h"
 #include "Commissioning.h"
 #include "LoRaMac.h"
+#include "tim.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -74,7 +75,7 @@
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
 
 
-#define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
+//#define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -226,7 +227,7 @@ void MX_FREERTOS_Init(void) {
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
-  osThreadDef(USART3, StartUSART3, osPriorityAboveNormal, 0, 256);
+  osThreadDef(USART3, StartUSART3, osPriorityNormal, 0, 128);
   USART3Handle = osThreadCreate(osThread(USART3), NULL);
 
   /* definition and creation of SPI2 */
@@ -524,8 +525,9 @@ void StartSPI2(void const * argument)
 					
 				}
 			}
+			DelayMsPoll(50000);
 			//osDelay(5000);
-			HAL_Delay(5000);
+			//HAL_Delay(5000);
 			//vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 	}
 		//osDelay(1);	
@@ -534,6 +536,7 @@ void StartSPI2(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+
 /**
   * @brief Rx Transfer completed callbacks
   * @param huart: uart handle

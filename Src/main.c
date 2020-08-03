@@ -84,7 +84,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -104,7 +104,6 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_PCD_Init();
   MX_SPI2_Init();
-  MX_TIM6_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 		
@@ -178,8 +177,8 @@ int main(void)
 		/* Initialize external flash and TEST if flash is okay */
 		myprintf("\r\nInitializing External Flash...\r\n");
 		
-		ext_flash_init();
-		ext_flash_power_on();
+		//ext_flash_init();
+		//ext_flash_power_on();
 			
 		//if (ext_flash_tb() == false){
 		//		Error_Handler();
@@ -292,9 +291,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
  /**
   * @brief  Period elapsed callback in non blocking mode
   * @note   This function is called  when TIM1 interrupt took place, inside
@@ -308,10 +304,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 0 */
 
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM1) {
-    HAL_IncTick();
 
-  }
   /* USER CODE BEGIN Callback 1 */
 	if(htim->Instance == TIM7)
 	{
@@ -320,6 +313,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}	
   /* USER CODE END Callback 1 */
 }
+/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.

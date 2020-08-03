@@ -71,3 +71,4 @@ lora-stpm32\freertos.o: ../Drivers/LoRaMAC/mac/LoRaMac.h
 lora-stpm32\freertos.o: ../Drivers/LoRaMAC/system/timer.h
 lora-stpm32\freertos.o: ../Drivers/LoRaMAC/radio/radio.h
 lora-stpm32\freertos.o: ../Drivers/LoRaMAC/mac/region/Region.h
+lora-stpm32\freertos.o: ../Inc/tim.h

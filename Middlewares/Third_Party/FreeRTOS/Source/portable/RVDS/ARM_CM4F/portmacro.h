@@ -25,7 +25,6 @@
  * 1 tab == 4 spaces!
  */
 
-#include <stdint.h>
 
 #ifndef PORTMACRO_H
 #define PORTMACRO_H
