@@ -30,6 +30,7 @@ extern TimerEvent_t TxTimeoutTimer;
 
 uint8_t LoRa_RxBuf_Size;
 uint8_t *LoRa_RxBuf;
+uint8_t LoRa_RxPort;
 
 #ifndef ACTIVE_REGION
 
@@ -434,27 +435,20 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 
     if( mcpsIndication->RxData == true && mcpsIndication->BufferSize != 0)
     {
-        switch( mcpsIndication->Port )
-        {
-        case 1: // The application LED can be controlled on port 1 or 2
-        case 2:
-						/*    
-						if( mcpsIndication->BufferSize == 1 )
-            {
-                AppLedStateOn = mcpsIndication->Buffer[0] & 0x01;
-                //GpioWrite( &Led3, ( ( AppLedStateOn & 0x01 ) != 0 ) ? 0 : 1 );
-            }
-						*/
-						LoRa_RxBuf = mcpsIndication->Buffer;
-						LoRa_RxBuf_Size = mcpsIndication->BufferSize;
-
-						myprintf("Received DownLink buffersize : %d\r\n", LoRa_RxBuf_Size);
-						myprintf("Received DownLink buffer : %x %x %x %x \r\n", LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+        LoRa_RxPort = mcpsIndication->Port;  //McpsIndication.Port->LoRa_RxPort
 				
-            break;
-        case 224:
-            if( ComplianceTest.Running == false )
-            {
+				if (LoRa_RxPort < 224){
+					LoRa_RxBuf = mcpsIndication->Buffer;
+					LoRa_RxBuf_Size = mcpsIndication->BufferSize;
+
+					myprintf("Received DownLink buffersize : %d\r\n", LoRa_RxBuf_Size);
+					myprintf("Received DownLink buffer : %x %x %x %x \r\n", LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+				}
+				else {
+					switch (LoRa_RxPort)
+						case 224:
+							if( ComplianceTest.Running == false )
+							{
                 // Check compliance test enable command (i)
                 if( ( mcpsIndication->BufferSize == 4 ) &&
                     ( mcpsIndication->Buffer[0] == 0x01 ) &&
@@ -478,13 +472,13 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                     mibReq.Param.AdrEnable = true;
                     LoRaMacMibSetRequestConfirm( &mibReq );
 
-#if defined( REGION_EU868 )
+										#if defined( REGION_EU868 )
                     LoRaMacTestSetDutyCycleOn( false );
-#endif
+										#endif
                 }
-            }
-            else
-            {
+							}
+							else
+							{
               DEBUG("ComplianceTest running");  
 							ComplianceTest.State = mcpsIndication->Buffer[0];
                 switch( ComplianceTest.State )
@@ -500,9 +494,9 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                     mibReq.Type = MIB_ADR;
                     mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
                     LoRaMacMibSetRequestConfirm( &mibReq );
-#if defined( REGION_EU868 )
+										#if defined( REGION_EU868 )
                     LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
-#endif
+										#endif
                     break;
                 case 1: // (iii, iv)
                     AppDataSize = 2;
@@ -546,9 +540,9 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                         mibReq.Type = MIB_ADR;
                         mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
                         LoRaMacMibSetRequestConfirm( &mibReq );
-#if defined( REGION_EU868 )
+												#if defined( REGION_EU868 )
                         LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
-#endif
+												#endif
 
                         mlmeReq.Type = MLME_JOIN;
 
@@ -595,17 +589,12 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 								*/
                 default:
                     break;
-                }
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
-    // Switch LED 2 ON for each received downlink
-    //GpioWrite( &Led2, 0 );
-    //TimerStart( &Led2Timer );
+							}
+					}
+				}
+    } else {
+			myprintf("No new message from LoRaWAN, BufferSize = %d\r\n",mcpsIndication->BufferSize);
+		}
 }
 
 /*!
