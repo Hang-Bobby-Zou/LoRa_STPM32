@@ -28,6 +28,9 @@ extern uint32_t UpLinkCounter;
 extern LoRaMacFlags_t LoRaMacFlags;
 extern TimerEvent_t TxTimeoutTimer;
 
+uint8_t LoRa_RxBuf_Size;
+uint8_t *LoRa_RxBuf;
+
 #ifndef ACTIVE_REGION
 
 #warning "No active region defined, LORAMAC_REGION_EU868 will be used as default."
@@ -429,17 +432,25 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
         ComplianceTest.DownLinkCounter++;
     }
 
-    if( mcpsIndication->RxData == true )
+    if( mcpsIndication->RxData == true && mcpsIndication->BufferSize != 0)
     {
         switch( mcpsIndication->Port )
         {
         case 1: // The application LED can be controlled on port 1 or 2
         case 2:
-            if( mcpsIndication->BufferSize == 1 )
+						/*    
+						if( mcpsIndication->BufferSize == 1 )
             {
                 AppLedStateOn = mcpsIndication->Buffer[0] & 0x01;
                 //GpioWrite( &Led3, ( ( AppLedStateOn & 0x01 ) != 0 ) ? 0 : 1 );
             }
+						*/
+						LoRa_RxBuf = mcpsIndication->Buffer;
+						LoRa_RxBuf_Size = mcpsIndication->BufferSize;
+
+						myprintf("Received DownLink buffersize : %d\r\n", LoRa_RxBuf_Size);
+						myprintf("Received DownLink buffer : %x %x %x %x \r\n", LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+				
             break;
         case 224:
             if( ComplianceTest.Running == false )
@@ -880,7 +891,7 @@ int LoRaMAC_Send(void){
 			//UpLinkCounter++;
 			myprintf("\r\nFrame %d Sent Success\r\n", UpLinkCounter);
 			
-			DelayMsPoll(1000);
+			//DelayMsPoll(1000);
 			
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){

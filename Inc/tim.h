@@ -34,12 +34,12 @@ extern TIM_HandleTypeDef htim7;
 
 /* USER CODE BEGIN Private defines */
 static uint32_t TIM7_Clock = 0;
-static uint32_t TIM7_Irq_Num = 0;
+//static uint32_t TIM7_Irq_Num = 0;
 static uint32_t TIM7_Point1 = 0;
 static uint32_t TIM7_Point2 = 0;
 
 #define TIM7_COUNT_CLOCK      (200000)
-#define TIM7_IRQ_CLOCK        (20)
+#define TIM7_IRQ_CLOCK        (20)		//How much time to enter interrupt, 
 #define TIM7_PERIOD           (TIM7_COUNT_CLOCK / TIM7_IRQ_CLOCK);
 
 void DelayMsPoll(int x);

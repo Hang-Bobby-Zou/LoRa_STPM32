@@ -1486,7 +1486,7 @@ static void OnRxWindow1TimerEvent( void )
 {
     TimerStop( &RxWindowTimer1 );
 	
-		//DEBUG("OnRxWindow1TimerEvent\r\n");
+		DEBUG("OnRxWindow1TimerEvent\r\n");
 		
     RxSlot = RX_SLOT_WIN_1;
 
@@ -1510,7 +1510,7 @@ static void OnRxWindow2TimerEvent( void )
 {
 		TimerStop( &RxWindowTimer2 );
 	
-		//DEBUG("OnRxWindow2TimerEvent\r\n");
+		DEBUG("OnRxWindow2TimerEvent\r\n");
 	
     RxWindow2Config.Channel = Channel;
     RxWindow2Config.Frequency = LoRaMacParams.Rx2Channel.Frequency;
@@ -1589,7 +1589,7 @@ static void OnAckTimeoutTimerEvent( void )
 
 static void RxWindowSetup( bool rxContinuous, uint32_t maxRxWindow )
 {
-  //DEBUG("\r\nRxWindowSetup\r\n");
+  //DEBUG("RxWindowSetup\r\n");
 	if( rxContinuous == false )
     {
         Radio.Rx( maxRxWindow );

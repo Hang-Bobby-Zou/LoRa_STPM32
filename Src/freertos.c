@@ -71,9 +71,7 @@
 #define V1_Low_Threshold 		200.0
 #define V1_High_Threshold		270.0
 
-
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
-
 
 //#define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
 /* USER CODE END PD */
@@ -103,20 +101,20 @@ int LoRa_Block_Time = 10000;
 //Raw data from STPM32 defines
 static uint8_t PH_Period								[5] = {0};
 static uint8_t CH1_RMS									[5] = {0};
-static uint8_t C1_PHA									[5] = {0};
+static uint8_t C1_PHA										[5] = {0};
 
 static uint8_t PH1_Active_Energy				[5] = {0};
-static uint8_t PH1_Fundamental_Energy	[5] = {0};
+static uint8_t PH1_Fundamental_Energy		[5] = {0};
 static uint8_t PH1_Reactive_Energy			[5] = {0};
 static uint8_t PH1_Apparent_Energy			[5] = {0};
 		
-static uint8_t PH1_Active_Power				[5] = {0};
+static uint8_t PH1_Active_Power					[5] = {0};
 static uint8_t PH1_Fundamental_Power		[5] = {0};
-static uint8_t PH1_Reactive_Power			[5] = {0};
+static uint8_t PH1_Reactive_Power				[5] = {0};
 static uint8_t	PH1_Apparent_RMS_Power	[5] = {0};
 
 static uint8_t Total_Active_Energy			[5] = {0};
-static uint8_t Total_Fundamental_Energy[5] = {0};
+static uint8_t Total_Fundamental_Energy	[5] = {0};
 static uint8_t Total_Reactive_Energy		[5] = {0};
 static uint8_t Total_Apparent_Energy		[5] = {0};
 
@@ -125,10 +123,7 @@ UBaseType_t USART3_Priority;
 UBaseType_t SPI1_Priority;
 UBaseType_t SPI2_Priority;
 
-
 extern LoRaMacFlags_t LoRaMacFlags;
-
-
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId IDLEHandle;
@@ -506,29 +501,34 @@ void StartSPI2(void const * argument)
 	
 	myprintf("LoRaMAC Join Done. \r\n");
 
+	uint32_t t;
+	
+	
+	
 	/* Infinite loop */
   for(;;)
   {
+		//t = TIM7_GetTimeMs();
+		//HAL_Delay(2000);
+		//t = TIM7_GetTimeMs();
+		
 			if (LoRa_CheckStateIDLE() == true){
 				if(LoRaMAC_Send() == -1){ //If send was not successful
 					if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
 						loramac_send_retry_count ++;
 						myprintf("LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
-						TimerIrqHandler();
 					}
 					
 				} else {	
 					myprintf("\r\nLoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
 					loramac_send_retry_count = 0;
-					
-					//TimerIrqHandler();					
-					
 				}
 			}
-			DelayMsPoll(50000);
-			//osDelay(5000);
-			//HAL_Delay(5000);
+			//DEBUG("Delaying...\r\n");
+			DelayMsPoll(10000);
+			//DEBUG("Delay finishing...\r\n");
 			//vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
+		
 	}
 		//osDelay(1);	
   /* USER CODE END StartSPI2 */

@@ -21,43 +21,33 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-
+extern uint32_t TIM7_Irq_Num;
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim7;
 
 /* TIM7 init function */
 void MX_TIM7_Init(void)
-{
-/*
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
+{	
+	htim7.Instance = TIM7;
+	
+	/*
+	TIM7_Clock = SystemCoreClock *2 / 8;																		// 4000000 *2 / 8 = 1000000 
+	
+	htim7.Init.Prescaler = (uint32_t)(TIM7_Clock / TIM7_COUNT_CLOCK) - 1;		// = 1'000'000 / 200'000 = 5
+	htim7.Init.Period = (uint32_t) TIM7_PERIOD;															// = 10000		overflows at 10000
+	
+	// 1'000'000 / 5 = 200'000 = 0.2MHz = 0.005ms
+	// 10000 * 0.005 = 50 ms triggers an interrupt
+	*/
 
-  htim7.Instance = TIM7;
-  htim7.Init.Prescaler = 0;
-  htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim7.Init.Period = 0;
-  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-*/
+	htim7.Init.Prescaler = (uint32_t) 8 - 1;			//80'000'000 / 8 = 10'000'000	= 10MHZ = 0.0001ms
+	htim7.Init.Period	= (uint32_t) 10000 - 1;			//10000 * 0.0001 ms = 1 ms triggers an interrupt
 	
-	TIM7_Clock = SystemCoreClock *2 / 8;
-	
-  htim7.Instance = TIM7;
-  htim7.Init.Prescaler = (uint32_t)(TIM7_Clock / TIM7_COUNT_CLOCK) - 1;
-  htim7.Init.Period = (uint32_t)TIM7_PERIOD;
 	htim7.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-	
+
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {
     Error_Handler();
@@ -122,15 +112,23 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 /* USER CODE BEGIN 1 */
 uint32_t TIM7_GetTimeMs(void)
 {
+	
 	uint32_t TimeValue = 0;
   
 	TimeValue = (uint32_t)(__HAL_TIM_GET_COUNTER(&htim7));
-	//TimeValue = (uint32_t)(__HAL_TIM_GET_COUNTER(&htim1));
 	
 	TimeValue = TimeValue & 0xffff;
-	TimeValue = TimeValue + TIM7_Irq_Num * TIM7_PERIOD;
-	TimeValue *= 1000u;	//Convert in ms
-	TimeValue /= TIM7_COUNT_CLOCK;
+	
+
+	//TimeValue = TimeValue + TIM7_Irq_Num * TIM7_PERIOD;
+	TimeValue = TimeValue + TIM7_Irq_Num * 10000;
+	
+	//TimeValue *= 1000u;	//Convert in ms
+	
+	//TimeValue /= TIM7_COUNT_CLOCK;				// how many ticks in one ms
+	TimeValue /= 10000;
+	
+	
 	if(TimeValue == 0)
 		TimeValue=1;	
 	return  TimeValue;
@@ -138,10 +136,9 @@ uint32_t TIM7_GetTimeMs(void)
 
 
 void DelayMsPoll(int x) 
-{ 
-	for (uint32_t j = 0; j < x; j++) {
-		for (uint32_t i = 0; i < 8000; i++) {  
-		
+{
+	for (int j = 0; j < x; j++) {
+		for(int i = 0; i < 20000; i++) {  
 		}
 	}
 }	
