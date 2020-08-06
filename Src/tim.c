@@ -138,7 +138,7 @@ uint32_t TIM7_GetTimeMs(void)
 void DelayMsPoll(int x) 
 {
 	for (int j = 0; j < x; j++) {
-		for(int i = 0; i < 20000; i++) {  
+		for(int i = 0; i < 16666; i++) {		//16666.66667 IDK why this number  
 		}
 	}
 }	

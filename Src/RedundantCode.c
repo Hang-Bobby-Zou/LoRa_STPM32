@@ -33,6 +33,9 @@
 
 //vTaskPrioritySet( USART3Handle, ( USART1_Priority - 2 ) );
 
+//#define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
+
+
 /* TIM7 init function
 void MX_TIM7_Init(void)
 {

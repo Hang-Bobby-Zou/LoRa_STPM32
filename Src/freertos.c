@@ -47,33 +47,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define R1									810000
-#define R2 									470
-
-#define F_CLK								125000
-#define P_CLK								0.000008		//  1 / F_CLK
-#define D_CLK								8712.5 
-
-
-#define V_ref 							1.18
-
-#define A_v 								2
-#define A_i 								2
-#define cal_v 							0.875
-#define cal_i								0.875
-
-#define k_s									0.0024
-#define k_int								1
-
-#define Freq_Low_Threshold	45.0
-#define Freq_High_Threshold	65.0
-
-#define V1_Low_Threshold 		200.0
-#define V1_High_Threshold		270.0
-
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
-
-//#define DelayMsPoll(x) { for (uint32_t j = 0; j < x; j++) {for (uint32_t i = 0; i < 8000; i++) {  }}}	
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -98,25 +72,30 @@ uint8_t loramac_send_retry_count = 0;
 
 int LoRa_Block_Time = 10000;
 
+int LoRa_DL_Flag = 0;
+
+extern uint8_t *LoRa_RxBuf;
+
 //Raw data from STPM32 defines
-static uint8_t PH_Period								[5] = {0};
-static uint8_t CH1_RMS									[5] = {0};
-static uint8_t C1_PHA										[5] = {0};
 
-static uint8_t PH1_Active_Energy				[5] = {0};
-static uint8_t PH1_Fundamental_Energy		[5] = {0};
-static uint8_t PH1_Reactive_Energy			[5] = {0};
-static uint8_t PH1_Apparent_Energy			[5] = {0};
+extern uint8_t PH_Period								[5];
+extern uint8_t CH1_RMS									[5];
+extern uint8_t C1_PHA										[5];
+
+extern uint8_t PH1_Active_Energy				[5];
+extern uint8_t PH1_Fundamental_Energy		[5];
+extern uint8_t PH1_Reactive_Energy			[5];
+extern uint8_t PH1_Apparent_Energy			[5];
 		
-static uint8_t PH1_Active_Power					[5] = {0};
-static uint8_t PH1_Fundamental_Power		[5] = {0};
-static uint8_t PH1_Reactive_Power				[5] = {0};
-static uint8_t	PH1_Apparent_RMS_Power	[5] = {0};
+extern uint8_t PH1_Active_Power					[5];
+extern uint8_t PH1_Fundamental_Power		[5];
+extern uint8_t PH1_Reactive_Power				[5];
+extern uint8_t	PH1_Apparent_RMS_Power	[5];
 
-static uint8_t Total_Active_Energy			[5] = {0};
-static uint8_t Total_Fundamental_Energy	[5] = {0};
-static uint8_t Total_Reactive_Energy		[5] = {0};
-static uint8_t Total_Apparent_Energy		[5] = {0};
+extern uint8_t Total_Active_Energy			[5];
+extern uint8_t Total_Fundamental_Energy	[5];
+extern uint8_t Total_Reactive_Energy		[5];
+extern uint8_t Total_Apparent_Energy		[5];
 
 UBaseType_t USART1_Priority;
 UBaseType_t USART3_Priority;
@@ -135,22 +114,7 @@ osSemaphoreId myBinarySem01Handle;
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 void uint8_cpy(uint8_t* dest, uint8_t* src, uint8_t size);
-void CalcPrint_Freq(void);
-void CalcPrint_V1_RMS(void);
-void CalcPrint_C1_RMS(void);
-void CalcPrint_Phase(void);
-void CalcPrint_Active_Energy(void);
-void CalcPrint_Funda_Energy(void);
-void CalcPrint_React_Energy(void);
-void CalcPrint_App_Energy(void);
-void CalcPrint_Active_Pwr(void);
-void CalcPrint_Funda_Pwr(void);
-void CalcPrint_React_Pwr(void);
-void CalcPrint_App_RMS_Pwr(void);
-void CalcPrint_Tot_Active_Energy(void);
-void CalcPrint_Tot_Funda_Energy(void);
-void CalcPrint_Tot_React_Energy(void);
-void CalcPrint_Tot_App_Energy(void);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -222,7 +186,7 @@ void MX_FREERTOS_Init(void) {
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
-  osThreadDef(USART3, StartUSART3, osPriorityNormal, 0, 128);
+  osThreadDef(USART3, StartUSART3, osPriorityAboveNormal, 0, 256);
   USART3Handle = osThreadCreate(osThread(USART3), NULL);
 
   /* definition and creation of SPI2 */
@@ -286,7 +250,7 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {	
-/*	  
+	  
 		//To cycle the register address pointer
 		if (i[0] > 0x8A){
 			i[0] = 0x2E;
@@ -407,7 +371,7 @@ void StartUSART1(void const * argument)
 		ReadMsgOnly(i[0],ReadBuffer);
 		
 		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));		//Runing delay
-*/
+
 		
 		//vTaskDelay (pdMS_TO_TICKS( 1000 ));
 
@@ -426,12 +390,11 @@ void StartUSART1(void const * argument)
 void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
-	//HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
+	HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
 	//myprintf("USART3 Running\r\n");
 	/* Infinite loop */
   for(;;)
   {		
-		//HAL_NVIC_EnableIRQ(TIM7_IRQn);
 		/*
 		if (USART3_RxFlag == 1){
 
@@ -456,22 +419,15 @@ void StartUSART3(void const * argument)
 		}
 */
 
-/*
+
 		if (USART3_RxFlag == 1){
-			//vTaskSuspend(SPI2Handle);
 			
-			USART3_PINSET_TX();
-			HAL_UART_Transmit(&huart3, aRxBuffer, 4, 0xFFFF);
-			USART3_PINSET_RX();
-			
-			//LoRa_ForceSetIDLE();
+			myprintf("USART3 Receive: %x %x %x %x \r\n", aRxBuffer[0], aRxBuffer[1], aRxBuffer[2], aRxBuffer[3]);
 			
 			USART3_RxFlag = 0;
 			HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
-			
-			//vTaskResume(SPI2Handle);
 		}
-*/
+		
 		osDelay(1); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
@@ -489,46 +445,44 @@ void StartSPI2(void const * argument)
   /* USER CODE BEGIN StartSPI2 */
   SPI2_Priority = uxTaskPriorityGet( NULL );
 
-	myprintf("LoRaMAC Init...\r\n");
-
+	DEBUG("LoRaMAC Init...");
 	LoRaMAC_Init();
+	DEBUG("LoRaMAC Init Done");
 	
-	myprintf("LoRaMAC Init Done. \r\n");
-	
-	myprintf("LoRaMAC Join...\r\n");
-
+	DEBUG("LoRaMAC Join...");
 	LoRaMAC_Join();
-	
-	myprintf("LoRaMAC Join Done. \r\n");
-
-	uint32_t t;
-	
-	
+	DEBUG("LoRaMAC Join Done");
 	
 	/* Infinite loop */
   for(;;)
   {
-		//t = TIM7_GetTimeMs();
-		//HAL_Delay(2000);
-		//t = TIM7_GetTimeMs();
-		
-			if (LoRa_CheckStateIDLE() == true){
-				if(LoRaMAC_Send() == -1){ //If send was not successful
-					if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
-						loramac_send_retry_count ++;
-						myprintf("LoRaMAC Send Failed, retrying for %d time...\r\n", loramac_send_retry_count);
-					}
-					
-				} else {	
-					myprintf("\r\nLoRaMAC Send Succeed! Blocking for %d miliseconds...\r\n", LoRa_Block_Time);
-					loramac_send_retry_count = 0;
-				}
+		myprintf("\r\n");
+		INFO("Entering LoRa Task\r\n");
+		HAL_NVIC_EnableIRQ(TIM7_IRQn);	//Enable TIM7 Irq since it is disabled while other task is running
+		if (LoRa_CheckStateIDLE() == true){
+			if(LoRaMAC_Send() == -1){ //If send was not successful
+				if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
+					loramac_send_retry_count ++;
+					WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
+				}			
+			} else {	
+				INFO("LoRaMAC Send Succeed!");
+				loramac_send_retry_count = 0;
 			}
-			//DEBUG("Delaying...\r\n");
-			DelayMsPoll(10000);
-			//DEBUG("Delay finishing...\r\n");
-			//vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
+		}
+		DelayMsPoll(10000);
 		
+		if (LoRa_DL_Flag == 1){
+			INFO("LoRa DownLink received!");
+			INFO("LoRa DownLink buffer: %x %x %x %x",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+			LoRa_DL_Flag = 0;
+		} else if (LoRa_DL_Flag == 0){
+			INFO("LoRa DownLink no new message");
+		}
+		
+		INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+		HAL_NVIC_DisableIRQ(TIM7_IRQn);
+		vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 	}
 		//osDelay(1);	
   /* USER CODE END StartSPI2 */
@@ -610,564 +564,6 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
 	}
 	
 }
-
-/**
-* @brief Calculate and Print the Freq of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Freq(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = dsp_reg1;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = PH_Period[0];
-	FlashBuffer [4] = PH_Period[1];
-	FlashBuffer [5] = PH_Period[2];
-	FlashBuffer [6] = PH_Period[3];
-	FlashBuffer [7] = PH_Period[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Freq, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint16_t freq_raw;
-
-	freq_raw = freq_raw | (uint16_t) PH_Period[1] << 8;
-	freq_raw = freq_raw | (uint16_t) PH_Period[2];
-	double freq = 1.0 / (freq_raw * P_CLK);
-	
-	if( freq < Freq_Low_Threshold || freq > Freq_High_Threshold){
-		USART3_PINSET_TX();
-		myprintf("ERROR: Freq error: %f Hz\r\n\r\n", freq);		//4 decimal numbers
-		USART3_PINSET_RX();
-	} else {
-		USART3_PINSET_TX();
-		myprintf("Freq: %f Hz\r\n\r\n", freq);		//4 decimal numbers
-		USART3_PINSET_RX();
-	}
-	
-	HAL_Delay(1);
-}
-
-/**
-* @brief Calculate and Print the RMS voltage
-*		 of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_V1_RMS(void){	
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = dsp_reg14;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = CH1_RMS[0];
-	FlashBuffer [4] = CH1_RMS[1];
-	FlashBuffer [5] = CH1_RMS[2];
-	FlashBuffer [6] = CH1_RMS[3];
-	FlashBuffer [7] = CH1_RMS[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_RMS, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	
-	static double V1_RMS = 0;
-	
-	uint16_t V1_RMS_raw = 0x0000;
-	V1_RMS_raw = V1_RMS_raw | ((uint16_t) CH1_RMS[1] << 8);
-	V1_RMS_raw = V1_RMS_raw | (uint16_t) CH1_RMS[0];
-	V1_RMS_raw = V1_RMS_raw & 0x7FFF; 				//Mask the most significant bit.
-	
-	V1_RMS = (double) V1_RMS_raw * (double) V_ref * (1.0 + (double) R1/ (double) R2) / ( (double) cal_v * (double) A_v * 32768.0);	
-
-	USART3_PINSET_TX();
-	myprintf("V1= %lf Volts\r\n",V1_RMS);
-	USART3_PINSET_RX();
-
-}
-
-/**
-* @brief Calculate and Print the RMS current
-*		 of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_C1_RMS(void){	
-	static double C1_RMS = 0;
-	
-	uint16_t C1_RMS_raw = 0x0000;
-	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[1] >> 7);
-	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[2] << 1);
-	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[3] << 9);
-
-	C1_RMS = (double) C1_RMS_raw * (double) V_ref / ((double) cal_i * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
-	
-	USART3_PINSET_TX();
-	myprintf("C1= %lf Amps\r\n",C1_RMS);
-	USART3_PINSET_RX();
-	
-}
-
-/**
-* @brief Calculate and Print the phase delay of voltage and current
-*		 for the fundamental harmonic of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Phase(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = dsp_reg17;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = C1_PHA[0];
-	FlashBuffer [4] = C1_PHA[1];
-	FlashBuffer [5] = C1_PHA[2];
-	FlashBuffer [6] = C1_PHA[3];
-	FlashBuffer [7] = C1_PHA[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Phase, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint16_t C1_PHA_raw;
-	
-	C1_PHA_raw = C1_PHA_raw | (uint16_t) C1_PHA[3] << 8;
-	C1_PHA_raw = C1_PHA_raw | (uint16_t) C1_PHA[2];
-	C1_PHA_raw = C1_PHA_raw & 0x1FFE;
-
-	double phase = (double) C1_PHA_raw / (double) F_CLK * (double) 50 * 360.0;
-	
-	USART3_PINSET_TX();
-	myprintf("Phase = %lf degrees\r\n\r\n", phase);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-
-/**
-* @brief Calculate and Print the active energy of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Active_Energy(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = ph1_reg1;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = PH1_Active_Energy[0];
-	FlashBuffer [4] = PH1_Active_Energy[1];
-	FlashBuffer [5] = PH1_Active_Energy[2];
-	FlashBuffer [6] = PH1_Active_Energy[3];
-	FlashBuffer [7] = PH1_Active_Energy[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Active_Energy, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	
-	uint32_t Active_Energy_raw = 0x0000;
-	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[3] << 24;
-	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[2] << 16;
-	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[1] << 8;
-	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[0];
-
-	double Active_Energy = (double)Active_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
-
-	USART3_PINSET_TX();
-	myprintf("Active Energy = %lf Watts\r\n\r\n", Active_Energy);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-
-/**
-* @brief Calculate and Print the fundamental energy of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Funda_Energy(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = ph1_reg2;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = PH1_Fundamental_Energy[0];
-	FlashBuffer [4] = PH1_Fundamental_Energy[1];
-	FlashBuffer [5] = PH1_Fundamental_Energy[2];
-	FlashBuffer [6] = PH1_Fundamental_Energy[3];
-	FlashBuffer [7] = PH1_Fundamental_Energy[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Funda_Energy, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t Funda_Energy_raw = 0x0000;
-	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[3] << 24;
-	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[2] << 16;
-	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[1] << 8;
-	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[0];
-
-	double Funda_Energy = (double)Funda_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
-
-
-	USART3_PINSET_TX();
-	myprintf("Fundamental Energy = %lf Watts\r\n\r\n", Funda_Energy);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-	
-}
-/**
-* @brief Calculate and Print the reactive energy of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_React_Energy(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = ph1_reg3;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = PH1_Reactive_Energy[0];
-	FlashBuffer [4] = PH1_Reactive_Energy[1];
-	FlashBuffer [5] = PH1_Reactive_Energy[2];
-	FlashBuffer [6] = PH1_Reactive_Energy[3];
-	FlashBuffer [7] = PH1_Reactive_Energy[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_React_Energy, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t React_Energy_raw = 0x0000;
-	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[3] << 24;
-	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[2] << 16;
-	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[1] << 8;
-	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[0];
-
-	double React_Energy = (double)React_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
-	
-	USART3_PINSET_TX();
-	myprintf("Reactive Energy = %lf Watts\r\n\r\n", React_Energy);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-/**
-* @brief Calculate and Print the apparent energy of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_App_Energy(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = ph1_reg4;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = PH1_Apparent_Energy[0];
-	FlashBuffer [4] = PH1_Apparent_Energy[1];
-	FlashBuffer [5] = PH1_Apparent_Energy[2];
-	FlashBuffer [6] = PH1_Apparent_Energy[3];
-	FlashBuffer [7] = PH1_Apparent_Energy[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_App_Energy, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t App_Energy_raw = 0x0000;
-	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[3] << 24;
-	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[2] << 16;
-	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[1] << 8;
-	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[0];
-
-	double App_Energy = (double)App_Energy_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
-
-
-	USART3_PINSET_TX();
-	myprintf("Apparent Energy = %lf Watts\r\n\r\n", App_Energy);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-/**
-* @brief Calculate and Print the active power of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Active_Pwr(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = ph1_reg5;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = PH1_Active_Power[0];
-	FlashBuffer [4] = PH1_Active_Power[1];
-	FlashBuffer [5] = PH1_Active_Power[2];
-	FlashBuffer [6] = PH1_Active_Power[3];
-	FlashBuffer [7] = PH1_Active_Power[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Active_Power, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t Active_Pwr_raw = 0x00000000;
-	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[3] << 24;
-	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[2] << 16;
-	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[1] << 8;
-	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[0];
-
-	Active_Pwr_raw = Active_Pwr_raw & 0x1FFFFFFF;
-
-	double Active_Pwr = (double)Active_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / (3600.0 * (double)D_CLK * (double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 131072.0);
-
-	USART3_PINSET_TX();
-	myprintf("Active Power = %lf WattHrs\r\n\r\n", Active_Pwr);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-/**
-* @brief Calculate and Print the fundamental power of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Funda_Pwr(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = ph1_reg6;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = PH1_Fundamental_Power[0];
-	FlashBuffer [4] = PH1_Fundamental_Power[1];
-	FlashBuffer [5] = PH1_Fundamental_Power[2];
-	FlashBuffer [6] = PH1_Fundamental_Power[3];
-	FlashBuffer [7] = PH1_Fundamental_Power[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Funda_Pwr, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t Funda_Pwr_raw = 0x00000000;
-	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[3] << 24;
-	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[2] << 16;
-	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[1] << 8;
-	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[0];
-
-	Funda_Pwr_raw = Funda_Pwr_raw & 0x1FFFFFFF;
-
-	double Funda_Pwr = (double)Funda_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / (3600.0 * (double)D_CLK * (double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 131072.0);
-	
-	USART3_PINSET_TX();
-	myprintf("Fundamental Power = %lf WattHrs\r\n\r\n", Funda_Pwr);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-/**
-* @brief Calculate and Print the reactive power of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_React_Pwr(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = ph1_reg7;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = PH1_Reactive_Power[0];
-	FlashBuffer [4] = PH1_Reactive_Power[1];
-	FlashBuffer [5] = PH1_Reactive_Power[2];
-	FlashBuffer [6] = PH1_Reactive_Power[3];
-	FlashBuffer [7] = PH1_Reactive_Power[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_React_Pwr, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t React_Pwr_raw = 0x00000000;
-	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[3] << 24;
-	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[2] << 16;
-	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[1] << 8;
-	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[0];
-
-	React_Pwr_raw = React_Pwr_raw & 0x1FFFFFFF;
-
-	double React_Pwr = (double)React_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / (3600.0 * (double)D_CLK * (double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 131072.0);
-	
-	USART3_PINSET_TX();
-	myprintf("Reactive Power = %lf WattHrs\r\n\r\n", React_Pwr);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-/**
-* @brief Calculate and Print the apparent RMS power of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_App_RMS_Pwr(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = ph1_reg8;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = PH1_Apparent_RMS_Power[0];
-	FlashBuffer [4] = PH1_Apparent_RMS_Power[1];
-	FlashBuffer [5] = PH1_Apparent_RMS_Power[2];
-	FlashBuffer [6] = PH1_Apparent_RMS_Power[3];
-	FlashBuffer [7] = PH1_Apparent_RMS_Power[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_App_RMS_Pwr, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t App_RMS_Pwr_raw = 0x00000000;
-	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[3] << 24;
-	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[2] << 16;
-	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[1] << 8;
-	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[0];
-
-	App_RMS_Pwr_raw = App_RMS_Pwr_raw & 0x1FFFFFFF;
-
-	double Apparent_RMS_Power = (double)App_RMS_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / (3600.0 * (double)D_CLK * (double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 131072.0);
-	
-	USART3_PINSET_TX();
-	myprintf("Apparent_RMS Power = %lf WattHrs\r\n\r\n", Apparent_RMS_Power);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-
-/**
-* @brief Calculate and Print the total active energy of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Tot_Active_Energy(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = tot_reg1;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = Total_Active_Energy[0];
-	FlashBuffer [4] = Total_Active_Energy[1];
-	FlashBuffer [5] = Total_Active_Energy[2];
-	FlashBuffer [6] = Total_Active_Energy[3];
-	FlashBuffer [7] = Total_Active_Energy[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Tot_Active_Energy, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t Tot_Active_Pwr_raw = 0x00000000;
-	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[3] << 24;
-	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[2] << 16;
-	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[1] << 8;
-	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[0];
-
-	double Tot_Active_Pwr = (double)Tot_Active_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
-	
-	USART3_PINSET_TX();
-	myprintf("Total Active Energy = %lf Watts\r\n\r\n", Tot_Active_Pwr);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-/**
-* @brief Calculate and Print the total fundamental energy of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Tot_Funda_Energy(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = tot_reg2;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = Total_Fundamental_Energy[0];
-	FlashBuffer [4] = Total_Fundamental_Energy[1];
-	FlashBuffer [5] = Total_Fundamental_Energy[2];
-	FlashBuffer [6] = Total_Fundamental_Energy[3];
-	FlashBuffer [7] = Total_Fundamental_Energy[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Tot_Funda_Energy, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t Tot_Funda_Pwr_raw = 0x00000000;
-	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[3] << 24;
-	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[2] << 16;
-	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[1] << 8;
-	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[0];
-
-	double Tot_Funda_Pwr = (double)Tot_Funda_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
-	
-	USART3_PINSET_TX();
-	myprintf("Total Fundamental Energy = %lf Watts\r\n\r\n", Tot_Funda_Pwr);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-/**
-* @brief Calculate and Print the total reactive energy of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Tot_React_Energy(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = tot_reg3;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = Total_Reactive_Energy[0];
-	FlashBuffer [4] = Total_Reactive_Energy[1];
-	FlashBuffer [5] = Total_Reactive_Energy[2];
-	FlashBuffer [6] = Total_Reactive_Energy[3];
-	FlashBuffer [7] = Total_Reactive_Energy[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Tot_React_Energy, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t Tot_React_Pwr_raw = 0x00000000;
-	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[3] << 24;
-	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[2] << 16;
-	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[1] << 8;
-	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[0];
-
-	double Tot_React_Pwr = (double)Tot_React_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
-	
-	USART3_PINSET_TX();
-	myprintf("Total Reactive Energy = %f Watts\r\n\r\n", Tot_React_Pwr);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-/**
-* @brief Calculate and Print the total apparent energy of the power line.
-* @param Parameter: None
-* @retval None
-*/
-void CalcPrint_Tot_App_Energy(void){
-	uint8_t FlashBuffer [8] = {0};
-	
-	FlashBuffer [0] = tot_reg4;
-	FlashBuffer [1] = FlashPointer >> 8;
-	FlashBuffer [2] = (uint8_t) FlashPointer;
-	FlashBuffer [3] = Total_Apparent_Energy[0];
-	FlashBuffer [4] = Total_Apparent_Energy[1];
-	FlashBuffer [5] = Total_Apparent_Energy[2];
-	FlashBuffer [6] = Total_Apparent_Energy[3];
-	FlashBuffer [7] = Total_Apparent_Energy[4];
-	
-	ext_flash_write(FlashPointer + FlashAddr_Tot_App_Energy, (char*) FlashBuffer, 8);
-	ext_flash_last_write_or_erase_done();
-	
-	uint32_t Tot_App_Pwr_raw = 0x00000000;
-	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[3] << 24;
-	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[2] << 16;
-	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[1] << 8;
-	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[0];
-
-	double Tot_App_Pwr = (double)Tot_App_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
-	
-	USART3_PINSET_TX();
-	myprintf("Total Apparent Energy = %lf Watts\r\n\r\n", Tot_App_Pwr);
-	USART3_PINSET_RX();
-	
-	HAL_Delay(1);
-}
-
 
 /**
 * @brief Copy the src string into dest string

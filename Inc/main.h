@@ -100,6 +100,8 @@ void Error_Handler(void);
 #define VC1_GPIO_Port GPIOB
 #define CMD_PWR_LORA_Pin GPIO_PIN_9
 #define CMD_PWR_LORA_GPIO_Port GPIOB
+
+
 /* USER CODE BEGIN Private defines */
 static uint8_t UART1_Buffer[2];
 
@@ -112,72 +114,48 @@ static int SPI1_TxFlag = 0;
 static int SPI2_RxFlag = 0;
 static int SPI2_TxFlag = 0;
 
-#define DEBUG_ON		1
+#define DEBUG_ON				0
+#define LOGLEVEL				6
+#define STPM32_INFO_ON	1
 
 #define DEBUG(format,...) \
 if (DEBUG_ON) {\
-	myprintf(""format, ##__VA_ARGS__);\
+	myprintf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DEBUG: "format, ##__VA_ARGS__);\
+	myprintf("\r\n");\
 }
 
-//
-//
-//#define LOGLEVEL LOGINFO
+#define STPM32_INFO(format,...) \
+if (STPM32_INFO_ON){\
+	myprintf(">>STPM32_INFO: "format, ##__VA_ARGS__);\
+	myprintf("\r\n");\
+}
 
 enum log_levels {
 	LOGERROR   = 3,	/**< Error which can stop the system */
 	LOGWARNING = 4,	/**< Anormal/strange behaviour message */
-	LOGINFO    = 6,	/**< High level information */
+	LOGINFO    = 6,	/**< High level user information */
 };
 #ifdef LOGLEVEL
-#define ERROR(format,...) \
-if (LOGLEVEL >= LOGERROR) {\
-	myprintf(">>ERROR: "format, ##__VA_ARGS__);\
-	myprintf("\r\n");\
-}
-#define WARN(format,...) \
-if (LOGLEVEL >= LOGWARNING) {\
-	myprintf(">>WARNING: "format, ##__VA_ARGS__);\
-	myprintf("\r\n");\
-}
-#define INFO(format,...) \
-if (LOGLEVEL >= LOGINFO) {\
-	myprintf(">>INFO: "format, ##__VA_ARGS__);\
-	myprintf("\r\n");\
-}
+	#define ERROR(format,...) \
+	if (LOGLEVEL >= LOGERROR) {\
+		myprintf(">>ERROR: "format, ##__VA_ARGS__);\
+		myprintf("\r\n");\
+	}
+	#define WARN(format,...) \
+	if (LOGLEVEL >= LOGWARNING) {\
+		myprintf(">>WARNING: "format, ##__VA_ARGS__);\
+		myprintf("\r\n");\
+	}
+	#define INFO(format,...) \
+	if (LOGLEVEL >= LOGINFO) {\
+		myprintf(">>INFO: "format, ##__VA_ARGS__);\
+		myprintf("\r\n");\
+	}
 #else	// not LOGLEVEL
-# define ERROR(args...) do {;} while(0)
-# define WARN(args...) do {;} while(0)
-# define INFO(args...) do {;} while(0)
+	# define ERROR(args...) do {;} while(0)
+	# define WARN(args...) do {;} while(0)
+	# define INFO(args...) do {;} while(0)
 #endif	// LOGLEVEL
-
-/*
-//#define LOGLEVEL LOGINFO
-
-enum log_levels{
-		LOGERROR 		= 3,
-		LOGWARNING 	= 4,
-		LOGINFO 		= 6,
-};
-
-#ifdef LOGLEVEL
-#define ERROR(format,...)\
-if (LOGLEVEL >= LOGERROR) {\
-	myprintf("/r/n>>ERROR: "format, ##__VA_ARGS___);\
-}
-#define WARN(format,...)\
-if (LOGLEVEL >= LOGWARNING) {\
-	myprintf("/r/n>>WATNING: "format, ##__VA_ARGS___);\
-}
-#define INFO(format,...)\
-if (LOGLEVEL >= LOGINFO) {\
-	myprintf("/r/n>>INFO: "format, ##__VA_ARGS___);\
-}
-#else		//Not LOGLEVEL
-#define ERROR(args...) do {;} while(0)
-#define WARN(args...) do {;} while(0)
-#define INFO(args...) do {;} while(0)
-#endif //LOGLEVEL
-*/
 
 /* USER CODE END Private defines */
 

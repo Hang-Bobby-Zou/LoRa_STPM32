@@ -58,3 +58,4 @@ lora-stpm32\stpm32.o: ../Inc/usart.h
 lora-stpm32\stpm32.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 lora-stpm32\stpm32.o: ../Inc/STPM32.h
 lora-stpm32\stpm32.o: ../Inc/STPM32_AddressMap.h
+lora-stpm32\stpm32.o: ../Inc/ext_flash.h

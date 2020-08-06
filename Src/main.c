@@ -45,7 +45,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-uint32_t TIM7_Irq_Num = 0;
+uint32_t TIM7_Irq_Num = 0;			//Used to count how many IRQs triggered by TIM7
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -154,28 +154,29 @@ int main(void)
 				|-----------------------------------|
 		*/
 		// Here set UART3 to be in S4 mode, Tx is on
-		DEBUG("Test\r\n");
+		DEBUG("Test \r\n\r\n");
+		INFO("Starting Program...\r\n");
 		HAL_Delay(3 * 1000);
 		
 		
 		//Initialize STPM32
-		myprintf("\r\nInitializing STPM32...\r\n");
+		INFO("Initializing STPM32...");
 		
 		if (STPM32_Init() != true)
 				Error_Handler();
 		
-		myprintf("\r\nSTPM32 Initialization Done!\r\n");
+		INFO("STPM32 Initialization Done!\r\n");
 		
 		
 		//Initialize LoRa
-		myprintf("\r\nInitializing LoRa...\r\n");
+		INFO("Initializing LoRa...");
 		if (LoRa_Init() != true)
 				Error_Handler();
-		myprintf("\r\nLoRa Initialization Done!\r\n");
+		INFO("LoRa Initialization Done!\r\n");
 		
 		
 		/* Initialize external flash and TEST if flash is okay */
-		myprintf("\r\nInitializing External Flash...\r\n");
+		INFO("Initializing External Flash...");
 		
 		//ext_flash_init();
 		//ext_flash_power_on();
@@ -186,18 +187,17 @@ int main(void)
 		//if (ext_flash_is_detected() != 1)	
 		//		Error_Handler();
 		
-		//myprintf("Erasing all block from flash...\r\n");
+		//INFO("Erasing all block from flash...");
 		//for (int i = 0; i < 32; i++){
 		//		ext_flash_erase_block(i);
 		//		ext_flash_last_write_or_erase_done();
 		//}
-		//myprintf("External Flash Initialization Done!\r\n");
+		INFO("External Flash Initialization Done!\r\n");
 		
 		
 		
 		//Finishing up by printing "Starting FreeRTOS System..."
-		myprintf("\r\nStarting FreeRTOC System...\r\n");
-		myprintf("\r\n");
+		INFO("Starting FreeRTOC System...\r\n");
 		
   /* USER CODE END 2 */
 

@@ -377,16 +377,13 @@ bool LoRa_is_detected(void){
 	int count = 0;
 	
 	do{	
-		myprintf("Checking LoRa Device ID\r\n\r\n");
+		DEBUG("Checking LoRa Device ID...");
 		
 		SPI2_TxBuffer[0] = RegVersion;
 		
 		SPI2_RxBuffer[0] = LoRa_ReadReg(SPI2_TxBuffer[0]);
 
-		
-		//SX1276ReadBuffer( RegVersion, SPI2_RxBuffer, 1 );
-		
-		myprintf("SPI2 ID: %x %x \r\n\r\n", SPI2_RxBuffer[0], SPI2_RxBuffer[1]);
+		DEBUG("SPI2 ID: %x %x ", SPI2_RxBuffer[0], SPI2_RxBuffer[1]);
 
 		count++;
 	} while (SPI2_RxBuffer[0] != 0x12 && count < 3);
@@ -394,6 +391,7 @@ bool LoRa_is_detected(void){
 	if (count < 3){
 		return true;
 	} else {
+		WARN("LoRa is not detected...");
 		return false;
 	}
 }

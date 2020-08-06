@@ -654,7 +654,7 @@ static void OpenContinuousRx2Window( void );
 static void OnRadioTxDone( void )
 {
 		
-		DEBUG("OnRadioTxDone\r\n");
+		DEBUG("OnRadioTxDone");
 	
 		GetPhyParams_t getPhy;
     PhyParam_t phyParam;
@@ -753,7 +753,7 @@ static void PrepareRxDoneAbort( void )
 
 static void OnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    DEBUG("OnRadioRxDone\r\n");
+    DEBUG("OnRadioRxDone");
 		LoRaMacHeader_t macHdr;
     LoRaMacFrameCtrl_t fCtrl;
     ApplyCFListParams_t applyCFList;
@@ -1277,7 +1277,7 @@ void OnMacStateCheckTimerEvent( void )
 	
     if( LoRaMacFlags.Bits.MacDone == 1 ){
 			
-		DEBUG("LoRaMacFlags.Bits.MacDone == 1\r\n");	
+		DEBUG("LoRaMacFlags.Bits.MacDone == 1");	
 			
 			if( ( LoRaMacState & LORAMAC_RX_ABORT ) == LORAMAC_RX_ABORT ){
             LoRaMacState &= ~LORAMAC_RX_ABORT;
@@ -1486,7 +1486,7 @@ static void OnRxWindow1TimerEvent( void )
 {
     TimerStop( &RxWindowTimer1 );
 	
-		DEBUG("OnRxWindow1TimerEvent\r\n");
+		DEBUG("OnRxWindow1TimerEvent");
 		
     RxSlot = RX_SLOT_WIN_1;
 
@@ -1510,7 +1510,7 @@ static void OnRxWindow2TimerEvent( void )
 {
 		TimerStop( &RxWindowTimer2 );
 	
-		DEBUG("OnRxWindow2TimerEvent\r\n");
+		DEBUG("OnRxWindow2TimerEvent");
 	
     RxWindow2Config.Channel = Channel;
     RxWindow2Config.Frequency = LoRaMacParams.Rx2Channel.Frequency;

@@ -31,6 +31,7 @@ extern TimerEvent_t TxTimeoutTimer;
 uint8_t LoRa_RxBuf_Size;
 uint8_t *LoRa_RxBuf;
 uint8_t LoRa_RxPort;
+extern int LoRa_DL_Flag;
 
 #ifndef ACTIVE_REGION
 
@@ -386,22 +387,22 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
     {
         case MCPS_UNCONFIRMED:
         {
-          DEBUG("Indication : MCPS_UNCONFIRMED\r\n");
+          //DEBUG("Indication : MCPS_UNCONFIRMED");
 					break;
         }
         case MCPS_CONFIRMED:
         {
-          DEBUG("Indication : MCPS_CONFIRMED\r\n");
+          //DEBUG("Indication : MCPS_CONFIRMED");
 					break;
         }
         case MCPS_PROPRIETARY:
         {
-          DEBUG("Indication : MCPS_PROPRIETARY\r\n");
+          //DEBUG("Indication : MCPS_PROPRIETARY");
 					break;
         }
         case MCPS_MULTICAST:
         {
-          DEBUG("Indication : MCPS_MULTICAST\r\n");
+          //DEBUG("Indication : MCPS_MULTICAST");
 					break;
         }
         default:
@@ -414,7 +415,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
     // Check FramePending
 		
 		// Check Multicast, Port, Datarate, FramePending, Buffer, BufferSize, Rssi, Snr, RxSlot
-		DEBUG("Indication : Rssi: %d  SNR: %d dB\r\n", mcpsIndication->Rssi, (signed char)(mcpsIndication->Snr));
+		//DEBUG("Indication : Rssi: %d  SNR: %d dB", mcpsIndication->Rssi, (signed char)(mcpsIndication->Snr));
 		
     //if( mcpsIndication->FramePending == true )
     //{
@@ -440,9 +441,12 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 				if (LoRa_RxPort < 224){
 					LoRa_RxBuf = mcpsIndication->Buffer;
 					LoRa_RxBuf_Size = mcpsIndication->BufferSize;
-
-					myprintf("Received DownLink buffersize : %d\r\n", LoRa_RxBuf_Size);
-					myprintf("Received DownLink buffer : %x %x %x %x \r\n", LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+					
+					DEBUG("Received DownLink buffersize : %d\r\n", LoRa_RxBuf_Size);
+					DEBUG("Received DownLink buffer : %x %x %x %x \r\n", LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+					
+					LoRa_DL_Flag = 1;
+					
 				}
 				else {
 					switch (LoRa_RxPort)
@@ -593,7 +597,8 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 					}
 				}
     } else {
-			myprintf("No new message from LoRaWAN, BufferSize = %d\r\n",mcpsIndication->BufferSize);
+			INFO("No new message from LoRaWAN");
+			DEBUG("Buffer Size = %d", mcpsIndication->BufferSize);
 		}
 }
 
@@ -877,19 +882,16 @@ int LoRaMAC_Send(void){
 			TimerIrqHandler();
 			
 			frame_count++;
-			//UpLinkCounter++;
-			myprintf("\r\nFrame %d Sent Success\r\n", UpLinkCounter);
-			
-			//DelayMsPoll(1000);
+			INFO("Frame %d Sent Success", UpLinkCounter);
 			
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){
-			//myprintf("LoRaMAC Status Busy\r\n");
+			DEBUG("LoRaMAC Status Busy");
 			return -1;
 		}
 		else
 		{
-			//myprintf("Frame ERROR (%d)(/%u)\r\n", status, frame_count);
+			DEBUG("Frame ERROR (%d)(/%u)", status, frame_count);
 			return -1;
 		}
   }
