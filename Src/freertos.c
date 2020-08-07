@@ -50,7 +50,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define LORAMAC_SEND_RETRY_COUNT_MAX 48
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -67,6 +67,7 @@ uint8_t	 	HAL_RxBuffer[5] = {0};
 uint8_t 	i[1] 						= {0x2E};
 int 			count 					= 0;
 uint16_t 	FlashPointer 		= 0x00;
+#define STPM32_Block_Time	60000
 
 //Raw data from STPM32 defines
 extern uint8_t PH_Period								[5];
@@ -94,8 +95,9 @@ uint8_t aRxBuffer[8] = {0};
 
 
 /* SPI2(LoRa) Variables */
+#define LORAMAC_SEND_RETRY_COUNT_MAX 48
 uint8_t loramac_send_retry_count = 0;
-int LoRa_Block_Time = 10000;
+int LoRa_Block_Time = 60000;
 int LoRa_DL_Flag = 0;
 extern uint8_t *LoRa_RxBuf;
 //extern LoRaMacFlags_t LoRaMacFlags;
@@ -190,15 +192,15 @@ void MX_FREERTOS_Init(void) {
   IDLEHandle = osThreadCreate(osThread(IDLE), NULL);
 
   /* definition and creation of USART1 */
-  osThreadDef(USART1, StartUSART1, osPriorityNormal, 0, 128);
+  osThreadDef(USART1, StartUSART1, osPriorityAboveNormal, 0, 256);
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
-  osThreadDef(USART3, StartUSART3, osPriorityAboveNormal, 0, 256);
+  osThreadDef(USART3, StartUSART3, osPriorityNormal, 0, 256);
   USART3Handle = osThreadCreate(osThread(USART3), NULL);
 
   /* definition and creation of SPI2 */
-  osThreadDef(SPI2, StartSPI2, osPriorityHigh, 0, 256);
+  osThreadDef(SPI2, StartSPI2, osPriorityNormal, 0, 256);
   SPI2Handle = osThreadCreate(osThread(SPI2), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -258,23 +260,23 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {	
-
+		HAL_NVIC_DisableIRQ(TIM7_IRQn);
 		//To cycle the register address pointer
 		if (i[0] > 0x8A){
 			i[0] = 0x2E;
 			
 			FlashPointer += 0x08;
-			myprintf("Blocking USART1 for 3 seconds\r\n\r\n");
+			INFO("Blocking STPM32 for %d seconds",STPM32_Block_Time);
 			
-			vTaskDelay (pdMS_TO_TICKS( 3000 ));	//If walks around for 1 term, then block itself for 1 sec for users to read something
+			vTaskDelay (pdMS_TO_TICKS( STPM32_Block_Time ));	//If walks around for 1 term, then block itself for 1 sec for users to read something
 		}
 		
 		if (FlashPointer > 0x00FFFF){
 			FlashPointer = 0x000000;
 			
 			USART3_PINSET_TX();
-			myprintf("!!!Flash Full!!!\r\n");
-			myprintf("...Overwriting Previous Info...\r\n");
+			INFO("!!!Flash Full!!!");
+			INFO("...Overwriting Previous Info...\r\n");
 			USART3_PINSET_RX();
 		}
 
@@ -286,85 +288,83 @@ void StartUSART1(void const * argument)
 			HAL_RxBuffer[4] = ReadBuffer[4];
 
 			if (count == 10){		//Wait for the third iteration so the data is stable
-			 	// USART3_PINSET_TX();
 					if (i[0] == dsp_reg1){
-						myprintf("Copying PH_Period\r\n");
+						STPM32_INFO("Copying PH_Period\r\n");
 						uint8_cpy(PH_Period, HAL_RxBuffer, 5);
 						CalcPrint_Freq();
 					
 					} else if (i[0] == dsp_reg17){
-						myprintf("Copying C1_PHA\r\n");
+						STPM32_INFO("Copying C1_PHA\r\n");
 						uint8_cpy(C1_PHA, HAL_RxBuffer, 5);
 						CalcPrint_Phase();
 						
 					} else if (i[0] == dsp_reg14){
-						myprintf("Copying CH1_RMS\r\n");
+						STPM32_INFO("Copying CH1_RMS\r\n");
 						uint8_cpy(CH1_RMS,HAL_RxBuffer,5);
 						CalcPrint_V1_RMS();
 						CalcPrint_C1_RMS();
 						
 					} else if (i[0] == ph1_reg1){
-						myprintf("Copying PH1_Active_Energy\r\n");
+						STPM32_INFO("Copying PH1_Active_Energy\r\n");
 						uint8_cpy(PH1_Active_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Active_Energy();
 						
 					} else if (i[0] == ph1_reg2){
-						myprintf("Copying PH1_Fundamental_Energy\r\n");
+						STPM32_INFO("Copying PH1_Fundamental_Energy\r\n");
 						uint8_cpy(PH1_Fundamental_Energy, HAL_RxBuffer, 5);
 						//CalcPrint_Funda_Energy();
 						
 					} else if (i[0] == ph1_reg3){
-						myprintf("Copying PH1_Reactive_Energy\r\n");
+						STPM32_INFO("Copying PH1_Reactive_Energy\r\n");
 						uint8_cpy(PH1_Reactive_Energy, HAL_RxBuffer, 5);
 						CalcPrint_React_Energy();
 						
 					} else if (i[0] == ph1_reg4){
-						myprintf("Copying PH1_Apparent_Energy\r\n");
+						STPM32_INFO("Copying PH1_Apparent_Energy\r\n");
 						uint8_cpy(PH1_Apparent_Energy, HAL_RxBuffer,5);
 						CalcPrint_App_Energy();
 						
 					} else if (i[0] == ph1_reg5){
-						myprintf("Copying PH1_Active_Power\r\n");
+						STPM32_INFO("Copying PH1_Active_Power\r\n");
 						uint8_cpy(PH1_Active_Power, HAL_RxBuffer, 5);
 						CalcPrint_Active_Pwr();
 						
 					} else if (i[0] == ph1_reg6){
-						myprintf("Copying PH1_Fundamental_Power\r\n");
+						STPM32_INFO("Copying PH1_Fundamental_Power\r\n");
 						uint8_cpy(PH1_Fundamental_Power, HAL_RxBuffer, 5);
 						//CalcPrint_Funda_Pwr();
 						
 					} else if (i[0] == ph1_reg7){
-						myprintf("Copying PH1_Reactive_Power\r\n");
+						STPM32_INFO("Copying PH1_Reactive_Power\r\n");
 						uint8_cpy(PH1_Reactive_Power, HAL_RxBuffer, 5);
 						CalcPrint_React_Pwr();
 						
 					} else if (i[0] == ph1_reg8){
-						myprintf("Copying PH1_Apparent_RMS_Power\r\n");
+						STPM32_INFO("Copying PH1_Apparent_RMS_Power\r\n");
 						uint8_cpy(PH1_Apparent_RMS_Power, HAL_RxBuffer, 5);
 						CalcPrint_App_RMS_Pwr();
 						
 					} else if (i[0] == tot_reg1){
-						myprintf("Copying Total_Active_Energy\r\n");
+						STPM32_INFO("Copying Total_Active_Energy\r\n");
 						uint8_cpy(Total_Active_Energy, HAL_RxBuffer, 5);
 						//CalcPrint_Tot_Active_Energy();
 						
 					} else if (i[0] == tot_reg2){
-						myprintf("Copying Total_Fundamental_Energy\r\n");
+						STPM32_INFO("Copying Total_Fundamental_Energy\r\n");
 						uint8_cpy(Total_Fundamental_Energy, HAL_RxBuffer, 5);
 						//CalcPrint_Tot_Funda_Energy();
 						
 					} else if (i[0] == tot_reg3){
-						myprintf("Copying Total_Reactive_Energy\r\n");
+						STPM32_INFO("Copying Total_Reactive_Energy\r\n");
 						uint8_cpy(Total_Reactive_Energy, HAL_RxBuffer, 5);
 						//CalcPrint_Tot_React_Energy();
 						
 					} else if (i[0] == tot_reg4){
-						myprintf("Copying Total_Apparent_Energy\r\n");
+						STPM32_INFO("Copying Total_Apparent_Energy\r\n");
 						uint8_cpy(Total_Apparent_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Tot_App_Energy();
 						
 					}
-				// USART3_PINSET_RX();
 				
 				i[0] += 0x02;
 				
@@ -377,14 +377,9 @@ void StartUSART1(void const * argument)
 		}
 		
 		ReadMsgOnly(i[0],ReadBuffer);
-		
-		//xTicksToDelay(pdMS_TO_TICKS( 1000 ));		//Runing delay
-
-		
-		//vTaskDelay (pdMS_TO_TICKS( 1000 ));
-
-		osDelay(1);
-  	}
+		vTaskDelay (pdMS_TO_TICKS( 100 ));
+		//osDelay(1);
+  }
   /* USER CODE END StartUSART1 */
 }
 
@@ -427,7 +422,6 @@ void StartUSART3(void const * argument)
 		}
 */
 
-
 		if (USART3_RxFlag == 1){
 			
 			myprintf("USART3 Receive: %x %x %x %x \r\n", aRxBuffer[0], aRxBuffer[1], aRxBuffer[2], aRxBuffer[3]);
@@ -435,8 +429,7 @@ void StartUSART3(void const * argument)
 			USART3_RxFlag = 0;
 			HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
 		}
-		
-		osDelay(1); //This delay is in ms
+		//osDelay(1); //This delay is in ms
   }
   /* USER CODE END StartUSART3 */
 }
@@ -461,9 +454,12 @@ void StartSPI2(void const * argument)
 	LoRaMAC_Join();
 	DEBUG("LoRaMAC Join Done");
 	
+	HAL_NVIC_DisableIRQ(TIM7_IRQn);
 	/* Infinite loop */
   for(;;)
   {
+		/*
+		
 		myprintf("\r\n");
 		INFO("Entering LoRa Task\r\n");
 		HAL_NVIC_EnableIRQ(TIM7_IRQn);	//Enable TIM7 Irq since it is disabled while other task is running
@@ -478,7 +474,7 @@ void StartSPI2(void const * argument)
 				loramac_send_retry_count = 0;
 			}
 		}
-		DelayMsPoll(10000);
+		DelayMsPoll(20000);
 		
 		if (LoRa_DL_Flag == 1){
 			INFO("LoRa DownLink received!");
@@ -491,14 +487,23 @@ void StartSPI2(void const * argument)
 		INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
 		HAL_NVIC_DisableIRQ(TIM7_IRQn);
 		vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
+		
+		*/
 	}
 		//osDelay(1);	
   /* USER CODE END StartSPI2 */
 }
 
+
+
+
+
+
+
+
+
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
 /**
   * @brief Rx Transfer completed callbacks
   * @param huart: uart handle

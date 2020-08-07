@@ -77,25 +77,40 @@
 #define tot_reg3	0x88
 #define tot_reg4	0x8A
 
+//Raw data flash address map
+#define FlashAddr_Freq_Raw							0x000000
+#define FlashAddr_RMS_Raw								0x010000
+#define FlashAddr_Phase_Raw 						0x020000
+#define FlashAddr_Active_Energy_Raw			0x030000
+#define FlashAddr_Funda_Energy_Raw			0x040000
+#define FlashAddr_React_Energy_Raw			0x050000
+#define FlashAddr_App_Energy_Raw				0x060000
+#define FlashAddr_Active_Power_Raw			0x070000
+#define FlashAddr_Funda_Pwr_Raw					0x080000
+#define FlashAddr_React_Pwr_Raw					0x090000
+#define FlashAddr_App_RMS_Pwr_Raw				0x0A0000
+#define FlashAddr_Tot_Active_Energy_Raw	0x0B0000
+#define FlashAddr_Tot_Funda_Energy_Raw	0x0C0000
+#define FlashAddr_Tot_React_Energy_Raw	0x0D0000
+#define FlashAddr_Tot_App_Energy_Raw		0x0E0000
 
-#define FlashAddr_Freq							0x000000
-#define FlashAddr_RMS								0x010000
-#define FlashAddr_Phase 						0x020000
-#define FlashAddr_Active_Energy			0x030000
-#define FlashAddr_Funda_Energy			0x040000
-#define FlashAddr_React_Energy			0x050000
-#define FlashAddr_App_Energy				0x060000
-#define FlashAddr_Active_Power			0x070000
-#define FlashAddr_Funda_Pwr					0x080000
-#define FlashAddr_React_Pwr					0x090000
-#define FlashAddr_App_RMS_Pwr				0x0A0000
-#define FlashAddr_Tot_Active_Energy	0x0B0000
-#define FlashAddr_Tot_Funda_Energy	0x0C0000
-#define FlashAddr_Tot_React_Energy	0x0D0000
-#define FlashAddr_Tot_App_Energy		0x0E0000
-
-
-
+//Real data flash address map
+#define FlashAddr_Freq_Real								0x100000
+#define FlashAddr_V1_RMS_Real							0x110000
+#define FlashAddr_C1_RMS_Real							0x120000
+#define FlashAddr_Phase_Real 							0x130000
+#define FlashAddr_Active_Energy_Real			0x140000
+#define FlashAddr_Funda_Energy_Real				0x150000
+#define FlashAddr_React_Energy_Real				0x160000
+#define FlashAddr_App_Energy_Real					0x170000
+#define FlashAddr_Active_Power_Real				0x180000
+#define FlashAddr_Funda_Pwr_Real					0x190000
+#define FlashAddr_React_Pwr_Real					0x1A0000
+#define FlashAddr_App_RMS_Pwr_Real				0x1B0000
+#define FlashAddr_Tot_Active_Energy_Real	0x1C0000
+#define FlashAddr_Tot_Funda_Energy_Real		0x1D0000
+#define FlashAddr_Tot_React_Energy_Real		0x1E0000
+#define FlashAddr_Tot_App_Energy_Real			0x1F0000
 
 
 
