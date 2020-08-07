@@ -279,8 +279,435 @@ void MX_TIM7_Init(void)
 		 	//myprintf("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], RxBuffer[4]);
 		 	//USART3_PINSET_RX();
 
+//External flash redundant code for different parameters
+/*
+int loading_parameters(char *params, bool check_new_value, uint32_t new_value)
+{
+	(void)(params);
+	(void)(check_new_value);
+	(void)(new_value);
+//	INFO("Loading algo parameters...\n");
+//	ext_flash_read(FLASH_PARAMETERS_ADDR, (char *)&params_algo, sizeof(params_algo));
+	ext_flash_power_off();	//Need to be done manually to save power
+
+	return 0;
+}
 
 
+int saving_parameters(char *params, bool check_new_value, uint32_t new_value)
+{
+	(void)(params);
+	(void)(check_new_value);
+	(void)(new_value);
+//	INFO("Saving algo parameters...\n");
+	ext_flash_erase_sector(FLASH_PARAMETERS_SECTOR);
+//	ext_flash_write(FLASH_PARAMETERS_ADDR, (char *)&params_algo, sizeof(params_algo));
+	ext_flash_power_off();	//Need to be done manually to save power
+
+	return 0;
+}
+
+
+ * The purpose of this function is to set all parameters to their default values.
+ * Default values will make in a default mode.
+ * This mode will be overwritten by USB command to set the parameters.
+
+void init_usecase_parameters(bool reset)
+{
+	loading_parameters(NULL, 0, 0);
+
+	 * if the flash has no data, all the param's sector is set to FF
+	 * then that means the user hasn't enter any parameters.
+	 * So we set the product into a default mode.
+	 *
+//	if( (reset == true) || (params_algo.use_case == 0xFFFF) )
+//	{
+//		params_algo.use_case = 	ALGO_ALIVE + ALGO_CHOC;
+//		params_algo.maxRange = 8;	//by default
+//
+//		params_algo.alive.mode = AUTO_REFRESH; 			//to read from config file
+//		params_algo.alive.period = 60000; 				//ms, to read from config file
+//		params_algo.alive.nb_temp_to_save = 1;			//by default, send directly the alive data
+//		params_algo.alive.send_sensors_data = false;	//by default, do not send the sensors data
+//
+//		params_algo.choc.freq_mpu = 10;				//to read from config file
+//		params_algo.choc.Gx_max_choc_pos = 5000;	//to read from config file
+//		params_algo.choc.Gx_max_choc_neg = 5000;	//to read from config file
+//		params_algo.choc.Gy_max_choc_pos = 5000;	//to read from config file
+//		params_algo.choc.Gy_max_choc_neg = 5000;	//to read from config file
+//		params_algo.choc.Gz_max_choc_pos = 5000;	//to read from config file
+//		params_algo.choc.Gz_max_choc_neg = 5000;	//to read from config file
+//		params_algo.choc.enable_inhibition = true;
+//		params_algo.choc.inhibition = 150;			//ms, to read from config file
+//		params_algo.choc.keep_gravity = true;
+//
+//		params_algo.movement.freq_mpu = 15;			//to read from config file
+//		params_algo.movement.sensitivity = 10;		//to read from config file (nb of threshold excess during X)
+//		params_algo.movement.count = 0;				//should be already set to 0
+//		params_algo.movement.time_before_start = 2000;		//in ms, to read from config file
+//		params_algo.movement.time_before_stop = 3000;		//in ms,to read from config file
+//		params_algo.movement.Gx_max_mvt_pos = 300;			//to read from config file
+//		params_algo.movement.Gx_max_mvt_neg = 300;			//to read from config file
+//		params_algo.movement.Gy_max_mvt_pos = 300;			//to read from config file
+//		params_algo.movement.Gy_max_mvt_neg = 300;			//to read from config file
+//		params_algo.movement.Gz_max_mvt_pos = 300;			//to read from config file
+//		params_algo.movement.Gz_max_mvt_neg = 300;			//to read from config file
+//		params_algo.movement.product_is_moving = false;
+//		params_algo.movement.send_trame_before = false;
+//		params_algo.movement.send_trame_after =  false;
+//		params_algo.movement.activity = true;
+//		params_algo.movement.additionate_activity = true;
+//		params_algo.movement.periodic_activity = true;
+//		params_algo.movement.activity_resume_period = 1;	//in hour
+//		params_algo.movement.send_resumed_activity = false;
+//		params_algo.movement.timer_is_over = false;
+//		params_algo.movement.activity_time = 0;
+//		params_algo.movement.activity_ticks_beginning = 0;
+//
+//		params_algo.temperature.mode = AUTO_REFRESH + THRESHOLD;		//to read from config file
+//		params_algo.temperature.delta_theta = 100;			//to read from config file
+//		params_algo.temperature.nb_excess_threshold = 5; 	//to read from config file
+//		params_algo.temperature.period_user = 30000;			//to read from config file
+//		params_algo.temperature.period_fast = 5000;			//to read from config file
+//		params_algo.temperature.period_ultrafast = 2000; 	//to read from config file
+//		params_algo.temperature.temp_max = 2500;			//to read from config file
+//		params_algo.temperature.temp_min = 2000;			//to read from config file
+//		params_algo.temperature.nb_excess = 3;				//should be already set to 0
+//		params_algo.temperature.nb_temp_to_save = 12;		//to read from config file
+//
+//		params_algo.tilt.mode = AUTO_REFRESH + THRESHOLD;	//to read from config file
+//		params_algo.tilt.period = 10000;					//to read from config file
+//		params_algo.tilt.threshold = 200;					//to read from config file
+//		params_algo.tilt.pitch_alert_threshold = 10;		//in degree, to read from config file
+//		params_algo.tilt.roll_alert_threshold = 10;			//in degree, to read from config file
+//		params_algo.tilt.nb_excess_threshold = 5;			//to read from config file
+//		params_algo.tilt.pitch_init = 0;					//should be already set to 0
+//		params_algo.tilt.roll_init = 0;						//should be already set to 0
+//		params_algo.tilt.init_pitch_roll = false;
+//		params_algo.tilt.nb_excess = 0;						//should be already set to 0
+//		params_algo.tilt.rotate_axes_around_y = TILT_NO_ROTATION;
+//
+//		params_algo.rotation.mode = AUTO_REFRESH + THRESHOLD;	//to read from config file
+//		params_algo.rotation.period = 5000;					//in ms, to read from config file
+//		params_algo.rotation.long_period = 15000;			//in ms, to read from config file
+//		params_algo.rotation.threshold = 200;				//in mg, to read from config file
+//		params_algo.rotation.nb_lap_before_sending = 5;
+//		params_algo.rotation.quart_tour = 0;
+//		params_algo.rotation.actual_zone = 0;
+//		params_algo.rotation.previous_zone = 0;
+//		params_algo.rotation.nb_tour = 0;
+//		params_algo.rotation.nb_lap_reset_enabled = true;
+//
+//		params_algo.orientation.mode = AUTO_REFRESH + THRESHOLD;	//to read from config file
+//		//FIXME:------------------------------
+//		params_algo.orientation.Rx_alert = 90;			//to read from config file
+//		params_algo.orientation.Ry_alert = -45;			//to read from config file
+//		params_algo.orientation.Rz_alert = 90;			//to read from config file
+//		//FIXME:------------------------------
+//		params_algo.orientation.mesuration_length = 5;	//in s, to read from config file
+//		params_algo.orientation.period = 30;			//in s, to read from config file
+//		params_algo.orientation.threshold = 800;		//in mg, to read from config file
+//		params_algo.orientation.initIsNeeded = false;
+//		params_algo.orientation.stopRequested = false;
+//
+//		params_algo.sensor.mode = AUTO_REFRESH;		//to read from config file
+//		params_algo.sensor.delta = 100;			//to read from config file
+//		params_algo.sensor.nb_excess_threshold = 5; 	//to read from config file
+//		params_algo.sensor.period_user = 30000;			//to read from config file
+//		params_algo.sensor.period_fast = 5000;			//to read from config file
+//		params_algo.sensor.period_ultrafast = 2000; 	//to read from config file
+//		params_algo.sensor.water_level_max = 2500;			//to read from config file
+//		params_algo.sensor.water_level_min = 2000;			//to read from config file
+//		params_algo.sensor.water_pressure_max = 2500;			//to read from config file
+//		params_algo.sensor.water_pressure_min = 2000;			//to read from config file
+//		params_algo.sensor.nb_excess = 3;				//should be already set to 0
+//	}
+}
+
+
+
+//==============================================================================
+
+//==============================================================================
+void vd_lib_flash_commands(char * s8p_Commande, int32_t s32_Param)
+{
+//    // Debug commands for FlashFS
+//    static const s_def_DebugCmd s_lib_FlashCmd[] =
+//    {
+//        {"status",		&vd_lib_flash_status,		"                                       : Display status", 0u},
+//        {"dump",		&vd_lib_flash_dump,			"<sector number>                        : Dump sector", 0u},
+//        {"erase",		&vd_lib_flash_erase_sector,	"<sector number>                        : Erase sector", 0u},
+//    };
+//
+//	vd_lib_Debug_ParseCmd(s_lib_FlashCmd, (sizeof(s_lib_FlashCmd)/sizeof(s_def_DebugCmd)), (uint8_t*)s8p_Commande);
+}
+
+//==============================================================================
+
+//==============================================================================
+//static void vd_lib_flash_status(char *s8p_Commande, int32_t s32_Param)
+//{
+//    UNUSED_PARAMETER(s8p_Commande);
+//	INFO("Flash detected=%d; size=%lu bytes\n", ext_flash_is_detected(), ext_flash_Get_Size());
+//}
+//
+////==============================================================================
+//static void vd_lib_flash_dump(char *s8p_Commande, int32_t s32_Param)
+//{
+//	uint8_t u8_sector[EXT_FLASH_SECTOR_SIZE];
+//	int32_t s32_noSector= 0;
+//	uint32_t u32_addr= 0;
+//	if ((s8p_Commande!=NULL) && (strlen(s8p_Commande)>0))
+//	{
+//		s32_noSector= (int32_t)atol(s8p_Commande);
+//	}
+//	u32_addr= s32_noSector*EXT_FLASH_SECTOR_SIZE;
+//	INFO("Dumping sector #%ld, addr 0x%06x\n", s32_noSector, u32_addr);
+//	memset(u8_sector, 0x55, sizeof(u8_sector));
+//	ext_flash_read(u32_addr, (char*)u8_sector, EXT_FLASH_SECTOR_SIZE);
+//#define	NB_BYTES_PER_LINE	32
+//
+//	for(uint32_t i=0;i<EXT_FLASH_SECTOR_SIZE;i+=NB_BYTES_PER_LINE)
+//	{
+//		INFO("0x%06x:", i);
+//		for(uint32_t j=0;j<NB_BYTES_PER_LINE;j++)
+//		{
+//			INFO(" %02x", u8_sector[i+j]);
+//		}
+//		INFO("\n");
+//	}
+//}
+//
+////==============================================================================
+//static void vd_lib_flash_erase_sector(char *s8p_Commande, int32_t s32_Param)
+//{
+//	if ((s8p_Commande!=NULL) && (strlen(s8p_Commande)>0))
+//	{
+//		int32_t s32_noSector= (int32_t)atol(s8p_Commande);
+//		uint32_t u32_addr= s32_noSector*EXT_FLASH_SECTOR_SIZE;
+//        INFO("Erasing sector #%ld, addr 0x%06x\n", s32_noSector, u32_addr);
+//        ext_flash_erase_sector(u32_addr);
+//	}
+//}
+
+*/
+
+
+//Redundant HAL_LoRa functions
+/*
+int LoRa_SendData(uint8_t* buffer, uint8_t offset, uint8_t size){
+
+	LoRa_SetOpMode(STANDBY);
+	
+	LoRa_WriteReg(RegHopPeriod, 0);		//Disable hopper period
+	
+	LoRa_WriteReg(RegDioMapping1, 0x40);
+	LoRa_WriteReg(RegDioMapping2, 0x00);
+	
+	LoRa_WriteReg(RegIrqFlags, 0xFF);
+	LoRa_WriteReg(RegIrqFlagsMask, 0x08);
+	
+	LoRa_WriteReg(RegPayloadLength, size);
+	LoRa_WriteReg(RegFifoTxBaseAddr, 0);
+	LoRa_WriteReg(RegFifoAddrPtr, 0);
+	
+	
+	HAL_GPIO_WritePin(NRST_1278_GPIO_Port, NRST_1278_Pin, GPIO_PIN_RESET);
+	uint8_t buff[1] = {0x80};
+	if(HAL_SPI_Transmit(&hspi2, &buff[0], 1, 5) != HAL_OK){
+		Error_Handler();
+	}
+		
+	for (int i = 0; i < size; i++) {
+		if(HAL_SPI_Transmit(&hspi2, &buffer[i+offset], 1, 5) != HAL_OK){
+			Error_Handler();
+		}
+	}
+
+	HAL_GPIO_WritePin(NRST_1278_GPIO_Port, NRST_1278_Pin, GPIO_PIN_SET);
+	
+	LoRa_SetOpMode(TX);
+	
+	int timeover = 1000;
+	
+	while (timeover-- > 0){
+		if ((LoRa_ReadReg(RegIrqFlags) & 0x08) == 0x08){
+			LoRa_SetReceiveMode(); 
+			return 0;
+		}
+		
+		HAL_Delay(3);
+	}
+	LoRa_SetReceiveMode(); 
+	return -1;
+}
+
+void LoRa_SetReceiveMode(void){
+	
+	LoRa_SetOpMode(STANDBY);
+	
+	//LoRa_WriteReg(RegHopPeriod, 0);		??
+	
+	LoRa_WriteReg(RegDioMapping1, 0x00);
+	LoRa_WriteReg(RegDioMapping2, 0x00);
+	
+	LoRa_WriteReg(RegIrqFlags, 0xFF);
+	LoRa_WriteReg(RegIrqFlagsMask, 0x40);
+	
+	LoRa_SetOpMode(RXSINGLE);
+	
+}
+
+**
+* @brief Set LoRa chip Low data rate on/off
+* @param Parameter: on/off
+* @retval None
+*
+void LoRa_SetMobileNode(bool enable){
+	uint8_t data;
+	
+	data = LoRa_ReadReg(RegModemConfig3);
+	
+	data &= 0xF7;
+	
+	data |= (enable ? 1 : 0) << 3;
+	
+	LoRa_WriteReg(RegModemConfig3, data);
+	
+}
+
+**
+* @brief Set LoRa chip operation time out
+* @param Parameter: time out value
+* @retval None
+*
+void LoRa_SetSymbTimeout(unsigned int value){
+	uint8_t buffer[2];
+	
+	buffer[0] = LoRa_ReadReg(RegModemConfig2);
+	
+	buffer[1] = LoRa_ReadReg(RegSymbTimeoutLsb);
+	
+	buffer[0] &= 0xFC;
+	buffer[0] |= value >> 8;
+	
+	buffer[1] = value & 0xFF;
+	
+	LoRa_WriteReg(RegModemConfig2,buffer[0]);
+	LoRa_WriteReg(RegSymbTimeoutLsb, buffer[1]);
+	
+}
+
+**
+* @brief Set LoRa chip payload length
+* @param Parameter: length of payload
+* @retval None
+*
+void LoRa_SetPayloadLength(uint8_t value){
+	LoRa_WriteReg(RegPayloadLength, value);
+}
+
+**
+* @brief Set LoRa chip implicit header on/off
+* @param Parameter: on/off
+* @retval None
+*
+void LoRa_SetImplicitHeaderOn(bool enable){
+	uint8_t data;
+	
+	data = LoRa_ReadReg(RegModemConfig1);
+	
+	data &= 0xFE;
+	
+	data |= (enable ? 1 : 0);
+	
+	LoRa_WriteReg(RegModemConfig1, data);
+}
+
+**
+* @brief Set LoRa chip bandwidth
+* @param Parameter: bandwidth
+* @retval None
+*
+void LoRa_SetSignalBandwidth(uint8_t bw){
+	uint8_t data;
+	
+	data = LoRa_ReadReg(RegModemConfig1);
+	
+	data &= 0x0F;
+	
+	data |= bw << 4;
+	
+	LoRa_WriteReg(RegModemConfig1, data);
+	
+}
+
+**
+* @brief Set LoRa chip crc on/off
+* @param Parameter: enable/disable
+* @retval None
+*
+void LoRa_SetPacketCrcOn(bool enable){
+	uint8_t data;
+	
+	data = LoRa_ReadReg(RegModemConfig2);
+	
+	data &= 0xFB;
+	
+	data |= (enable ? 1:0) << 2;
+	
+	LoRa_WriteReg(RegModemConfig2, data);
+	
+}
+
+**
+* @brief Set LoRa chip error coding rate
+* @param Parameter: error code rate
+* @retval None
+*
+void LoRa_SetErrorCoding(uint8_t value){
+	uint8_t data;
+	
+	data = LoRa_ReadReg(RegModemConfig1);
+	
+	data &= 0xF1;
+	
+	data |= value << 1;
+	
+	LoRa_WriteReg(RegModemConfig1, data);
+	
+}
+
+**
+* @brief Set LoRa chip spreading factor
+* @param Parameter: spreading factor
+* @retval None
+*
+void LoRa_SetSpreadingFactor(uint8_t factor){
+	uint8_t data;
+	
+	data = LoRa_ReadReg(RegModemConfig2);
+	
+	data &= 0x0F;
+	
+	data |= factor<<4;
+	
+	LoRa_WriteReg(RegModemConfig2, data);
+	
+}
+
+**
+* @brief Set LoRa chip RF Power
+* @param Parameter: power
+* @retval None
+*
+void LoRa_SetRFPower(uint8_t power){
+	//LoRa_WriteReg(RegPaConfig, 0x00);
+	//LoRa_WriteReg(RegPaDac,0x04);
+	
+}
+
+*/
 
 
 /*============================================================================*/

@@ -13,19 +13,6 @@ bool LoRa_is_detected(void);
 void LoRa_SetOpMode(uint8_t OperatingMode);
 void LoRa_SetFskMode(uint8_t ModulationMode);
 void LoRa_SetRFFrequency(uint32_t freq);
-void LoRa_SetRFPower(uint8_t power);
-void LoRa_SetSpreadingFactor(uint8_t factor);
-void LoRa_SetErrorCoding(uint8_t value);
-void LoRa_SetPacketCrcOn(bool enable);
-void LoRa_SetSignalBandwidth(uint8_t bw);
-void LoRa_SetImplicitHeaderOn(bool enable);
-void LoRa_SetPayloadLength(uint8_t value);
-void LoRa_SetSymbTimeout(unsigned int value);
-void LoRa_SetMobileNode(bool enable);
-void LoRa_SetReceiveMode(void);
-
-
-int LoRa_SendData(uint8_t* buffer, uint8_t offset, uint8_t size);
 
 uint8_t LoRa_ReadReg(uint8_t Address);
 void LoRa_WriteReg(uint8_t Address, uint8_t WriteData);

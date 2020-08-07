@@ -94,7 +94,8 @@ static bool SystemWakeupTimeCalibrated = false;
  */
 void OnCalibrateSystemWakeupTimeTimerEvent( void )
 {
-    SystemWakeupTimeCalibrated = true;
+    UNUSED(SystemWakeupTimeCalibrated);
+		SystemWakeupTimeCalibrated = true;
 }
 
 /*!
@@ -205,12 +206,6 @@ uint32_t BoardGetBatteryVoltage( void ){return 0;}
 uint8_t BoardGetBatteryLevel( void ){return 0;}
 
 void SystemClockReConfig( void ){ }
-
-//void SysTick_Handler( void )
-//{
-//    HAL_IncTick( );
-//    HAL_SYSTICK_IRQHandler( );
-//}
 
 uint8_t GetBoardPowerSource( void ){return 0;}
 

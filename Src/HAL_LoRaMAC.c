@@ -1,4 +1,3 @@
-
 #include "utilities.h"
 #include "board.h"	
 #include "gpio.h"
@@ -127,12 +126,7 @@ static uint8_t IsTxConfirmed = LORAWAN_CONFIRMED_MSG_ON;
 /*!
  * Timer to handle the application data transmission duty cycle
  */
-static TimerEvent_t TxNextPacketTimer;
-
-/*!
- * Specifies the state of the application LED
- */
-static bool AppLedStateOn = false;
+//static TimerEvent_t TxNextPacketTimer;
 
 /*!
  * Indicates if a new packet can be sent
@@ -155,16 +149,6 @@ struct ComplianceTest_s
     uint8_t DemodMargin;
     uint8_t NbGateways;
 }ComplianceTest;
-
-/*!
- * LED GPIO pins objects
- */
-//extern Gpio_t Led1;
-//extern Gpio_t Led2;
-//extern Gpio_t Led3;
-
-static LoRaMacStatus_t status;
-
 
 /*!
  * \brief   Prepares the payload of the frame
@@ -270,6 +254,7 @@ bool SendFrame( void )
 /*!
  * \brief Function executed on TxNextPacket Timeout event
  */
+/*
 static void OnTxNextPacketTimerEvent( void )
 {
     MibRequestConfirm_t mibReq;
@@ -308,26 +293,7 @@ static void OnTxNextPacketTimerEvent( void )
         }
     }
 }
-
-/*!
- * \brief Function executed on Led 1 Timeout event
- */
-//static void OnLed1TimerEvent( void )
-//{
-//    TimerStop( &Led1Timer );
-    // Switch LED 1 OFF
-//    GpioWrite( &Led1, 1 );
-//}
-
-/*!
- * \brief Function executed on Led 2 Timeout event
- */
-//static void OnLed2TimerEvent( void )
-//{
-//    TimerStop( &Led2Timer );
-		//Switch LED 2 OFF
-//    GpioWrite( &Led2, 1 );
-//}
+*/
 
 /*!
  * \brief   MCPS-Confirm event function
@@ -684,7 +650,9 @@ static void MlmeIndication( MlmeIndication_t *mlmeIndication )
 /*                   PRIVATE FUNCTIONS		                                    */
 /*============================================================================*/
 void LoRaMAC_Init(void){
-
+	LoRaMacStatus_t status;
+	UNUSED(status);
+	
   BoardInitMcu( );
   
 	LoRaMacPrimitives.MacMcpsConfirm = McpsConfirm;
@@ -778,7 +746,8 @@ void LoRaMAC_Join(void){
 			DevAddr = randr( 0, 0x01FFFFFF );
     }
 
-		//static LoRaMacStatus_t status;
+		static LoRaMacStatus_t status;
+		UNUSED(status);
 		
     mibReq.Type = MIB_NET_ID;
     mibReq.Param.NetID = LORAWAN_NETWORK_ID;

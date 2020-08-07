@@ -29,6 +29,7 @@
 #include "usart.h"
 #include "HAL_spi.h"
 #include "ext_flash_tb.h"
+#include "tim.h"
 
 /*============================================================================*/
 /*                   MACRO DEFINITION                                         */
@@ -221,19 +222,21 @@ static void vd_ext_flash_reset(void)
 {
 	// wait 10µs from last deselect
 	//vTaskDelay(pdMS_TO_TICKS( 10 ));
-	HAL_Delay(1);
+	//HAL_Delay(1);
+	DelayMsPoll(1);
 	
 	// pulse of 10µs
 	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_SET);
 	//vTaskDelay(pdMS_TO_TICKS( 10 ));
-	HAL_Delay(1);
-	
+	//HAL_Delay(1);
+	DelayMsPoll(1);
 	
 	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);
 	
 	// reset recovery, wait 30µs
 	//vTaskDelay(pdMS_TO_TICKS( 30 ));
-	HAL_Delay(3);
+	//HAL_Delay(3);
+	DelayMsPoll(3);
 }
 
 
@@ -270,14 +273,14 @@ static int32_t ext_flash_read_id(void)
 	if (i16_found >= 0)
 	{
 		u32_ext_flash_size= ts_nor_id[i16_found].u32_nb_sectors_64k << 16;
-		//INFO("Flash detected \"%s\", size is %lu bytes", ts_nor_id[i16_found].name, u32_ext_flash_size);
-		myprintf("Flash detected \"%s\", size is %lu bytes\n", ts_nor_id[i16_found].name, u32_ext_flash_size);
+		INFO("Flash detected \"%s\", size is %lu bytes", ts_nor_id[i16_found].name, u32_ext_flash_size);
+		//myprintf("Flash detected \"%s\", size is %lu bytes\n", ts_nor_id[i16_found].name, u32_ext_flash_size);
 	}
 	else
 	{
 		u32_ext_flash_size = 0;
-		//INFO("Flash not recognized or not detected (id %02x %02x %02x)", rd_buf[0], rd_buf[1], rd_buf[2]);
-		myprintf("Flash not recognized or not detected (id %02x %02x %02x)\n", rd_buf[0], rd_buf[1], rd_buf[2]);
+		INFO("Flash not recognized or not detected (id %02x %02x %02x)", rd_buf[0], rd_buf[1], rd_buf[2]);
+		//myprintf("Flash not recognized or not detected (id %02x %02x %02x)\n", rd_buf[0], rd_buf[1], rd_buf[2]);
 	}
 
 	return(u32_ext_flash_size ? 1 : 0);
@@ -442,15 +445,10 @@ void ext_flash_release_from_deep_powerdown(void)
 //==============================================================================
 void ext_flash_power_on(void)
 {
-  //INFO("Switching Flash ON");
-	myprintf("Switching Flash ON");
+  INFO("Switching Flash ON");
 
 	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);		// Pull down to enable
 	
-	// Wait for 10 ticks
-	//vTaskDelay(10);
-	HAL_Delay(1);
-
 	ext_flash_is_enable = true;
 }
 
@@ -471,157 +469,6 @@ void ext_flash_power_off(void)
 
 	ext_flash_is_enable = false;
 }
-//==============================================================================
-
-//==============================================================================
-int loading_parameters(char *params, bool check_new_value, uint32_t new_value)
-{
-	(void)(params);
-	(void)(check_new_value);
-	(void)(new_value);
-//	INFO("Loading algo parameters...\n");
-//	ext_flash_read(FLASH_PARAMETERS_ADDR, (char *)&params_algo, sizeof(params_algo));
-	ext_flash_power_off();	//Need to be done manually to save power
-
-	return 0;
-}
-
-//==============================================================================
-
-//==============================================================================
-int saving_parameters(char *params, bool check_new_value, uint32_t new_value)
-{
-	(void)(params);
-	(void)(check_new_value);
-	(void)(new_value);
-//	INFO("Saving algo parameters...\n");
-	ext_flash_erase_sector(FLASH_PARAMETERS_SECTOR);
-//	ext_flash_write(FLASH_PARAMETERS_ADDR, (char *)&params_algo, sizeof(params_algo));
-	ext_flash_power_off();	//Need to be done manually to save power
-
-	return 0;
-}
-
-/*
- * The purpose of this function is to set all parameters to their default values.
- * Default values will make in a default mode.
- * This mode will be overwritten by USB command to set the parameters.
- */
-void init_usecase_parameters(bool reset)
-{
-	loading_parameters(NULL, 0, 0);
-
-	/* if the flash has no data, all the param's sector is set to FF
-	 * then that means the user hasn't enter any parameters.
-	 * So we set the product into a default mode.
-	 */
-//	if( (reset == true) || (params_algo.use_case == 0xFFFF) )
-//	{
-//		params_algo.use_case = 	ALGO_ALIVE + ALGO_CHOC;
-//		params_algo.maxRange = 8;	//by default
-//
-//		params_algo.alive.mode = AUTO_REFRESH; 			//to read from config file
-//		params_algo.alive.period = 60000; 				//ms, to read from config file
-//		params_algo.alive.nb_temp_to_save = 1;			//by default, send directly the alive data
-//		params_algo.alive.send_sensors_data = false;	//by default, do not send the sensors data
-//
-//		params_algo.choc.freq_mpu = 10;				//to read from config file
-//		params_algo.choc.Gx_max_choc_pos = 5000;	//to read from config file
-//		params_algo.choc.Gx_max_choc_neg = 5000;	//to read from config file
-//		params_algo.choc.Gy_max_choc_pos = 5000;	//to read from config file
-//		params_algo.choc.Gy_max_choc_neg = 5000;	//to read from config file
-//		params_algo.choc.Gz_max_choc_pos = 5000;	//to read from config file
-//		params_algo.choc.Gz_max_choc_neg = 5000;	//to read from config file
-//		params_algo.choc.enable_inhibition = true;
-//		params_algo.choc.inhibition = 150;			//ms, to read from config file
-//		params_algo.choc.keep_gravity = true;
-//
-//		params_algo.movement.freq_mpu = 15;			//to read from config file
-//		params_algo.movement.sensitivity = 10;		//to read from config file (nb of threshold excess during X)
-//		params_algo.movement.count = 0;				//should be already set to 0
-//		params_algo.movement.time_before_start = 2000;		//in ms, to read from config file
-//		params_algo.movement.time_before_stop = 3000;		//in ms,to read from config file
-//		params_algo.movement.Gx_max_mvt_pos = 300;			//to read from config file
-//		params_algo.movement.Gx_max_mvt_neg = 300;			//to read from config file
-//		params_algo.movement.Gy_max_mvt_pos = 300;			//to read from config file
-//		params_algo.movement.Gy_max_mvt_neg = 300;			//to read from config file
-//		params_algo.movement.Gz_max_mvt_pos = 300;			//to read from config file
-//		params_algo.movement.Gz_max_mvt_neg = 300;			//to read from config file
-//		params_algo.movement.product_is_moving = false;
-//		params_algo.movement.send_trame_before = false;
-//		params_algo.movement.send_trame_after =  false;
-//		params_algo.movement.activity = true;
-//		params_algo.movement.additionate_activity = true;
-//		params_algo.movement.periodic_activity = true;
-//		params_algo.movement.activity_resume_period = 1;	//in hour
-//		params_algo.movement.send_resumed_activity = false;
-//		params_algo.movement.timer_is_over = false;
-//		params_algo.movement.activity_time = 0;
-//		params_algo.movement.activity_ticks_beginning = 0;
-//
-//		params_algo.temperature.mode = AUTO_REFRESH + THRESHOLD;		//to read from config file
-//		params_algo.temperature.delta_theta = 100;			//to read from config file
-//		params_algo.temperature.nb_excess_threshold = 5; 	//to read from config file
-//		params_algo.temperature.period_user = 30000;			//to read from config file
-//		params_algo.temperature.period_fast = 5000;			//to read from config file
-//		params_algo.temperature.period_ultrafast = 2000; 	//to read from config file
-//		params_algo.temperature.temp_max = 2500;			//to read from config file
-//		params_algo.temperature.temp_min = 2000;			//to read from config file
-//		params_algo.temperature.nb_excess = 3;				//should be already set to 0
-//		params_algo.temperature.nb_temp_to_save = 12;		//to read from config file
-//
-//		params_algo.tilt.mode = AUTO_REFRESH + THRESHOLD;	//to read from config file
-//		params_algo.tilt.period = 10000;					//to read from config file
-//		params_algo.tilt.threshold = 200;					//to read from config file
-//		params_algo.tilt.pitch_alert_threshold = 10;		//in degree, to read from config file
-//		params_algo.tilt.roll_alert_threshold = 10;			//in degree, to read from config file
-//		params_algo.tilt.nb_excess_threshold = 5;			//to read from config file
-//		params_algo.tilt.pitch_init = 0;					//should be already set to 0
-//		params_algo.tilt.roll_init = 0;						//should be already set to 0
-//		params_algo.tilt.init_pitch_roll = false;
-//		params_algo.tilt.nb_excess = 0;						//should be already set to 0
-//		params_algo.tilt.rotate_axes_around_y = TILT_NO_ROTATION;
-//
-//		params_algo.rotation.mode = AUTO_REFRESH + THRESHOLD;	//to read from config file
-//		params_algo.rotation.period = 5000;					//in ms, to read from config file
-//		params_algo.rotation.long_period = 15000;			//in ms, to read from config file
-//		params_algo.rotation.threshold = 200;				//in mg, to read from config file
-//		params_algo.rotation.nb_lap_before_sending = 5;
-//		params_algo.rotation.quart_tour = 0;
-//		params_algo.rotation.actual_zone = 0;
-//		params_algo.rotation.previous_zone = 0;
-//		params_algo.rotation.nb_tour = 0;
-//		params_algo.rotation.nb_lap_reset_enabled = true;
-//
-//		params_algo.orientation.mode = AUTO_REFRESH + THRESHOLD;	//to read from config file
-//		//FIXME:------------------------------
-//		params_algo.orientation.Rx_alert = 90;			//to read from config file
-//		params_algo.orientation.Ry_alert = -45;			//to read from config file
-//		params_algo.orientation.Rz_alert = 90;			//to read from config file
-//		//FIXME:------------------------------
-//		params_algo.orientation.mesuration_length = 5;	//in s, to read from config file
-//		params_algo.orientation.period = 30;			//in s, to read from config file
-//		params_algo.orientation.threshold = 800;		//in mg, to read from config file
-//		params_algo.orientation.initIsNeeded = false;
-//		params_algo.orientation.stopRequested = false;
-//
-//		params_algo.sensor.mode = AUTO_REFRESH;		//to read from config file
-//		params_algo.sensor.delta = 100;			//to read from config file
-//		params_algo.sensor.nb_excess_threshold = 5; 	//to read from config file
-//		params_algo.sensor.period_user = 30000;			//to read from config file
-//		params_algo.sensor.period_fast = 5000;			//to read from config file
-//		params_algo.sensor.period_ultrafast = 2000; 	//to read from config file
-//		params_algo.sensor.water_level_max = 2500;			//to read from config file
-//		params_algo.sensor.water_level_min = 2000;			//to read from config file
-//		params_algo.sensor.water_pressure_max = 2500;			//to read from config file
-//		params_algo.sensor.water_pressure_min = 2000;			//to read from config file
-//		params_algo.sensor.nb_excess = 3;				//should be already set to 0
-//	}
-}
-
-
-
-
 
 
 /*============================================================================*/
@@ -637,18 +484,19 @@ static void flash_ext_wr_rd(const char *wr_buf, uint16_t wr_size, char *rd_buf, 
 	HAL_GPIO_WritePin(GPIOA, CS_FLASH_Pin, GPIO_PIN_RESET);
 	// Wait for 10 ms
 	//vTaskDelay(pdMS_TO_TICKS( 10 ));
-	HAL_Delay(1);
+	//HAL_Delay(1);
+	DelayMsPoll(1);
 	
 	// Transmit data
 	if(HAL_SPI_Transmit(&hspi1, (uint8_t *)wr_buf, wr_size, 5) != HAL_OK){
-		//ERROR("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!");
-		myprintf("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!\n");
+		ERROR("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!");
+		//myprintf("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!\n");
 	}
 
 	// Read data
 	if(HAL_SPI_Receive(&hspi1, (uint8_t *)rd_buf, rd_size, 5) != HAL_OK){
-		//INFO("HAL_SPI_Receive NOTHING in flash_ext_wr_rd()!");
-		myprintf("\nHAL_SPI_Receive NOTHING in flash_ext_wr_rd()!\n");
+		DEBUG("HAL_SPI_Receive NOTHING in flash_ext_wr_rd()!");
+		//myprintf("\nHAL_SPI_Receive NOTHING in flash_ext_wr_rd()!\n");
 	}
 
 	// Disable Flash, Hardware NSS output signal
@@ -689,70 +537,6 @@ static void flash_ext_end_wr(const char *wr_buf, int32_t wr_size)
 	//HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(CS_FLASH_GPIO_Port, CS_FLASH_Pin, GPIO_PIN_SET);
 }
-
-//==============================================================================
-
-//==============================================================================
-void vd_lib_flash_commands(char * s8p_Commande, int32_t s32_Param)
-{
-//    // Debug commands for FlashFS
-//    static const s_def_DebugCmd s_lib_FlashCmd[] =
-//    {
-//        {"status",		&vd_lib_flash_status,		"                                       : Display status", 0u},
-//        {"dump",		&vd_lib_flash_dump,			"<sector number>                        : Dump sector", 0u},
-//        {"erase",		&vd_lib_flash_erase_sector,	"<sector number>                        : Erase sector", 0u},
-//    };
-//
-//	vd_lib_Debug_ParseCmd(s_lib_FlashCmd, (sizeof(s_lib_FlashCmd)/sizeof(s_def_DebugCmd)), (uint8_t*)s8p_Commande);
-}
-
-//==============================================================================
-
-//==============================================================================
-//static void vd_lib_flash_status(char *s8p_Commande, int32_t s32_Param)
-//{
-//    UNUSED_PARAMETER(s8p_Commande);
-//	INFO("Flash detected=%d; size=%lu bytes\n", ext_flash_is_detected(), ext_flash_Get_Size());
-//}
-//
-////==============================================================================
-//static void vd_lib_flash_dump(char *s8p_Commande, int32_t s32_Param)
-//{
-//	uint8_t u8_sector[EXT_FLASH_SECTOR_SIZE];
-//	int32_t s32_noSector= 0;
-//	uint32_t u32_addr= 0;
-//	if ((s8p_Commande!=NULL) && (strlen(s8p_Commande)>0))
-//	{
-//		s32_noSector= (int32_t)atol(s8p_Commande);
-//	}
-//	u32_addr= s32_noSector*EXT_FLASH_SECTOR_SIZE;
-//	INFO("Dumping sector #%ld, addr 0x%06x\n", s32_noSector, u32_addr);
-//	memset(u8_sector, 0x55, sizeof(u8_sector));
-//	ext_flash_read(u32_addr, (char*)u8_sector, EXT_FLASH_SECTOR_SIZE);
-//#define	NB_BYTES_PER_LINE	32
-//
-//	for(uint32_t i=0;i<EXT_FLASH_SECTOR_SIZE;i+=NB_BYTES_PER_LINE)
-//	{
-//		INFO("0x%06x:", i);
-//		for(uint32_t j=0;j<NB_BYTES_PER_LINE;j++)
-//		{
-//			INFO(" %02x", u8_sector[i+j]);
-//		}
-//		INFO("\n");
-//	}
-//}
-//
-////==============================================================================
-//static void vd_lib_flash_erase_sector(char *s8p_Commande, int32_t s32_Param)
-//{
-//	if ((s8p_Commande!=NULL) && (strlen(s8p_Commande)>0))
-//	{
-//		int32_t s32_noSector= (int32_t)atol(s8p_Commande);
-//		uint32_t u32_addr= s32_noSector*EXT_FLASH_SECTOR_SIZE;
-//        INFO("Erasing sector #%ld, addr 0x%06x\n", s32_noSector, u32_addr);
-//        ext_flash_erase_sector(u32_addr);
-//	}
-//}
 
 /** @} */
 /*============================================================================*/

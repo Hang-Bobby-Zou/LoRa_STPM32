@@ -67,6 +67,6 @@ lora-stpm32\main.o: ../Inc/ext_flash_tb.h
 lora-stpm32\main.o: D:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 lora-stpm32\main.o: ../Inc/STPM32.h
 lora-stpm32\main.o: ../Inc/LoRa.h
-lora-stpm32\main.o: ../Inc/stm32l4xx_it.h
 lora-stpm32\main.o: ../Inc/HAL_LoRaMAC.h
+lora-stpm32\main.o: ../Inc/stm32l4xx_it.h
 lora-stpm32\main.o: ../Drivers/LoRaMAC/system/timer.h

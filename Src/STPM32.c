@@ -3,7 +3,7 @@
  * @{
  * \file STPM32.c
  * \author Hang Bobby Zou
- * \brief STPM32 Code library
+ * \brief STPM32 HAL Code library
  */
  
 /*============================================================================*/
@@ -736,7 +736,7 @@ bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage){
 }
 
 /*===================================================================== */
-/*					CRC Calc 																										*/
+/*					CRC Calculations 																						*/
 /*===================================================================== */
 static u8 CalcCRC8(u8 *pBuf)
 {

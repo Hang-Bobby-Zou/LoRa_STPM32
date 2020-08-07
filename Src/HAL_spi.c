@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * File Name          : SPI.c
+  * File Name          : HAL_SPI.c
   * Description        : This file provides code for the configuration
   *                      of the SPI instances.
   ******************************************************************************

@@ -33,8 +33,9 @@
 #include "ext_flash_tb.h"
 #include "STPM32.h"
 #include "LoRa.h"
-#include "stm32l4xx_it.h"
 #include "HAL_LoRaMAC.h"
+#include "stm32l4xx_it.h"
+
 #include "timer.h"
 /* USER CODE END Includes */
 
@@ -106,99 +107,86 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-		
-		/*	---- Connetion Table ----
-				SPI1 	- External Flash				Verified, Flash test is called from main.c
-				SPI2 	- LoRa									Under Development
-				UART1 - STPM32								Under Development
-				UART3 - Serial Out Terminal		Verified
-				USB		- USB										NULL
-		*/
-		
-		/* Initialize SPI */
-		HAL_SPI_MspInit(&hspi1);
-		HAL_SPI_MspInit(&hspi2);
-		/*
-			|--SPI2 - LoRa Control--|
-			|-----------------------|
-			|   TX/RX   | VC1 | VC2 |
-			|-----------|-----------|
-			|Transceiver|  L  |  H  |
-			|Receiver   |  H  |  L  |
-			|-----------------------|
-			 Truth Table
-		*/
-		
-		/* Initialize USB */
-		HAL_PCD_MspInit(&hpcd_USB_FS);
-		
-		/* Initialize Timer7*/
-		//HAL_TIM_Base_Init(&htim7);
-		//HAL_TIM_Base_Start_IT(&htim7);
-				
-		/* Initialize UART for sending message*/ 
-		HAL_UART_MspInit(&huart1);		//UART1 - Connect STPM32
-		HAL_UART_MspInit(&huart3);		//UART3 - Connect Serial Out Terminal
+	
+	/*	---- Connetion Table ----
+			SPI1 	- External Flash				Verified, Flash test is called from main.c
+			SPI2 	- LoRa									Done
+			UART1 - STPM32								Done
+			UART3 - Serial Out Terminal		Verified
+			USB		- USB										NULL
+	*/
 
-		/*  Configure DE & !RE pins for UART3  */ 
-		/*	GPIO_PIN_SET 		:= set pin high	== 1
-				GPIO_PIN_RESET 	:= set pin low  == 0 
-				##------- DE -- Tx	!RE -- Rx -----##
-				|-----------------------------------|
-				|  RE  |  !RE  |  DE  |  Rx  |  Tx  |
-				|---------------------|-------------|
-				|  0   |   1   |  0   |  1      0   |	S1
-				|  0   |   1   |  1   |  1      1   | S2
-				|  1   |   0   |  0   |  0      0   | S3
-				|  1   |   0   |  1   |  0      1   | S4
-				|-----------------------------------|
-		*/
-		// Here set UART3 to be in S4 mode, Tx is on
-		DEBUG("Test \r\n\r\n");
-		INFO("Starting Program...\r\n");
-		HAL_Delay(3 * 1000);
+	/* Initialize SPI */
+	HAL_SPI_MspInit(&hspi1);
+	HAL_SPI_MspInit(&hspi2);
+	/*
+		|--SPI2 - LoRa Control--|
+		|-----------------------|
+		|   TX/RX   | VC1 | VC2 |
+		|-----------|-----------|
+		|Transceiver|  L  |  H  |
+		|Receiver   |  H  |  L  |
+		|-----------------------|
+		 Truth Table
+	*/
+		
+	/* Initialize USB */
+	HAL_PCD_MspInit(&hpcd_USB_FS);
+	
+	/* Initialize UART for sending message*/ 
+	HAL_UART_MspInit(&huart1);		//UART1 - Connect STPM32
+	HAL_UART_MspInit(&huart3);		//UART3 - Connect Serial Out Terminal
+
+	HAL_NVIC_DisableIRQ(TIM7_IRQn);
+
+	// Here set UART3 to be in S4 mode, Tx is on
+	DEBUG("Test \r\n\r\n");
+	INFO("Starting Program...\r\n");
+	HAL_Delay(3 * 1000);
 		
 		
-		//Initialize STPM32
-		INFO("Initializing STPM32...");
+	//Initialize STPM32
+	INFO("Initializing STPM32...");
 		
-		if (STPM32_Init() != true)
-				Error_Handler();
+	if (STPM32_Init() != true)
+			Error_Handler();
 		
-		INFO("STPM32 Initialization Done!\r\n");
-		
-		
-		//Initialize LoRa
-		INFO("Initializing LoRa...");
-		if (LoRa_Init() != true)
-				Error_Handler();
-		INFO("LoRa Initialization Done!\r\n");
+	INFO("STPM32 Initialization Done!\r\n");
 		
 		
-		/* Initialize external flash and TEST if flash is okay */
-		INFO("Initializing External Flash...");
+	//Initialize LoRa
+	INFO("Initializing LoRa...");
+	if (LoRa_Init() != true)
+			Error_Handler();
+	INFO("LoRa Initialization Done!\r\n");
 		
-		//ext_flash_init();
-		//ext_flash_power_on();
+		
+	/* Initialize external flash and TEST if flash is okay */
+	INFO("Initializing External Flash...");
+		
+	ext_flash_init();
+	ext_flash_power_on();
 			
-		//if (ext_flash_tb() == false){
-		//		Error_Handler();
-		//}
-		//if (ext_flash_is_detected() != 1)	
-		//		Error_Handler();
-		
-		//INFO("Erasing all block from flash...");
-		//for (int i = 0; i < 32; i++){
-		//		ext_flash_erase_block(i);
-		//		ext_flash_last_write_or_erase_done();
-		//}
-		INFO("External Flash Initialization Done!\r\n");
-		
-		
-		
-		//Finishing up by printing "Starting FreeRTOS System..."
-		INFO("Starting FreeRTOC System...\r\n");
-		
+	//if (ext_flash_tb() == false){
+	//	Error_Handler();
+	//}
+	
+	if (ext_flash_is_detected() != 1)	
+		Error_Handler();
+	
+	INFO("Erasing all block from flash...");
+	for (int i = 0; i < 32; i++){
+			ext_flash_erase_block(i);
+			ext_flash_last_write_or_erase_done();
+			INFO("Erase block # %d done.", i);
+	}
+	INFO("External Flash Initialization Done!\r\n");
+	
+	//Finishing up by printing "Starting FreeRTOS System..."
+	INFO("Starting FreeRTOC System...\r\n");
+	DelayMsPoll(1000);
+	HAL_NVIC_EnableIRQ(TIM7_IRQn);
+	
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

@@ -33,4 +33,3 @@ void LoRaMAC_Join(void);
 int LoRaMAC_Send(void);
 
 void LoRaMAC(void);
-

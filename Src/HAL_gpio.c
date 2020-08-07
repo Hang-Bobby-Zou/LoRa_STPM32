@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * File Name          : gpio.c
+  * File Name          : HAL_gpio.c
   * Description        : This file provides code for the configuration
   *                      of all used GPIO pins.
   ******************************************************************************

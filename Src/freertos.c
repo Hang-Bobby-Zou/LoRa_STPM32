@@ -26,18 +26,21 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
-#include "usart.h"
-#include "HAL_spi.h"
-#include "ext_flash.h"
 #include "stdio.h"
+
+#include "ext_flash.h"
 #include "ext_flash_tb.h"
 #include "STPM32.h"
-#include "STPM32_AddressMap.h"
 #include "LoRa.h"
 #include "HAL_LoRaMAC.h"
-#include "Commissioning.h"
-#include "LoRaMac.h"
+#include "HAL_spi.h"
 #include "tim.h"
+#include "usart.h"
+
+#include "LoRaMac.h"
+#include "Commissioning.h"
+#include "STPM32_AddressMap.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,27 +60,15 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t ReadBuffer[5] = {0};
-uint8_t HAL_RxBuffer[5] = {0};
-uint8_t i[1] = {0x2E};
-int count = 0;
-uint16_t FlashPointer = 0x00;
 
-uint8_t aRxBuffer[8] = {0};
-
-static int USART3_RxFlag = 0;
-static int USART3_TxFlag = 0;
-
-uint8_t loramac_send_retry_count = 0;
-
-int LoRa_Block_Time = 10000;
-
-int LoRa_DL_Flag = 0;
-
-extern uint8_t *LoRa_RxBuf;
+/* USART1(STPM32) Variables */
+uint8_t 	ReadBuffer[5] 	= {0};
+uint8_t	 	HAL_RxBuffer[5] = {0};
+uint8_t 	i[1] 						= {0x2E};
+int 			count 					= 0;
+uint16_t 	FlashPointer 		= 0x00;
 
 //Raw data from STPM32 defines
-
 extern uint8_t PH_Period								[5];
 extern uint8_t CH1_RMS									[5];
 extern uint8_t C1_PHA										[5];
@@ -97,12 +88,29 @@ extern uint8_t Total_Fundamental_Energy	[5];
 extern uint8_t Total_Reactive_Energy		[5];
 extern uint8_t Total_Apparent_Energy		[5];
 
+
+/* USART3(RS485) Variables */
+uint8_t aRxBuffer[8] = {0};
+
+
+/* SPI2(LoRa) Variables */
+uint8_t loramac_send_retry_count = 0;
+int LoRa_Block_Time = 10000;
+int LoRa_DL_Flag = 0;
+extern uint8_t *LoRa_RxBuf;
+//extern LoRaMacFlags_t LoRaMacFlags;
+
+
+/* SYSTEM Variables */
+static int USART3_RxFlag = 0;
+static int USART3_TxFlag = 0;
+
 UBaseType_t USART1_Priority;
 UBaseType_t USART3_Priority;
 UBaseType_t SPI1_Priority;
 UBaseType_t SPI2_Priority;
 
-extern LoRaMacFlags_t LoRaMacFlags;
+
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId IDLEHandle;
@@ -250,7 +258,7 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {	
-	  
+
 		//To cycle the register address pointer
 		if (i[0] > 0x8A){
 			i[0] = 0x2E;
@@ -498,7 +506,7 @@ void StartSPI2(void const * argument)
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   /* Prevent unused argument(s) compilation warning */
-  //UNUSED(huart);
+  UNUSED(huart);
 	
 	if (huart == &huart1){
 		USART1_RxFlag = 1;
@@ -516,7 +524,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
   /* Prevent unused argument(s) compilation warning */
-  //UNUSED(huart);
+  UNUSED(huart);
+	UNUSED(USART3_TxFlag);
 	
 	if (huart == &huart1){
 		USART1_TxFlag = 1;

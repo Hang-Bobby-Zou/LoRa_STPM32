@@ -30,16 +30,6 @@ TIM_HandleTypeDef htim7;
 void MX_TIM7_Init(void)
 {	
 	htim7.Instance = TIM7;
-	
-	/*
-	TIM7_Clock = SystemCoreClock *2 / 8;																		// 4000000 *2 / 8 = 1000000 
-	
-	htim7.Init.Prescaler = (uint32_t)(TIM7_Clock / TIM7_COUNT_CLOCK) - 1;		// = 1'000'000 / 200'000 = 5
-	htim7.Init.Period = (uint32_t) TIM7_PERIOD;															// = 10000		overflows at 10000
-	
-	// 1'000'000 / 5 = 200'000 = 0.2MHz = 0.005ms
-	// 10000 * 0.005 = 50 ms triggers an interrupt
-	*/
 
 	htim7.Init.Prescaler = (uint32_t) 8 - 1;			//80'000'000 / 8 = 10'000'000	= 10MHZ = 0.0001ms
 	htim7.Init.Period	= (uint32_t) 10000 - 1;			//10000 * 0.0001 ms = 1 ms triggers an interrupt
@@ -71,7 +61,6 @@ void MX_TIM7_Init(void)
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
 {
-
   if(tim_baseHandle->Instance==TIM7)
   {
   /* USER CODE BEGIN TIM7_MspInit 0 */
@@ -92,7 +81,6 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
 
 void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 {
-
   if(tim_baseHandle->Instance==TIM7)
   {
   /* USER CODE BEGIN TIM7_MspDeInit 0 */
@@ -112,22 +100,15 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 /* USER CODE BEGIN 1 */
 uint32_t TIM7_GetTimeMs(void)
 {
-	
 	uint32_t TimeValue = 0;
   
 	TimeValue = (uint32_t)(__HAL_TIM_GET_COUNTER(&htim7));
 	
 	TimeValue = TimeValue & 0xffff;
 	
-
-	//TimeValue = TimeValue + TIM7_Irq_Num * TIM7_PERIOD;
 	TimeValue = TimeValue + TIM7_Irq_Num * 10000;
-	
-	//TimeValue *= 1000u;	//Convert in ms
-	
-	//TimeValue /= TIM7_COUNT_CLOCK;				// how many ticks in one ms
+
 	TimeValue /= 10000;
-	
 	
 	if(TimeValue == 0)
 		TimeValue=1;	
@@ -141,9 +122,7 @@ void DelayMsPoll(int x)
 		for(int i = 0; i < 16666; i++) {		//16666.66667 IDK why this number  
 		}
 	}
-}	
-
-
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
