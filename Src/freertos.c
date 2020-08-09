@@ -101,7 +101,9 @@ int LoRa_Block_Time = 60000;
 int LoRa_DL_Flag = 0;
 extern uint8_t *LoRa_RxBuf;
 //extern LoRaMacFlags_t LoRaMacFlags;
-
+uint8_t LoRa_Sendtype = 0x10;
+char LoRa_UL_Buffer[8];
+uint32_t LoRa_UL_Addr = 0x00;
 
 /* SYSTEM Variables */
 static int USART3_RxFlag = 0;
@@ -393,38 +395,165 @@ void StartUSART1(void const * argument)
 void StartUSART3(void const * argument)
 {
   /* USER CODE BEGIN StartUSART3 */
-	HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
+	HAL_UART_Receive_IT(&huart3, aRxBuffer, 8); 
 	//myprintf("USART3 Running\r\n");
 	/* Infinite loop */
   for(;;)
   {		
-		/*
-		if (USART3_RxFlag == 1){
-
-			char data[8] = {0};
-
-			uint32_t addr = 0;
-			
-			addr = addr | aRxBuffer[0] << 24;
-			addr = addr | aRxBuffer[1] << 16;
-			addr = addr | aRxBuffer[2] << 8;
-			addr = addr | aRxBuffer[3];
-			
-			ext_flash_read(addr, data, 8);
-			
-			
-			USART3_PINSET_TX();
-			myprintf("Reading addr: %x ,Data: %x %x %x %x %x %x %x %x \r\n\r\n",addr,data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
-			USART3_PINSET_RX();
-			
-			
-			USART3_RxFlag = 0;
-		}
-*/
-
 		if (USART3_RxFlag == 1){
 			
-			myprintf("USART3 Receive: %x %x %x %x \r\n", aRxBuffer[0], aRxBuffer[1], aRxBuffer[2], aRxBuffer[3]);
+			//Get all aRxBuffer values into local values
+			uint8_t CommandByte 	= aRxBuffer[0];
+			uint8_t Message1			=	aRxBuffer[1];
+			uint8_t Message2			=	aRxBuffer[2];
+			uint8_t Message3			=	aRxBuffer[3];
+			uint8_t Message4			=	aRxBuffer[4];
+			uint8_t Message5			=	aRxBuffer[5];
+			uint8_t Message6			=	aRxBuffer[6];
+			uint8_t EndByte 			= aRxBuffer[7];
+			
+			
+			if (EndByte == 0xAA){
+				
+				DEBUG("RS485 Receive: %x %x %x %x %x %x %x %x\r\n", CommandByte, Message1, Message2, Message3, Message4, Message5, Message6, EndByte);
+				INFO("RS485 Receive:");
+				INFO("             	Command: %x", CommandByte);
+				INFO("							Message: %x %x %x %x %x %x", Message1, Message2, Message3, Message4, Message5, Message6);
+				
+				//Command Porcess
+				if( CommandByte == 0x00 ){
+					INFO("SYSTEM Status");
+					
+				} else if ( CommandByte == 0x01 ){
+					INFO("STPM32 Status");
+					
+				} else if ( CommandByte == 0x02 ){
+					INFO("Flash Status");
+					
+				} else if ( CommandByte == 0x03 ){
+					INFO("LoRa Status");
+					
+				} else if ( CommandByte	== 0x10 ){
+					INFO("Auto Rotate Raw Data Upload");
+					
+					LoRa_Sendtype = CommandByte;
+					
+				} else if ( CommandByte == 0x11 ){
+					INFO("Auto Rotate Real Data Upload");
+					
+					LoRa_Sendtype = CommandByte;
+					
+				} else if ( CommandByte == 0x12 ){
+					INFO("Raw Data Upload from a specific address");
+					
+					LoRa_UL_Addr = LoRa_UL_Addr | Message1 << 24;
+					LoRa_UL_Addr = LoRa_UL_Addr | Message2 << 16;
+					LoRa_UL_Addr = LoRa_UL_Addr | Message3 << 8;
+					LoRa_UL_Addr = LoRa_UL_Addr | Message4;
+					
+					LoRa_Sendtype = CommandByte;
+					
+				} else if ( CommandByte == 0x13 ){
+					INFO("Real Data Upload from a specific address");
+					
+					LoRa_UL_Addr = LoRa_UL_Addr | Message1 << 24;
+					LoRa_UL_Addr = LoRa_UL_Addr | Message2 << 16;
+					LoRa_UL_Addr = LoRa_UL_Addr | Message3 << 8;
+					LoRa_UL_Addr = LoRa_UL_Addr | Message4;
+					
+					LoRa_Sendtype = CommandByte;
+					
+				} else if ( CommandByte == 0x14 ){
+					INFO("Return specific content from flash");
+					
+					//Process address
+					uint32_t addr = 0x000000;
+			
+					addr = addr | Message1 << 24;
+					addr = addr | Message2 << 16;
+					addr = addr | Message3 << 8;
+					addr = addr | Message4;
+					
+					//Read data
+					char flash_data[8] = {0};
+					ext_flash_read(addr, flash_data, 8);
+
+					INFO("Reading addr: %x ",addr);
+					INFO("Data: %x", *flash_data);
+					
+				} else if ( CommandByte == 0x15 ){
+					INFO("Erase specific content from flash");
+					
+					//Process address
+					uint32_t addr = 0x000000;
+					
+					addr = addr | Message1 << 24;
+					addr = addr | Message2 << 16;
+					addr = addr | Message3 << 8;
+					addr = addr | Message4;
+					
+					//Do erase
+					char EraseFF[8];
+					EraseFF[0] = 0xFF; EraseFF[1] = 0xFF; EraseFF[2] = 0xFF; EraseFF[3] = 0xFF;
+					EraseFF[4] = 0xFF; EraseFF[5] = 0xFF; EraseFF[6] = 0xFF; EraseFF[7] = 0xFF;
+					ext_flash_write(addr, EraseFF, 8);
+					ext_flash_last_write_or_erase_done();
+					
+					//Check erase
+					char flash_data[8] = {0};
+					
+					ext_flash_read(addr, flash_data, 8);
+					
+					if (strcmp(flash_data, EraseFF) == 0) {
+						INFO("Erase address %x done",addr);  
+					} else {
+						WARN("Erase address %x error", addr);
+					}
+					
+				} else if (CommandByte == 0x16){ 
+					INFO("Erase specific sector");
+					
+					//Process address
+					uint32_t addr = 0x000000;
+					
+					addr = addr | Message1 << 8;
+					addr = addr | Message2;
+					
+					if(addr <= 0x01FF){
+						//Erase sector
+						ext_flash_erase_sector( addr );
+						ext_flash_last_write_or_erase_done();
+					
+						INFO("Erase sector %d done", addr);
+					} else {
+						WARN("Sector address %d invalid", addr);
+					}
+					
+				} else if (CommandByte == 0x17){ 
+					INFO("Erase specific block");
+					
+					//Process address
+					uint32_t addr = Message1;
+					
+					//Erase block
+					if (addr <= 0x1F){	
+						ext_flash_erase_block( addr );
+						ext_flash_last_write_or_erase_done();
+					
+						INFO("Erase block %d done", addr);
+					} else {
+						WARN("Block address %d invalid", addr);
+					}
+					
+				} else if ( CommandByte == 0xFF ){
+					INFO("Emergency Stop");
+				}
+				
+				
+			} else {
+				WARN("RS485 End Byte Error");
+			}
+			
 			
 			USART3_RxFlag = 0;
 			HAL_UART_Receive_IT(&huart3, aRxBuffer, 4); 
@@ -458,11 +587,60 @@ void StartSPI2(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
-		/*
-		
+				
 		myprintf("\r\n");
 		INFO("Entering LoRa Task\r\n");
 		HAL_NVIC_EnableIRQ(TIM7_IRQn);	//Enable TIM7 Irq since it is disabled while other task is running
+		
+		//Check LoRa Upload Mode
+		if (LoRa_Sendtype == 0x10){						//Auto Rotate Raw
+			if (LoRa_UL_Addr > 0x100000){
+				LoRa_UL_Addr -= 0x100000;
+			}
+			
+			if (LoRa_UL_Addr > 0x0E0000){
+				LoRa_UL_Addr = 0x000000;
+			}
+			
+			ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
+			
+			LoRa_UL_Addr += 0x010000;
+			
+		} else if (LoRa_Sendtype == 0x11){		//Auto Rotate Real
+			if (LoRa_UL_Addr < 0x100000){
+				LoRa_UL_Addr += 0x100000;
+			}
+			
+			if (LoRa_UL_Addr > 0x1F0000){
+				LoRa_UL_Addr = 0x100000;
+			}
+			
+			ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);
+			
+			LoRa_UL_Addr += 0x010000;
+			
+		} else if (LoRa_Sendtype == 0x12){		//Specific Raw upload
+			
+			ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);
+			
+		} else if (LoRa_Sendtype == 0x13){		//Specific Real upload
+			
+			ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);
+			
+		} else {															//Default: Auto Rotate Raw
+			if (LoRa_UL_Addr > 0x100000){
+				LoRa_UL_Addr -= 0x100000;
+			}
+			
+			if (LoRa_UL_Addr > 0x0E0000){
+				LoRa_UL_Addr = 0x000000;
+			}
+			
+			ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);
+			
+			LoRa_UL_Addr += 0x010000;
+		}
+		
 		if (LoRa_CheckStateIDLE() == true){
 			if(LoRaMAC_Send() == -1){ //If send was not successful
 				if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
@@ -488,7 +666,7 @@ void StartSPI2(void const * argument)
 		HAL_NVIC_DisableIRQ(TIM7_IRQn);
 		vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 		
-		*/
+		
 	}
 		//osDelay(1);	
   /* USER CODE END StartSPI2 */

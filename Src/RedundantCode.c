@@ -17,6 +17,34 @@
 //#include "main.h"
 #include <stdlib.h>
 
+
+//USART3 Read from flash code
+		/*
+		if (USART3_RxFlag == 1){
+
+			char data[8] = {0};
+
+			uint32_t addr = 0;
+			
+			addr = addr | aRxBuffer[0] << 24;
+			addr = addr | aRxBuffer[1] << 16;
+			addr = addr | aRxBuffer[2] << 8;
+			addr = addr | aRxBuffer[3];
+			
+			ext_flash_read(addr, data, 8);
+			
+			
+			USART3_PINSET_TX();
+			myprintf("Reading addr: %x ,Data: %x %x %x %x %x %x %x %x \r\n\r\n",addr,data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+			USART3_PINSET_RX();
+			
+			
+			USART3_RxFlag = 0;
+		}
+*/
+
+
+
 /*
 		TimerStop( &TxTimeoutTimer );
 		TimerSetValue( &TxTimeoutTimer, timeout );

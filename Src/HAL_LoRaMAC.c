@@ -22,7 +22,8 @@ LoRaMacCallback_t LoRaMacCallbacks;
 MibRequestConfirm_t mibReq;
 
 uint32_t frame_count = 0;
-extern uint8_t aRxBuffer[8];
+//extern uint8_t aRxBuffer[8];
+extern char LoRa_UL_Buffer[8];
 extern uint32_t UpLinkCounter;
 extern LoRaMacFlags_t LoRaMacFlags;
 extern TimerEvent_t TxTimeoutTimer;
@@ -800,21 +801,20 @@ int LoRaMAC_Send(void){
 		
 		//PrepareTxFrame( AppPort );
 		
-		AppData[0] = aRxBuffer[0];
-		AppData[1] = aRxBuffer[1];
-		AppData[2] = aRxBuffer[2];
-		AppData[3] = aRxBuffer[3];
-		AppData[4] = 0xAA;
+		AppData[0] = 0xFF;							//Default: 0xFF
+		AppData[1] = 0x00;							//Default: 0x00
+		AppData[2] = 0x00;							//Default: 0x00
+		AppData[3] = LoRa_UL_Buffer[0];	
+		AppData[4] = LoRa_UL_Buffer[1];
+		AppData[5] = LoRa_UL_Buffer[2];
+		AppData[6] = LoRa_UL_Buffer[3];
+		AppData[7] = LoRa_UL_Buffer[4];
+		AppData[8] = LoRa_UL_Buffer[5];
+		AppData[9] = LoRa_UL_Buffer[6];
+		AppData[10] = LoRa_UL_Buffer[7];
+		AppData[11]	= 0xAA;
 		
-		/*
-		AppData[0] = 0xAA;
-		AppData[1] = 0xAA;
-		AppData[2] = 0xAA;
-		AppData[3] = 0xAA;
-		AppData[4] = 0xAA;
-		*/
-		
-		AppDataSize = 5;
+		AppDataSize = 12;
 		
 		if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
     {
