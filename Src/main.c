@@ -173,14 +173,14 @@ int main(void)
 	
 	if (ext_flash_is_detected() != 1)	
 		Error_Handler();
-	/*
+	
 	INFO("Erasing all block from flash...");
 	for (int i = 0; i < 32; i++){
-			ext_flash_erase_block(i);
+			ext_flash_erase_block(i * 65536);
 			ext_flash_last_write_or_erase_done();
 			INFO("Erase block # %d done.", i);
 	}
-	*/
+	
 	INFO("External Flash Initialization Done!\r\n");
 
 	//Finishing up by printing "Starting FreeRTOS System..."

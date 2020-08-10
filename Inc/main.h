@@ -103,8 +103,6 @@ void Error_Handler(void);
 
 
 /* USER CODE BEGIN Private defines */
-static uint8_t UART1_Buffer[2];
-
 static int USART1_RxFlag = 0;
 static int USART1_TxFlag = 0;
 
@@ -114,14 +112,14 @@ static int SPI1_TxFlag = 0;
 static int SPI2_RxFlag = 0;
 static int SPI2_TxFlag = 0;
 
-#define DEBUG_ON				1
+#define DEBUG_ON				0
 #define LOGLEVEL				6
 #define STPM32_INFO_ON	1
 
 #define DEBUG(format,...) \
 if (DEBUG_ON) {\
 	myprintf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DEBUG: "format, ##__VA_ARGS__);\
-	myprintf("\r\n");\
+	myprintf("\r\n\r\n");\
 }
 
 #define STPM32_INFO(format,...) \

@@ -489,13 +489,13 @@ static void flash_ext_wr_rd(const char *wr_buf, uint16_t wr_size, char *rd_buf, 
 	
 	// Transmit data
 	if(HAL_SPI_Transmit(&hspi1, (uint8_t *)wr_buf, wr_size, 5) != HAL_OK){
-		ERROR("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!");
+		//ERROR("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!");
 		//myprintf("HAL_SPI_Transmit ERROR in flash_ext_wr_rd()!\n");
 	}
 
 	// Read data
 	if(HAL_SPI_Receive(&hspi1, (uint8_t *)rd_buf, rd_size, 5) != HAL_OK){
-		DEBUG("HAL_SPI_Receive NOTHING in flash_ext_wr_rd()!");
+		//DEBUG("HAL_SPI_Receive NOTHING in flash_ext_wr_rd()!");
 		//myprintf("\nHAL_SPI_Receive NOTHING in flash_ext_wr_rd()!\n");
 	}
 
