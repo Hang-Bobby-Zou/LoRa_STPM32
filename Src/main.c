@@ -137,7 +137,7 @@ int main(void)
 	HAL_UART_MspInit(&huart1);		//UART1 - Connect STPM32
 	HAL_UART_MspInit(&huart3);		//UART3 - Connect Serial Out Terminal
 
-	HAL_NVIC_DisableIRQ(TIM7_IRQn);
+	//HAL_NVIC_DisableIRQ(TIM7_IRQn);
 
 	// Here set UART3 to be in S4 mode, Tx is on
 	DEBUG("Test \r\n\r\n");
@@ -173,15 +173,16 @@ int main(void)
 	
 	if (ext_flash_is_detected() != 1)	
 		Error_Handler();
-	
+	/*
 	INFO("Erasing all block from flash...");
 	for (int i = 0; i < 32; i++){
 			ext_flash_erase_block(i);
 			ext_flash_last_write_or_erase_done();
 			INFO("Erase block # %d done.", i);
 	}
+	*/
 	INFO("External Flash Initialization Done!\r\n");
-	
+
 	//Finishing up by printing "Starting FreeRTOS System..."
 	INFO("Starting FreeRTOC System...\r\n");
 	DelayMsPoll(1000);

@@ -114,7 +114,7 @@ static int SPI1_TxFlag = 0;
 static int SPI2_RxFlag = 0;
 static int SPI2_TxFlag = 0;
 
-#define DEBUG_ON				0
+#define DEBUG_ON				1
 #define LOGLEVEL				6
 #define STPM32_INFO_ON	1
 

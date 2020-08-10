@@ -802,8 +802,8 @@ int LoRaMAC_Send(void){
 		//PrepareTxFrame( AppPort );
 		
 		AppData[0] = 0xFF;							//Default: 0xFF
-		AppData[1] = 0x00;							//Default: 0x00
-		AppData[2] = 0x00;							//Default: 0x00
+		AppData[1] = 0x01;							//Default: 0x00
+		AppData[2] = 0x10;							//Default: 0x00
 		AppData[3] = LoRa_UL_Buffer[0];	
 		AppData[4] = LoRa_UL_Buffer[1];
 		AppData[5] = LoRa_UL_Buffer[2];
