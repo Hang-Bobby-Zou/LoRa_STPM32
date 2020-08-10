@@ -41,12 +41,6 @@ extern uint16_t FlashPointer;
 /*============================================================================*/
 /*                   PRIVATE DEFINES			                                    */
 /*============================================================================*/
-//SYN timing defines, all Min.
-//#define t_ltch			20 	//ns, Time between de-selection and latch
-//#define t_lpw				4 	//us, Latch pulse width
-//#define t_w					4		//us, Time between two consecutive latch pulses
-//#define t_rel				40	//ns, Time between pulse and selection
-
 // Power-on procedure TYPICAL timing
 #define t_if				10	//ms, Time for interface choice locking
 #define t_startup 	35	//ms, Time between power on and reset
@@ -90,6 +84,7 @@ uint8_t Total_Apparent_Energy		[5] = {0};
 * @retval None
 */
 void CalcPrint_Freq(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = dsp_reg1;
@@ -101,14 +96,14 @@ void CalcPrint_Freq(void){
 	FlashBuffer [6] = PH_Period[3];
 	FlashBuffer [7] = PH_Period[4];
 	
-	INFO("Writing Freq Raw to Flash, Address:%x  Data: %x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Freq_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Freq Raw to Flash, Address:%x  Data: %x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Freq_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	ext_flash_write(FlashPointer + FlashAddr_Freq_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Freq_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Freq Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Freq_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Freq Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Freq_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint16_t freq_raw;
 
 	freq_raw = freq_raw | (uint16_t) PH_Period[1] << 8;
@@ -123,7 +118,7 @@ void CalcPrint_Freq(void){
 	if( freq < Freq_Low_Threshold || freq > Freq_High_Threshold){
 		WARN("ERROR: Freq error: %f Hz\r\n\r\n", freq);		//4 decimal numbers
 	} else {
-		STPM32_INFO("Freq: %f Hz\r\n\r\n", freq);		//4 decimal numbers
+		INFO("Freq: %f Hz\r\n\r\n", freq);		//4 decimal numbers
 	}
 }
 
@@ -134,6 +129,7 @@ void CalcPrint_Freq(void){
 * @retval None
 */
 void CalcPrint_V1_RMS(void){	
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = dsp_reg14;
@@ -145,13 +141,14 @@ void CalcPrint_V1_RMS(void){
 	FlashBuffer [6] = CH1_RMS[3];
 	FlashBuffer [7] = CH1_RMS[4];
 
-	INFO("Writing RMS Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_RMS_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing RMS Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_RMS_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	ext_flash_write(FlashPointer + FlashAddr_RMS_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_RMS_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading RMS Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_RMS_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading RMS Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_RMS_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
+	//Do calculation and save the value to flash and check
 	double V1_RMS;
 	
 	uint16_t V1_RMS_raw = 0x0000;
@@ -164,7 +161,7 @@ void CalcPrint_V1_RMS(void){
 	//ext_flash_write(FlashPointer + FlashAddr_V1_RMS_Real, (char*) &V1_RMS, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("V1= %lf Volts\r\n",V1_RMS);
+	INFO("V1= %lf Volts\r\n",V1_RMS);
 }
 
 /**
@@ -174,7 +171,7 @@ void CalcPrint_V1_RMS(void){
 * @retval None
 */
 void CalcPrint_C1_RMS(void){	
-	
+	//Do calculation and save the value to flash and check
 	uint16_t C1_RMS_raw = 0x0000;
 	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[1] >> 7);
 	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[2] << 1);
@@ -186,7 +183,7 @@ void CalcPrint_C1_RMS(void){
 	//ext_flash_write(FlashPointer + FlashAddr_C1_RMS_Real, (char*) &C1_RMS, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("C1= %lf Amps\r\n",C1_RMS);
+	INFO("C1= %lf Amps\r\n",C1_RMS);
 }
 
 /**
@@ -196,6 +193,7 @@ void CalcPrint_C1_RMS(void){
 * @retval None
 */
 void CalcPrint_Phase(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = dsp_reg17;
@@ -207,16 +205,15 @@ void CalcPrint_Phase(void){
 	FlashBuffer [6] = C1_PHA[3];
 	FlashBuffer [7] = C1_PHA[4];
 	
-	INFO("Writing Phase Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Phase_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Phase Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Phase_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_Phase_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Phase_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Phase Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Phase_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Phase Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Phase_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
-	
+	//Do calculation and save the value to flash and check
 	uint16_t C1_PHA_raw;
 	
 	C1_PHA_raw = C1_PHA_raw | (uint16_t) C1_PHA[3] << 8;
@@ -229,7 +226,7 @@ void CalcPrint_Phase(void){
 	//ext_flash_write(FlashPointer + FlashAddr_Phase_Real, (char*) &phase, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Phase = %lf degrees\r\n\r\n", phase);
+	INFO("Phase = %lf degrees\r\n\r\n", phase);
 }
 
 /**
@@ -238,6 +235,7 @@ void CalcPrint_Phase(void){
 * @retval None
 */
 void CalcPrint_Active_Energy(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = ph1_reg1;
@@ -249,15 +247,15 @@ void CalcPrint_Active_Energy(void){
 	FlashBuffer [6] = PH1_Active_Energy[3];
 	FlashBuffer [7] = PH1_Active_Energy[4];
 	
-	INFO("Writing Active Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Active_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Active Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Active_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_Active_Energy_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Active_Energy_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Active Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Active_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Active Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Active_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t Active_Energy_raw = 0x0000;
 	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[3] << 24;
 	Active_Energy_raw = Active_Energy_raw | (uint16_t) PH1_Active_Energy[2] << 16;
@@ -270,7 +268,7 @@ void CalcPrint_Active_Energy(void){
 	//ext_flash_write(FlashPointer + FlashAddr_Active_Energy_Real, (char*) &Active_Energy, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Active Energy = %lf Watts\r\n\r\n", Active_Energy);
+	INFO("Active Energy = %lf Watts\r\n\r\n", Active_Energy);
 }
 
 /**
@@ -279,6 +277,7 @@ void CalcPrint_Active_Energy(void){
 * @retval None
 */
 void CalcPrint_Funda_Energy(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = ph1_reg2;
@@ -290,15 +289,15 @@ void CalcPrint_Funda_Energy(void){
 	FlashBuffer [6] = PH1_Fundamental_Energy[3];
 	FlashBuffer [7] = PH1_Fundamental_Energy[4];
 	
-	INFO("Writing Funda Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Funda_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Funda Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Funda_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_Funda_Energy_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Funda_Energy_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Funda Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Funda_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Funda Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Funda_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t Funda_Energy_raw = 0x0000;
 	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[3] << 24;
 	Funda_Energy_raw = Funda_Energy_raw | (uint16_t) PH1_Fundamental_Energy[2] << 16;
@@ -311,7 +310,7 @@ void CalcPrint_Funda_Energy(void){
 	//ext_flash_write(FlashPointer + FlashAddr_Funda_Energy_Real, (char*) &Funda_Energy, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Fundamental Energy = %lf Watts\r\n\r\n", Funda_Energy);
+	INFO("Fundamental Energy = %lf Watts\r\n\r\n", Funda_Energy);
 }
 /**
 * @brief Calculate and Print the reactive energy of the power line.
@@ -319,6 +318,7 @@ void CalcPrint_Funda_Energy(void){
 * @retval None
 */
 void CalcPrint_React_Energy(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = ph1_reg3;
@@ -330,15 +330,15 @@ void CalcPrint_React_Energy(void){
 	FlashBuffer [6] = PH1_Reactive_Energy[3];
 	FlashBuffer [7] = PH1_Reactive_Energy[4];
 	
-	INFO("Writing React Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_React_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing React Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_React_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_React_Energy_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_React_Energy_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading React Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_React_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading React Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_React_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t React_Energy_raw = 0x0000;
 	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[3] << 24;
 	React_Energy_raw = React_Energy_raw | (uint16_t) PH1_Reactive_Energy[2] << 16;
@@ -351,7 +351,7 @@ void CalcPrint_React_Energy(void){
 	//ext_flash_write(FlashPointer + FlashAddr_React_Energy_Real, (char*) &React_Energy, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Reactive Energy = %lf Watts\r\n\r\n", React_Energy);
+	INFO("Reactive Energy = %lf Watts\r\n\r\n", React_Energy);
 }
 /**
 * @brief Calculate and Print the apparent energy of the power line.
@@ -359,6 +359,7 @@ void CalcPrint_React_Energy(void){
 * @retval None
 */
 void CalcPrint_App_Energy(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = ph1_reg4;
@@ -370,15 +371,15 @@ void CalcPrint_App_Energy(void){
 	FlashBuffer [6] = PH1_Apparent_Energy[3];
 	FlashBuffer [7] = PH1_Apparent_Energy[4];
 	
-	INFO("Writing App Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_App_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing App Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_App_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_App_Energy_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_App_Energy_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading App Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_App_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading App Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_App_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t App_Energy_raw = 0x0000;
 	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[3] << 24;
 	App_Energy_raw = App_Energy_raw | (uint16_t) PH1_Apparent_Energy[2] << 16;
@@ -391,7 +392,7 @@ void CalcPrint_App_Energy(void){
 	//ext_flash_write(FlashPointer + FlashAddr_App_Energy_Real, (char*) &App_Energy, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Apparent Energy = %lf Watts\r\n\r\n", App_Energy);
+	INFO("Apparent Energy = %lf Watts\r\n\r\n", App_Energy);
 }
 /**
 * @brief Calculate and Print the active power of the power line.
@@ -399,6 +400,7 @@ void CalcPrint_App_Energy(void){
 * @retval None
 */
 void CalcPrint_Active_Pwr(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = ph1_reg5;
@@ -410,15 +412,15 @@ void CalcPrint_Active_Pwr(void){
 	FlashBuffer [6] = PH1_Active_Power[3];
 	FlashBuffer [7] = PH1_Active_Power[4];
 	
-	INFO("Writing Active Pwr Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Active_Power_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Active Pwr Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Active_Power_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_Active_Power_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Active_Power_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Active Pwr Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Active_Power_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Active Pwr Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Active_Power_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t Active_Pwr_raw = 0x00000000;
 	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[3] << 24;
 	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[2] << 16;
@@ -433,7 +435,7 @@ void CalcPrint_Active_Pwr(void){
 	//ext_flash_write(FlashPointer + FlashAddr_Active_Power_Real, (char*) &Active_Pwr, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Active Power = %lf WattHrs\r\n\r\n", Active_Pwr);
+	INFO("Active Power = %lf WattHrs\r\n\r\n", Active_Pwr);
 }
 /**
 * @brief Calculate and Print the fundamental power of the power line.
@@ -441,6 +443,7 @@ void CalcPrint_Active_Pwr(void){
 * @retval None
 */
 void CalcPrint_Funda_Pwr(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = ph1_reg6;
@@ -452,15 +455,15 @@ void CalcPrint_Funda_Pwr(void){
 	FlashBuffer [6] = PH1_Fundamental_Power[3];
 	FlashBuffer [7] = PH1_Fundamental_Power[4];
 	
-	INFO("Writing Funda Pwr Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Funda_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Funda Pwr Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Funda_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_Funda_Pwr_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Funda_Pwr_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Funda Pwr Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Funda_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Funda Pwr Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Funda_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t Funda_Pwr_raw = 0x00000000;
 	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[3] << 24;
 	Funda_Pwr_raw = Funda_Pwr_raw | (uint16_t) PH1_Fundamental_Power[2] << 16;
@@ -475,7 +478,7 @@ void CalcPrint_Funda_Pwr(void){
 	//ext_flash_write(FlashPointer + FlashAddr_Funda_Pwr_Real, (char*) &Funda_Pwr, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Fundamental Power = %lf WattHrs\r\n\r\n", Funda_Pwr);
+	INFO("Fundamental Power = %lf WattHrs\r\n\r\n", Funda_Pwr);
 }
 /**
 * @brief Calculate and Print the reactive power of the power line.
@@ -483,6 +486,7 @@ void CalcPrint_Funda_Pwr(void){
 * @retval None
 */
 void CalcPrint_React_Pwr(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = ph1_reg7;
@@ -494,15 +498,15 @@ void CalcPrint_React_Pwr(void){
 	FlashBuffer [6] = PH1_Reactive_Power[3];
 	FlashBuffer [7] = PH1_Reactive_Power[4];
 	
-	INFO("Writing React Pwr Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_React_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing React Pwr Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_React_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_React_Pwr_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_React_Pwr_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading React Pwr Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_React_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading React Pwr Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_React_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t React_Pwr_raw = 0x00000000;
 	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[3] << 24;
 	React_Pwr_raw = React_Pwr_raw | (uint16_t) PH1_Reactive_Power[2] << 16;
@@ -517,7 +521,7 @@ void CalcPrint_React_Pwr(void){
 	//ext_flash_write(FlashPointer + FlashAddr_React_Pwr_Real, (char*) &React_Pwr, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Reactive Power = %lf WattHrs\r\n\r\n", React_Pwr);
+	INFO("Reactive Power = %lf WattHrs\r\n\r\n", React_Pwr);
 }
 /**
 * @brief Calculate and Print the apparent RMS power of the power line.
@@ -525,6 +529,7 @@ void CalcPrint_React_Pwr(void){
 * @retval None
 */
 void CalcPrint_App_RMS_Pwr(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = ph1_reg8;
@@ -536,15 +541,15 @@ void CalcPrint_App_RMS_Pwr(void){
 	FlashBuffer [6] = PH1_Apparent_RMS_Power[3];
 	FlashBuffer [7] = PH1_Apparent_RMS_Power[4];
 	
-	INFO("Writing App RMS Pwr Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_App_RMS_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing App RMS Pwr Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_App_RMS_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_App_RMS_Pwr_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_App_RMS_Pwr_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading App RMS Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_App_RMS_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading App RMS Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_App_RMS_Pwr_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t App_RMS_Pwr_raw = 0x00000000;
 	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[3] << 24;
 	App_RMS_Pwr_raw = App_RMS_Pwr_raw | (uint16_t) PH1_Apparent_RMS_Power[2] << 16;
@@ -559,7 +564,7 @@ void CalcPrint_App_RMS_Pwr(void){
 	//ext_flash_write(FlashPointer + FlashAddr_App_RMS_Pwr_Real, (char*) &Apparent_RMS_Power, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Apparent_RMS Power = %lf WattHrs\r\n\r\n", Apparent_RMS_Power);
+	INFO("Apparent_RMS Power = %lf WattHrs\r\n\r\n", Apparent_RMS_Power);
 }
 
 /**
@@ -568,6 +573,7 @@ void CalcPrint_App_RMS_Pwr(void){
 * @retval None
 */
 void CalcPrint_Tot_Active_Energy(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = tot_reg1;
@@ -579,15 +585,15 @@ void CalcPrint_Tot_Active_Energy(void){
 	FlashBuffer [6] = Total_Active_Energy[3];
 	FlashBuffer [7] = Total_Active_Energy[4];
 	
-	INFO("Writing Tot Active Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_Active_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Tot Active Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_Active_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_Tot_Active_Energy_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Tot_Active_Energy_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Tot Active Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_Active_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Tot Active Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_Active_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t Tot_Active_Pwr_raw = 0x00000000;
 	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[3] << 24;
 	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[2] << 16;
@@ -600,7 +606,7 @@ void CalcPrint_Tot_Active_Energy(void){
 	//ext_flash_write(FlashPointer + FlashAddr_Tot_Active_Energy_Real, (char*) &Tot_Active_Pwr, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Total Active Energy = %lf Watts\r\n\r\n", Tot_Active_Pwr);
+	INFO("Total Active Energy = %lf Watts\r\n\r\n", Tot_Active_Pwr);
 }
 /**
 * @brief Calculate and Print the total fundamental energy of the power line.
@@ -608,6 +614,7 @@ void CalcPrint_Tot_Active_Energy(void){
 * @retval None
 */
 void CalcPrint_Tot_Funda_Energy(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = tot_reg2;
@@ -619,15 +626,15 @@ void CalcPrint_Tot_Funda_Energy(void){
 	FlashBuffer [6] = Total_Fundamental_Energy[3];
 	FlashBuffer [7] = Total_Fundamental_Energy[4];
 	
-	INFO("Writing Tot Funda Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_Funda_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Tot Funda Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_Funda_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_Tot_Funda_Energy_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Tot_Funda_Energy_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Tot Funda Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_Funda_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Tot Funda Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_Funda_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t Tot_Funda_Pwr_raw = 0x00000000;
 	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[3] << 24;
 	Tot_Funda_Pwr_raw = Tot_Funda_Pwr_raw | (uint16_t) Total_Fundamental_Energy[2] << 16;
@@ -640,7 +647,7 @@ void CalcPrint_Tot_Funda_Energy(void){
 	//ext_flash_write(FlashPointer + FlashAddr_Tot_Funda_Energy_Real, (char*) &Tot_Funda_Pwr, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Total Fundamental Energy = %lf Watts\r\n\r\n", Tot_Funda_Pwr);
+	INFO("Total Fundamental Energy = %lf Watts\r\n\r\n", Tot_Funda_Pwr);
 }
 /**
 * @brief Calculate and Print the total reactive energy of the power line.
@@ -648,6 +655,7 @@ void CalcPrint_Tot_Funda_Energy(void){
 * @retval None
 */
 void CalcPrint_Tot_React_Energy(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = tot_reg3;
@@ -659,15 +667,15 @@ void CalcPrint_Tot_React_Energy(void){
 	FlashBuffer [6] = Total_Reactive_Energy[3];
 	FlashBuffer [7] = Total_Reactive_Energy[4];
 	
-	INFO("Writing Tot React Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_React_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Tot React Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_React_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_Tot_React_Energy_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Tot_React_Energy_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Tot React Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_React_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Tot React Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_React_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t Tot_React_Pwr_raw = 0x00000000;
 	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[3] << 24;
 	Tot_React_Pwr_raw = Tot_React_Pwr_raw | (uint16_t) Total_Reactive_Energy[2] << 16;
@@ -680,7 +688,7 @@ void CalcPrint_Tot_React_Energy(void){
 	//ext_flash_write(FlashPointer + FlashAddr_Tot_React_Energy_Real, (char*) &Tot_React_Pwr, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Total Reactive Energy = %f Watts\r\n\r\n", Tot_React_Pwr);
+	INFO("Total Reactive Energy = %f Watts\r\n\r\n", Tot_React_Pwr);
 }
 /**
 * @brief Calculate and Print the total apparent energy of the power line.
@@ -688,6 +696,7 @@ void CalcPrint_Tot_React_Energy(void){
 * @retval None
 */
 void CalcPrint_Tot_App_Energy(void){
+	//Saving raw value to flash can check
 	uint8_t FlashBuffer [8] = {0};
 	
 	FlashBuffer [0] = tot_reg4;
@@ -699,15 +708,15 @@ void CalcPrint_Tot_App_Energy(void){
 	FlashBuffer [6] = Total_Apparent_Energy[3];
 	FlashBuffer [7] = Total_Apparent_Energy[4];
 	
-	INFO("Writing Tot App Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_App_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Writing Tot App Energy Raw to Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_App_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
 	ext_flash_write(FlashPointer + FlashAddr_Tot_App_Energy_Raw, (char*) FlashBuffer, 8);
 	ext_flash_last_write_or_erase_done();
 	
 	ext_flash_read(FlashPointer + FlashAddr_Tot_App_Energy_Raw, (char*) FlashBuffer, 8);
-	INFO("Reading Tot App Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_App_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
+	STPM32_INFO("Reading Tot App Energy Raw from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_Tot_App_Energy_Raw, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
+	//Do calculation and save the value to flash and check
 	uint32_t Tot_App_Pwr_raw = 0x00000000;
 	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[3] << 24;
 	Tot_App_Pwr_raw = Tot_App_Pwr_raw | (uint16_t) Total_Apparent_Energy[2] << 16;
@@ -720,8 +729,22 @@ void CalcPrint_Tot_App_Energy(void){
 	//ext_flash_write(FlashPointer + FlashAddr_Tot_App_Energy_Real, (char*) &Tot_App_Pwr, 8);
 	//ext_flash_last_write_or_erase_done();
 	
-	STPM32_INFO("Total Apparent Energy = %lf Watts\r\n\r\n", Tot_App_Pwr);
+	INFO("Total Apparent Energy = %lf Watts\r\n\r\n", Tot_App_Pwr);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*============================================================================*/
