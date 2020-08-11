@@ -42,6 +42,7 @@
 #include "STPM32_AddressMap.h"
 
 #include "stm32l4xx_hal_uart.h"
+#include "cmsis_armcc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -95,7 +96,12 @@ uint8_t aRxBuffer[128] = {0};
 uint8_t RxCounter1 = 0;
 uint8_t ReceiveState = 0;
 
+extern uint8_t DevEui[];
 extern uint8_t AppEui[];
+extern uint8_t AppKey[];
+
+extern uint8_t NwkSKey[];
+extern uint8_t AppSKey[];
 
 /* SPI2(LoRa) Variables */
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
@@ -130,6 +136,7 @@ osSemaphoreId myBinarySem01Handle;
 void uint8_cpy(uint8_t* dest, uint8_t* src, uint8_t size);
 bool strcmp_n(char dest[], char src[], uint8_t start);
 void strcpy_n(char dest[], char src[], uint8_t start, uint8_t end);
+void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[]);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -411,81 +418,75 @@ void StartUSART3(void const * argument)
 				
 				
 			} else if (strncmp(ProcessBuffer,"AT+",3) == 0){
-				//INFO("AT+ command");
-				
-				if (strcmp_n(ProcessBuffer, "NJM", 4)){
-					INFO("NJM Command");
-					
-				} else if (strcmp_n(ProcessBuffer, "DEUI", 4)){
-					//("Device Command");
-					
-					if(strcmp_n(ProcessBuffer, "?", 8)){
-						INFO("DEUI Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 8)){
-						INFO("DEUI = %x:%x:%x:%x:%x:%x:%x:%x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
-					} else {
-						INFO("Setting DEUI");
-						char AppEuiReceiveBuffer[24] = {0};
-						uint8_t AppEuiProcessBuffer[8] = {0};
-						
-						strcpy_n(AppEuiReceiveBuffer, ProcessBuffer, 9, 31);
-						if(strlen(AppEuiReceiveBuffer) != 23){
-							ERROR("! ! ! DEUI Length Incorrect ! ! !");
-							INFO("Processed DEUI: %x:%x:%x:%x:%x:%x:%x:%x", AppEuiProcessBuffer[0], AppEuiProcessBuffer[1], AppEuiProcessBuffer[2], AppEuiProcessBuffer[3], AppEuiProcessBuffer[4], AppEuiProcessBuffer[5], AppEuiProcessBuffer[6], AppEuiProcessBuffer[7]);
-						} else {
-							INFO("Process DEUI");
-							int IncorrectFlag = 0; 
-							for (int i = 0; i < 8; i++){
-								if (AppEuiReceiveBuffer[i * 3 + 2] != 0x3A && i != 7){		// ":"
-									ERROR("! ! ! Incorrect Address ! ! !");
-									IncorrectFlag = 1;
-									break;
-								} else {
-									if (AppEuiReceiveBuffer[ i * 3 + 1 ] >= 0x30 && AppEuiReceiveBuffer[ i * 3 + 1 ] <= 0x39){	//If its a number
-										AppEuiProcessBuffer[i] = 	(AppEuiReceiveBuffer[ i * 3 + 1 ] - 0x30);
-									} else if (AppEuiReceiveBuffer[ i * 3 + 1 ] >= 0x41 && AppEuiReceiveBuffer[ i * 3 + 1 ] <= 0x46){	//If its a lower case
-										AppEuiProcessBuffer[i] = 	(AppEuiReceiveBuffer[ i * 3 + 1 ] - 0x37);
-									} else if (AppEuiReceiveBuffer[ i * 3 + 1 ] >= 0x61 && AppEuiReceiveBuffer[ i * 3 + 1 ] <= 0x66){	//If its a upper case
-										AppEuiProcessBuffer[i] = 	(AppEuiReceiveBuffer[ i * 3 + 1 ] - 0x57);
-									} else {
-										ERROR("! ! ! Incorrect Address ! ! !");
-										IncorrectFlag = 1;
-										break;
-									}
-									
-									if (AppEuiReceiveBuffer[ i * 3 + 0 ] >= 0x30 && AppEuiReceiveBuffer[ i * 3 + 0 ] <= 0x39){	//If its a number
-										AppEuiProcessBuffer[i] += (AppEuiReceiveBuffer[ i * 3 + 0 ] - 0x30)* 16;
-									} else if (AppEuiReceiveBuffer[ i * 3 + 0 ] >= 0x41 && AppEuiReceiveBuffer[ i * 3 + 0 ] <= 0x46){	//If its a lower case
-										AppEuiProcessBuffer[i] += (AppEuiReceiveBuffer[ i * 3 + 0 ] - 0x37)* 16;
-									} else if (AppEuiReceiveBuffer[ i * 3 + 0 ] >= 0x61 && AppEuiReceiveBuffer[ i * 3 + 0 ] <= 0x66){	//If its a upper case {
-										AppEuiProcessBuffer[i] += (AppEuiReceiveBuffer[ i * 3 + 0 ] - 0x57)* 16;
-									} else {
-										ERROR("! ! ! Incorrect Address ! ! !");
-										IncorrectFlag = 1;
-										break;
-									}
-								}
-							}
-							if (IncorrectFlag){
-								memset( AppEuiProcessBuffer, 0, sizeof(AppEuiProcessBuffer));
-								INFO("Processed DEUI: %x:%x:%x:%x:%x:%x:%x:%x", AppEuiProcessBuffer[0], AppEuiProcessBuffer[1], AppEuiProcessBuffer[2], AppEuiProcessBuffer[3], AppEuiProcessBuffer[4], AppEuiProcessBuffer[5], AppEuiProcessBuffer[6], AppEuiProcessBuffer[7]);
-							} else {
-								INFO("Processed DEUI: %x:%x:%x:%x:%x:%x:%x:%x", AppEuiProcessBuffer[0], AppEuiProcessBuffer[1], AppEuiProcessBuffer[2], AppEuiProcessBuffer[3], AppEuiProcessBuffer[4], AppEuiProcessBuffer[5], AppEuiProcessBuffer[6], AppEuiProcessBuffer[7]);
-							}
-						}
-					}
 
+					//AT+NJM : Set ABP or OTAA
+				if (strcmp_n(ProcessBuffer, "NJM", 4)){
+					INFO("Resetting SYSTEM");
+					DelayMsPoll(1000);
+					
+					__set_FAULTMASK(1);//close all interrupt
+					NVIC_SystemReset();//reset
+					
+					//AT+DEUI : Device EUI
+				} else if (strcmp_n(ProcessBuffer, "DEUI", 4)){
+					
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("DEUI") + 1)){
+						INFO("DEUI Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("DEUI") + 1)){
+						INFO("DEUI = %x:%x:%x:%x:%x:%x:%x:%x", DevEui[0], DevEui[1], DevEui[2], DevEui[3], DevEui[4], DevEui[5], DevEui[6], DevEui[7]);
+					} else {
+						uint8_t OutputBuffer[8];
+						ProcessAddress("DEUI", ProcessBuffer, OutputBuffer);	
+					}
+					
+					//AT+APPEUI : AppEUI
 				} else if (strcmp_n(ProcessBuffer, "APPEUI", 4)){
-					INFO("AppEUI Command");
 					
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("APPEUI") + 1)){
+						INFO("APPEUI Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("APPEUI") + 1)){
+						INFO("APPEUI = %x:%x:%x:%x:%x:%x:%x:%x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
+					} else {
+						uint8_t OutputBuffer[8];
+						ProcessAddress("APPEUI", ProcessBuffer, OutputBuffer);	
+					}
+					
+					//AT+APPKEY : AppKey
 				} else if (strcmp_n(ProcessBuffer, "APPKEY", 4)){
-					INFO("AppKey Command");
 					
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("APPKEY") + 1)){
+						INFO("APPKEY Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("APPKEY") + 1)){
+						INFO("APPKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7], AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
+					} else {
+						uint8_t OutputBuffer[16];
+						ProcessAddress("APPKEY", ProcessBuffer, OutputBuffer);	
+					}
+					
+					//AT+NWKSKEY : NwkSKey
 				} else if (strcmp_n(ProcessBuffer, "NWKSKEY", 4)){
-					INFO("NwkSKkey Command");
 					
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("NWKSKEY") + 1)){
+						INFO("NWKSKEY Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("NWKSKEY") + 1)){
+						INFO("NWKSKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", NwkSKey[0], NwkSKey[1], NwkSKey[2], NwkSKey[3], NwkSKey[4], NwkSKey[5], NwkSKey[6], NwkSKey[7], NwkSKey[8], NwkSKey[9], NwkSKey[10], NwkSKey[11], NwkSKey[12], NwkSKey[13], NwkSKey[14], NwkSKey[15]);
+					} else {
+						uint8_t OutputBuffer[16];
+						ProcessAddress("NWKSKEY", ProcessBuffer, OutputBuffer);	
+					}
+					
+					//AT+APPSKEY : AppSKey
 				} else if (strcmp_n(ProcessBuffer, "APPSKEY", 4)){
-					INFO("AppSKey Command");
+					
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("APPSKEY") + 1)){
+						INFO("APPSKEY Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("APPSKEY") + 1)){
+						INFO("APPSKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", AppSKey[0], AppSKey[1], AppSKey[2], AppSKey[3], AppSKey[4], AppSKey[5], AppSKey[6], AppSKey[7], AppSKey[8], AppSKey[9], AppSKey[10], AppSKey[11], AppSKey[12], AppSKey[13], AppSKey[14], AppSKey[15]);
+					} else {
+						uint8_t OutputBuffer[16];
+						ProcessAddress("APPSKEY", ProcessBuffer, OutputBuffer);	
+					}
+					
 					
 				} else if (strcmp_n(ProcessBuffer, "DADDR", 4)){
 					INFO("DADDR Command");
@@ -514,9 +515,16 @@ void StartUSART3(void const * argument)
 				} else if (strcmp_n(ProcessBuffer, "MOVEEDATA", 4)){
 					INFO("MOVEEDATA Command");
 					
+				} else if (strcmp_n(ProcessBuffer, "STATE", 4)){
+					
+				}	else if (strcmp_n(ProcessBuffer, "ULROTATE", 4)){
+					
+				} else if (strcmp_n(ProcessBuffer, "ULSPEC", 4)){
+					
+				} else if (strcmp_n(ProcessBuffer, "ERASEFLASH", 4)){
+					
 				} else{
 					WARN("Invalid Command");
-					
 				}
 				
 				
@@ -1020,6 +1028,79 @@ void strcpy_n(char dest[], char src[], uint8_t start, uint8_t end){
 	
 	for (int i = start; i <= end; i++){
 		dest[i-start] = src [ i - 1];
+	}
+	
+}
+
+void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[]){
+	int AddressLength;
+	
+	if(!strcmp(AddressName,"DEUI")|| !strcmp(AddressName,"APPDEUI")){
+		AddressLength = 8;
+	} else if (!strcmp(AddressName,"APPKEY")){
+		AddressLength = 16;
+	}
+	
+	char ReceiveBuffer[48] = {0};
+	uint8_t ProcessBuffer[16] = {0};
+
+	//strcpy_n(ReceiveBuffer, InputBuffer, 9, 31);
+	strcpy_n(ReceiveBuffer, InputBuffer, 3 + strlen(AddressName) + 2, 3 + strlen(AddressName) + 2 + 3 * AddressLength - 2);
+	
+	if(strlen(ReceiveBuffer) != (3 * AddressLength - 1)){
+		ERROR("! ! ! %s Length Incorrect ! ! !", AddressName);
+		
+	} else {
+		INFO("Process %s", AddressName);
+		int IncorrectFlag = 0; 
+		for (int i = 0; i < AddressLength; i++){
+			if (ReceiveBuffer[i * 3 + 2] != 0x3A && i != 7){		// ":"
+				ERROR("! ! ! Incorrect Address ! ! !");
+				IncorrectFlag = 1;
+				break;
+			} else {
+				if (ReceiveBuffer[ i * 3 + 1 ] >= 0x30 && ReceiveBuffer[ i * 3 + 1 ] <= 0x39){	//If its a number
+					ProcessBuffer[i] = 	(ReceiveBuffer[ i * 3 + 1 ] - 0x30);
+				} else if (ReceiveBuffer[ i * 3 + 1 ] >= 0x41 && ReceiveBuffer[ i * 3 + 1 ] <= 0x46){	//If its a lower case
+					ProcessBuffer[i] = 	(ReceiveBuffer[ i * 3 + 1 ] - 0x37);
+				} else if (ReceiveBuffer[ i * 3 + 1 ] >= 0x61 && ReceiveBuffer[ i * 3 + 1 ] <= 0x66){	//If its a upper case
+					ProcessBuffer[i] = 	(ReceiveBuffer[ i * 3 + 1 ] - 0x57);
+				} else {
+					ERROR("! ! ! Incorrect Address ! ! !");
+					IncorrectFlag = 1;
+					break;
+				}
+										
+				if (ReceiveBuffer[ i * 3 + 0 ] >= 0x30 && ReceiveBuffer[ i * 3 + 0 ] <= 0x39){	//If its a number
+					ProcessBuffer[i] += (ReceiveBuffer[ i * 3 + 0 ] - 0x30)* 16;
+				} else if (ReceiveBuffer[ i * 3 + 0 ] >= 0x41 && ReceiveBuffer[ i * 3 + 0 ] <= 0x46){	//If its a lower case
+					ProcessBuffer[i] += (ReceiveBuffer[ i * 3 + 0 ] - 0x37)* 16;
+				} else if (ReceiveBuffer[ i * 3 + 0 ] >= 0x61 && ReceiveBuffer[ i * 3 + 0 ] <= 0x66){	//If its a upper case {
+					ProcessBuffer[i] += (ReceiveBuffer[ i * 3 + 0 ] - 0x57)* 16;
+				} else {
+					ERROR("! ! ! Incorrect Address ! ! !");
+					IncorrectFlag = 1;
+					break;
+				}
+			}
+		}
+		if (IncorrectFlag){
+			memset( ProcessBuffer, 0, sizeof(ProcessBuffer));
+			
+			myprintf(">>INFO: Processed %s: ", AddressName);
+			for (int i = 0; i < AddressLength - 1; i++)
+			myprintf("%x:",ProcessBuffer[i]);
+			myprintf("%x\r\n",ProcessBuffer[AddressLength-1]);
+		} else {
+			myprintf(">>INFO: Processed %s: ", AddressName);
+			for (int i = 0; i < AddressLength - 1; i++)
+			myprintf("%x:",ProcessBuffer[i]);
+			myprintf("%x\r\n",ProcessBuffer[AddressLength-1]);
+		}
+	}
+	
+	for(int i = 0; i < AddressLength; i++){
+		OutputBuffer[i] = ProcessBuffer[i];
 	}
 	
 }
