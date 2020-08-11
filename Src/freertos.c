@@ -41,6 +41,7 @@
 #include "Commissioning.h"
 #include "STPM32_AddressMap.h"
 
+#include "stm32l4xx_hal_uart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -89,18 +90,19 @@ extern uint8_t Total_Fundamental_Energy	[5];
 extern uint8_t Total_Reactive_Energy		[5];
 extern uint8_t Total_Apparent_Energy		[5];
 
-
 /* USART3(RS485) Variables */
 uint8_t aRxBuffer[128] = {0};
+uint8_t RxCounter1 = 0;
+uint8_t ReceiveState = 0;
 
+extern uint8_t AppEui[];
 
 /* SPI2(LoRa) Variables */
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
 uint8_t loramac_send_retry_count = 0;
-int LoRa_Block_Time = 120000;
+#define LoRa_Block_Time 120000;
 int LoRa_DL_Flag = 0;
 extern uint8_t *LoRa_RxBuf;
-//extern LoRaMacFlags_t LoRaMacFlags;
 uint8_t LoRa_Sendtype = 0x10;
 char LoRa_UL_Buffer[8];
 uint32_t LoRa_UL_Addr = 0x00;
@@ -126,7 +128,8 @@ osSemaphoreId myBinarySem01Handle;
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 void uint8_cpy(uint8_t* dest, uint8_t* src, uint8_t size);
-
+bool strcmp_n(char dest[], char src[], uint8_t start);
+void strcpy_n(char dest[], char src[], uint8_t start, uint8_t end);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -194,15 +197,15 @@ void MX_FREERTOS_Init(void) {
   IDLEHandle = osThreadCreate(osThread(IDLE), NULL);
 
   /* definition and creation of USART1 */
-  osThreadDef(USART1, StartUSART1, osPriorityAboveNormal, 0, 256);
+  osThreadDef(USART1, StartUSART1, osPriorityNormal, 0, 256);
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
-  osThreadDef(USART3, StartUSART3, osPriorityNormal, 0, 256);
+  osThreadDef(USART3, StartUSART3, osPriorityHigh, 0, 256);
   USART3Handle = osThreadCreate(osThread(USART3), NULL);
 
   /* definition and creation of SPI2 */
-  osThreadDef(SPI2, StartSPI2, osPriorityHigh, 0, 256);
+  osThreadDef(SPI2, StartSPI2, osPriorityNormal, 0, 256);
   SPI2Handle = osThreadCreate(osThread(SPI2), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -388,10 +391,154 @@ void StartUSART3(void const * argument)
 	/* Infinite loop */
   for(;;)
   {		
-	
+		char ProcessBuffer[128] = {0};
+		
+		if(RxCounter1 != 0){
+			
+			DelayMsPoll(1000);
+			myprintf(">>INFO: RS485 Recevied:");
+			
+			USART3_PINSET_TX();
+			HAL_UART_Transmit(&huart3, aRxBuffer, RxCounter1,0xFFFF);
+			USART3_PINSET_RX();
+			myprintf("\r\n");
+				
+			
+			strncpy(ProcessBuffer,(char*) aRxBuffer, RxCounter1);
+							
+			if (strncmp(ProcessBuffer,"ATZ",3) == 0){	
+				INFO("ATZ Command");
+				
+				
+			} else if (strncmp(ProcessBuffer,"AT+",3) == 0){
+				//INFO("AT+ command");
+				
+				if (strcmp_n(ProcessBuffer, "NJM", 4)){
+					INFO("NJM Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "DEUI", 4)){
+					//("Device Command");
+					
+					if(strcmp_n(ProcessBuffer, "?", 8)){
+						INFO("DEUI Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 8)){
+						INFO("DEUI = %x:%x:%x:%x:%x:%x:%x:%x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
+					} else {
+						INFO("Setting DEUI");
+						char AppEuiReceiveBuffer[24] = {0};
+						uint8_t AppEuiProcessBuffer[8] = {0};
+						
+						strcpy_n(AppEuiReceiveBuffer, ProcessBuffer, 9, 31);
+						if(strlen(AppEuiReceiveBuffer) != 23){
+							ERROR("! ! ! DEUI Length Incorrect ! ! !");
+							INFO("Processed DEUI: %x:%x:%x:%x:%x:%x:%x:%x", AppEuiProcessBuffer[0], AppEuiProcessBuffer[1], AppEuiProcessBuffer[2], AppEuiProcessBuffer[3], AppEuiProcessBuffer[4], AppEuiProcessBuffer[5], AppEuiProcessBuffer[6], AppEuiProcessBuffer[7]);
+						} else {
+							INFO("Process DEUI");
+							int IncorrectFlag = 0; 
+							for (int i = 0; i < 8; i++){
+								if (AppEuiReceiveBuffer[i * 3 + 2] != 0x3A && i != 7){		// ":"
+									ERROR("! ! ! Incorrect Address ! ! !");
+									IncorrectFlag = 1;
+									break;
+								} else {
+									if (AppEuiReceiveBuffer[ i * 3 + 1 ] >= 0x30 && AppEuiReceiveBuffer[ i * 3 + 1 ] <= 0x39){	//If its a number
+										AppEuiProcessBuffer[i] = 	(AppEuiReceiveBuffer[ i * 3 + 1 ] - 0x30);
+									} else if (AppEuiReceiveBuffer[ i * 3 + 1 ] >= 0x41 && AppEuiReceiveBuffer[ i * 3 + 1 ] <= 0x46){	//If its a lower case
+										AppEuiProcessBuffer[i] = 	(AppEuiReceiveBuffer[ i * 3 + 1 ] - 0x37);
+									} else if (AppEuiReceiveBuffer[ i * 3 + 1 ] >= 0x61 && AppEuiReceiveBuffer[ i * 3 + 1 ] <= 0x66){	//If its a upper case
+										AppEuiProcessBuffer[i] = 	(AppEuiReceiveBuffer[ i * 3 + 1 ] - 0x57);
+									} else {
+										ERROR("! ! ! Incorrect Address ! ! !");
+										IncorrectFlag = 1;
+										break;
+									}
+									
+									if (AppEuiReceiveBuffer[ i * 3 + 0 ] >= 0x30 && AppEuiReceiveBuffer[ i * 3 + 0 ] <= 0x39){	//If its a number
+										AppEuiProcessBuffer[i] += (AppEuiReceiveBuffer[ i * 3 + 0 ] - 0x30)* 16;
+									} else if (AppEuiReceiveBuffer[ i * 3 + 0 ] >= 0x41 && AppEuiReceiveBuffer[ i * 3 + 0 ] <= 0x46){	//If its a lower case
+										AppEuiProcessBuffer[i] += (AppEuiReceiveBuffer[ i * 3 + 0 ] - 0x37)* 16;
+									} else if (AppEuiReceiveBuffer[ i * 3 + 0 ] >= 0x61 && AppEuiReceiveBuffer[ i * 3 + 0 ] <= 0x66){	//If its a upper case {
+										AppEuiProcessBuffer[i] += (AppEuiReceiveBuffer[ i * 3 + 0 ] - 0x57)* 16;
+									} else {
+										ERROR("! ! ! Incorrect Address ! ! !");
+										IncorrectFlag = 1;
+										break;
+									}
+								}
+							}
+							if (IncorrectFlag){
+								memset( AppEuiProcessBuffer, 0, sizeof(AppEuiProcessBuffer));
+								INFO("Processed DEUI: %x:%x:%x:%x:%x:%x:%x:%x", AppEuiProcessBuffer[0], AppEuiProcessBuffer[1], AppEuiProcessBuffer[2], AppEuiProcessBuffer[3], AppEuiProcessBuffer[4], AppEuiProcessBuffer[5], AppEuiProcessBuffer[6], AppEuiProcessBuffer[7]);
+							} else {
+								INFO("Processed DEUI: %x:%x:%x:%x:%x:%x:%x:%x", AppEuiProcessBuffer[0], AppEuiProcessBuffer[1], AppEuiProcessBuffer[2], AppEuiProcessBuffer[3], AppEuiProcessBuffer[4], AppEuiProcessBuffer[5], AppEuiProcessBuffer[6], AppEuiProcessBuffer[7]);
+							}
+						}
+					}
+
+				} else if (strcmp_n(ProcessBuffer, "APPEUI", 4)){
+					INFO("AppEUI Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "APPKEY", 4)){
+					INFO("AppKey Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "NWKSKEY", 4)){
+					INFO("NwkSKkey Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "APPSKEY", 4)){
+					INFO("AppSKey Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "DADDR", 4)){
+					INFO("DADDR Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "ADR", 4)){
+					INFO("ADR Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "CFM", 4)){
+					INFO("CFM Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "HBTPD", 4)){
+					INFO("HBTPD Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "AITHRED", 4)){
+					INFO("AITHRED Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "SAVEPARA", 4)){
+					INFO("SAVAPARA Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "VER", 4)){
+					INFO("VER Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "TIMESTAMP", 4)){
+					INFO("TOMESTAMP Command");
+					
+				} else if (strcmp_n(ProcessBuffer, "MOVEEDATA", 4)){
+					INFO("MOVEEDATA Command");
+					
+				} else{
+					WARN("Invalid Command");
+					
+				}
+				
+				
+				
+				
+				
+				
+			} else {
+				WARN("Not a valid AT instruction");
+			}
+			
+			
+			
+			RxCounter1 = 0;
+		}
+		
+		
+		
+		/*
 		if (USART3_RxFlag == 1){
 			
-			/*
+			
 			//Get all aRxBuffer values into local values
 			uint8_t CommandByte 	= aRxBuffer[0];
 			uint8_t Message1			=	aRxBuffer[1];
@@ -543,27 +690,17 @@ void StartUSART3(void const * argument)
 			} else {
 				WARN("RS485 End Byte Error");
 			}
-			*/
 			
-			if (aRxBuffer[0] == 0x41 && aRxBuffer[1] == 0X54){
-				if(aRxBuffer[2] == 0x5A){
-					//Reset Board
-				}
-				
-				if(aRxBuffer[2] == 0x2B){
-					
-				}
-				
-				
-			} else {
-				WARN("Not AT Command");
-			}
-			
-			
+
 			USART3_RxFlag = 0;
 			HAL_UART_Receive_IT(&huart3, aRxBuffer, 128); 
 		}
 		//osDelay(1); //This delay is in ms
+		*/
+		
+		
+		
+		
 		
   }
   /* USER CODE END StartUSART3 */
@@ -787,6 +924,7 @@ void StartSPI2(void const * argument)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(huart);
+	UNUSED(USART3_RxFlag);
 	
 	if (huart == &huart1){
 		USART1_RxFlag = 1;
@@ -865,6 +1003,28 @@ void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
 		dest[i] = src[i];
 	}
 }
+
+bool strcmp_n(char dest[], char src[], uint8_t start){
+	uint8_t end = strlen(src) + start - 1;
+	
+	for(int i = start; i <= end; i++){
+		if (dest[i - 1] != src[i - start]){
+			return false;
+		}
+	}
+	
+	return true;
+	
+}
+void strcpy_n(char dest[], char src[], uint8_t start, uint8_t end){
+	
+	for (int i = start; i <= end; i++){
+		dest[i-start] = src [ i - 1];
+	}
+	
+}
+
+
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

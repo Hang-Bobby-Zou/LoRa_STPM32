@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usart.h"
+#include "stm32l4xx_hal_uart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +46,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern uint8_t aRxBuffer[128];
+extern uint8_t RxCounter1;
+extern uint8_t ReceiveState;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -208,6 +211,16 @@ void USART1_IRQHandler(void)
 void USART3_IRQHandler(void)
 {
   /* USER CODE BEGIN USART3_IRQn 0 */
+	uint8_t Clear = Clear;
+	
+	if(__HAL_UART_GET_FLAG(&huart3, UART_FLAG_RXNE) != RESET){
+		aRxBuffer[RxCounter1++] = USART3->RDR;
+	} else if (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_IDLE) != RESET){
+		//Clear = USART3->ISR;
+		//Clear = USART3->RDR;
+		//ReceiveState = 1;
+	}
+	
 	
   /* USER CODE END USART3_IRQn 0 */
   HAL_UART_IRQHandler(&huart3);

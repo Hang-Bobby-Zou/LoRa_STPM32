@@ -127,6 +127,10 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     /* USART3 interrupt Init */
     HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(USART3_IRQn);
+		
+		HAL_NVIC_EnableIRQ(UART_IT_IDLE);
+		HAL_NVIC_EnableIRQ(UART_IT_RXNE);
+		
   /* USER CODE BEGIN USART3_MspInit 1 */
 
   /* USER CODE END USART3_MspInit 1 */
