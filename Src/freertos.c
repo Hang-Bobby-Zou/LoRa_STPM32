@@ -103,6 +103,14 @@ extern uint8_t AppKey[];
 extern uint8_t NwkSKey[];
 extern uint8_t AppSKey[];
 
+extern uint32_t DevAddr;
+
+extern uint8_t IsTxConfirmed;
+
+uint8_t UL_Command = 0;
+
+
+
 /* SPI2(LoRa) Variables */
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
 uint8_t loramac_send_retry_count = 0;
@@ -137,6 +145,8 @@ void uint8_cpy(uint8_t* dest, uint8_t* src, uint8_t size);
 bool strcmp_n(char dest[], char src[], uint8_t start);
 void strcpy_n(char dest[], char src[], uint8_t start, uint8_t end);
 void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[]);
+void ProcessBool(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[]);
+void ProcessNum(char* NumName, char InputBuffer[], uint8_t OutputBuffer[]);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -402,7 +412,7 @@ void StartUSART3(void const * argument)
 		
 		if(RxCounter1 != 0){
 			
-			DelayMsPoll(1000);
+			DelayMsPoll(500);
 			myprintf(">>INFO: RS485 Recevied:");
 			
 			USART3_PINSET_TX();
@@ -414,22 +424,26 @@ void StartUSART3(void const * argument)
 			strncpy(ProcessBuffer,(char*) aRxBuffer, RxCounter1);
 							
 			if (strncmp(ProcessBuffer,"ATZ",3) == 0){	
-				INFO("ATZ Command");
-				
+				INFO("Resetting SYSTEM");
+				DelayMsPoll(1000);
+					
+				__set_FAULTMASK(1);//close all interrupt
+				NVIC_SystemReset();//reset
 				
 			} else if (strncmp(ProcessBuffer,"AT+",3) == 0){
-
-					//AT+NJM : Set ABP or OTAA
 				if (strcmp_n(ProcessBuffer, "NJM", 4)){
-					INFO("Resetting SYSTEM");
-					DelayMsPoll(1000);
+					//AT+NJM : Set ABP or OTAA
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("NJM") + 1)){
+						INFO("NJM Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("NJM") + 1)){
+						INFO("NJM = %x", OVER_THE_AIR_ACTIVATION);
+					} else {
+						uint8_t OutputBuffer[1];
+						ProcessBool("NJM", ProcessBuffer, OutputBuffer);
+					}
 					
-					__set_FAULTMASK(1);//close all interrupt
-					NVIC_SystemReset();//reset
-					
-					//AT+DEUI : Device EUI
 				} else if (strcmp_n(ProcessBuffer, "DEUI", 4)){
-					
+					//AT+DEUI : Device EUI
 					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("DEUI") + 1)){
 						INFO("DEUI Help String");
 					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("DEUI") + 1)){
@@ -439,9 +453,8 @@ void StartUSART3(void const * argument)
 						ProcessAddress("DEUI", ProcessBuffer, OutputBuffer);	
 					}
 					
-					//AT+APPEUI : AppEUI
 				} else if (strcmp_n(ProcessBuffer, "APPEUI", 4)){
-					
+					//AT+APPEUI : AppEUI
 					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("APPEUI") + 1)){
 						INFO("APPEUI Help String");
 					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("APPEUI") + 1)){
@@ -451,9 +464,8 @@ void StartUSART3(void const * argument)
 						ProcessAddress("APPEUI", ProcessBuffer, OutputBuffer);	
 					}
 					
-					//AT+APPKEY : AppKey
 				} else if (strcmp_n(ProcessBuffer, "APPKEY", 4)){
-					
+					//AT+APPKEY : AppKey
 					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("APPKEY") + 1)){
 						INFO("APPKEY Help String");
 					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("APPKEY") + 1)){
@@ -463,9 +475,8 @@ void StartUSART3(void const * argument)
 						ProcessAddress("APPKEY", ProcessBuffer, OutputBuffer);	
 					}
 					
-					//AT+NWKSKEY : NwkSKey
 				} else if (strcmp_n(ProcessBuffer, "NWKSKEY", 4)){
-					
+					//AT+NWKSKEY : NwkSKey
 					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("NWKSKEY") + 1)){
 						INFO("NWKSKEY Help String");
 					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("NWKSKEY") + 1)){
@@ -475,9 +486,8 @@ void StartUSART3(void const * argument)
 						ProcessAddress("NWKSKEY", ProcessBuffer, OutputBuffer);	
 					}
 					
-					//AT+APPSKEY : AppSKey
 				} else if (strcmp_n(ProcessBuffer, "APPSKEY", 4)){
-					
+					//AT+APPSKEY : AppSKey
 					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("APPSKEY") + 1)){
 						INFO("APPSKEY Help String");
 					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("APPSKEY") + 1)){
@@ -487,42 +497,126 @@ void StartUSART3(void const * argument)
 						ProcessAddress("APPSKEY", ProcessBuffer, OutputBuffer);	
 					}
 					
-					
 				} else if (strcmp_n(ProcessBuffer, "DADDR", 4)){
-					INFO("DADDR Command");
+					//AT+DADDR : DevAddr
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("DADDR") + 1)){
+						INFO("DADDR Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("DADDR") + 1)){
+						INFO("DADDR = %x", DevAddr);
+					} else {
+						uint8_t OutputBuffer[4];
+						ProcessAddress("DADDR", ProcessBuffer, OutputBuffer);	
+					}
 					
 				} else if (strcmp_n(ProcessBuffer, "ADR", 4)){
-					INFO("ADR Command");
+					//AT+ADR
+					INFO("ADR Command not yet implemented");
+					
 					
 				} else if (strcmp_n(ProcessBuffer, "CFM", 4)){
-					INFO("CFM Command");
+					//AT+CFM : Confirmed/Unconfirmed UL
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("CFM") + 1)){
+						INFO("CFM Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("CFM") + 1)){
+						INFO("CFM = %x", IsTxConfirmed);
+					} else {
+						uint8_t OutputBuffer[1];
+						ProcessBool("CFM", ProcessBuffer, OutputBuffer);
+					}
 					
 				} else if (strcmp_n(ProcessBuffer, "HBTPD", 4)){
-					INFO("HBTPD Command");
+					INFO("HBTPD Command not yet implemented");
 					
 				} else if (strcmp_n(ProcessBuffer, "AITHRED", 4)){
-					INFO("AITHRED Command");
-					
+					INFO("AITHRED Command not supported");
+					//Not supported
 				} else if (strcmp_n(ProcessBuffer, "SAVEPARA", 4)){
-					INFO("SAVAPARA Command");
-					
+					INFO("SAVAPARA Command not supported");
+					//Not supported
 				} else if (strcmp_n(ProcessBuffer, "VER", 4)){
-					INFO("VER Command");
+					INFO("VER Command not yet implemented");
 					
 				} else if (strcmp_n(ProcessBuffer, "TIMESTAMP", 4)){
-					INFO("TOMESTAMP Command");
-					
+					INFO("TOMESTAMP Command not supported");
+					// ??
 				} else if (strcmp_n(ProcessBuffer, "MOVEEDATA", 4)){
-					INFO("MOVEEDATA Command");
-					
+					INFO("MOVEEDATA Command not supported");
+					// Not supported
 				} else if (strcmp_n(ProcessBuffer, "STATE", 4)){
+					INFO("STATE Command not yet implemented");
 					
-				}	else if (strcmp_n(ProcessBuffer, "ULROTATE", 4)){
 					
-				} else if (strcmp_n(ProcessBuffer, "ULSPEC", 4)){
+					
+					
+				}	else if (strcmp_n(ProcessBuffer, "ULSET", 4)){
+					//AT+ULROTATE : Set UL auto rotate mode
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("ULSET") + 1)){
+						INFO("ULSET Help String");
+					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("ULSET") + 1)){
+						INFO("ULSET = %x", UL_Command);
+					} else {
+						uint8_t OutputBuffer[1];
+						ProcessNum("ULSET", ProcessBuffer, OutputBuffer);
+					}
 					
 				} else if (strcmp_n(ProcessBuffer, "ERASEFLASH", 4)){
-					
+					//AT_ERASEFLASH = Erase the specific part of flash.
+					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("ERASEFLASH") + 1)){
+						INFO("ERASEFLASH Help String");
+					} else {
+						char ReceiveBuffer[16] = {0};
+
+						strcpy_n(ReceiveBuffer, ProcessBuffer, 15, 24);
+						
+						if(strlen(ReceiveBuffer) != 10){
+							ERROR("! ! ! %s Length Incorrect ! ! !", "ERASEFLASH");
+							
+						} else {
+							INFO("Process %s", "ERASEFLASH");
+							if (strcmp_n(ReceiveBuffer, ":", 2) && (strcmp_n(ReceiveBuffer, "0x", 3) || strcmp_n(ReceiveBuffer, "0X", 3))){
+									
+								uint32_t EraseFlashAddr = 0x00000;
+								uint32_t Temp = 0;
+							
+								for (int i = 0; i < 6; i++){
+									if (ReceiveBuffer[ i+4 ] >= 0x30 && ReceiveBuffer[ i+4 ] <= 0x39){	//If its a number
+										Temp = 1;
+										for (int j = 5; j > i; j--){
+											Temp = Temp * 16;
+										}
+										EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x30);
+									} else if (ReceiveBuffer[ i+4 ] >= 0x41 && ReceiveBuffer[ i+4 ] <= 0x46){	//If its a lower case
+										Temp = 1;
+										for (int j = 5; j > i; j--){
+											Temp = Temp * 16;
+										}
+										EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x37);
+									} else if (ReceiveBuffer[ i+4 ] >= 0x61 && ReceiveBuffer[ i+4 ] <= 0x66){	//If its a upper case
+										Temp = 1;
+										for (int j = 5; j > i; j--){
+											Temp = Temp * 16;
+										}
+										EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x57);
+									} else {
+										ERROR("! ! ! Incorrect Address ! ! !");
+										break;
+									}
+								}
+									
+									if (strcmp_n(ReceiveBuffer,"0", 1)){
+										INFO("Erasing address : %x", EraseFlashAddr);
+									} else if (strcmp_n(ReceiveBuffer,"1", 1)){
+										INFO("Erasing sector address : %x", EraseFlashAddr);
+									} else if (strcmp_n(ReceiveBuffer,"2", 1)){
+										INFO("Erasing block address : %x", EraseFlashAddr);
+									} else {
+										WARN("Erase type invalid");
+									}
+							} else {
+									WARN("! ! ! Incorrect Input ! ! !");
+							}
+						}
+					}
 				} else{
 					WARN("Invalid Command");
 				}
@@ -1035,10 +1129,15 @@ void strcpy_n(char dest[], char src[], uint8_t start, uint8_t end){
 void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[]){
 	int AddressLength;
 	
-	if(!strcmp(AddressName,"DEUI")|| !strcmp(AddressName,"APPDEUI")){
+	if(!strcmp(AddressName,"DEUI") || !strcmp(AddressName,"APPEUI")){
 		AddressLength = 8;
-	} else if (!strcmp(AddressName,"APPKEY")){
+	} else if (!strcmp(AddressName,"APPKEY") || !strcmp(AddressName,"NWKSKEY") || !strcmp(AddressName,"APPSKEY")){
 		AddressLength = 16;
+	} else if (!strcmp(AddressName,"DADDR")){
+		AddressLength = 4;
+	} else {
+		WARN("Not a valid AddressName");
+		return;
 	}
 	
 	char ReceiveBuffer[48] = {0};
@@ -1054,7 +1153,7 @@ void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[
 		INFO("Process %s", AddressName);
 		int IncorrectFlag = 0; 
 		for (int i = 0; i < AddressLength; i++){
-			if (ReceiveBuffer[i * 3 + 2] != 0x3A && i != 7){		// ":"
+			if (ReceiveBuffer[i * 3 + 2] != 0x3A && i != AddressLength - 1){		// ":"
 				ERROR("! ! ! Incorrect Address ! ! !");
 				IncorrectFlag = 1;
 				break;
@@ -1103,6 +1202,75 @@ void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[
 		OutputBuffer[i] = ProcessBuffer[i];
 	}
 	
+}
+
+void ProcessBool(char* BoolName, char InputBuffer[], uint8_t OutputBuffer[]){
+	int AddressLength;
+	
+	if (!strcmp(BoolName,"CFM") || !strcmp(BoolName,"NJM")){
+		AddressLength = 1;
+	} else {
+		WARN("Not a valid AddressName");
+		return;
+	}
+	
+	char ReceiveBuffer[1] = {0};
+	
+	strcpy_n(ReceiveBuffer, InputBuffer, 3 + strlen(BoolName) + 2, 3 + strlen(BoolName) + 2);
+	
+	if(strlen(ReceiveBuffer) != 1){
+		ERROR("! ! ! %s Length Incorrect ! ! !", BoolName);
+		
+	} else {
+		INFO("Process %s", BoolName);
+		
+		if (ReceiveBuffer[0] == 0x30){
+			OutputBuffer[0] = 0;
+			INFO("Processed %s: %x", BoolName, OutputBuffer[0]);
+		} else if (ReceiveBuffer[0] == 0x31){
+			OutputBuffer[0] = 1;
+			INFO("Processed %s: %x", BoolName, OutputBuffer[0]);
+		} else {
+			OutputBuffer[0] = 0;
+			WARN("Not a valid Bool");
+		}
+	}
+}
+
+void ProcessNum(char* NumName, char InputBuffer[], uint8_t OutputBuffer[]){
+	int AddressLength;
+	
+	if (!strcmp(NumName,"ULSET")){
+		AddressLength = 1;
+	} else {
+		WARN("Not a valid AddressName");
+		return;
+	}
+	
+	char ReceiveBuffer[1] = {0};
+	
+	strcpy_n(ReceiveBuffer, InputBuffer, 3 + strlen(NumName) + 2, 3 + strlen(NumName) + 2);
+	
+	if(strlen(ReceiveBuffer) != 1){
+		ERROR("! ! ! %s Length Incorrect ! ! !", NumName);
+		
+	} else {
+		INFO("Process %s", NumName);
+	
+		if (ReceiveBuffer[0] >= 0x30 && ReceiveBuffer[0] <= 0x39){
+			OutputBuffer[0] = ReceiveBuffer[0] - 0x30;
+			INFO("Processed %s: %x", NumName, OutputBuffer[0]);
+		} else if (ReceiveBuffer[0] >= 0x41 && ReceiveBuffer[0] <= 0x46){
+			OutputBuffer[0] = ReceiveBuffer[0] - 0x37;
+			INFO("Processed %s: %x", NumName, OutputBuffer[0]);
+		} else if (ReceiveBuffer[0] >= 0x61 && ReceiveBuffer[0] <= 0x66){
+			OutputBuffer[0] = ReceiveBuffer[0] - 0x57;
+			INFO("Processed %s: %x", NumName, OutputBuffer[0]);
+		} else{
+			OutputBuffer[0] = 0;
+			WARN("! ! ! Incorrect Input ! ! !");
+		}
+	}
 }
 
 

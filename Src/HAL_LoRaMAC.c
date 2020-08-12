@@ -100,7 +100,7 @@ uint8_t AppSKey[] = LORAWAN_APPSKEY;
 /*!
  * Device address
  */
-static uint32_t DevAddr = LORAWAN_DEVICE_ADDRESS;
+uint32_t DevAddr = LORAWAN_DEVICE_ADDRESS;
 
 #endif
 
@@ -118,7 +118,7 @@ static uint8_t AppDataSizeBackup = 16;
 /*!
  * Indicates if the node is sending confirmed or unconfirmed messages
  */
-static uint8_t IsTxConfirmed = LORAWAN_CONFIRMED_MSG_ON;
+uint8_t IsTxConfirmed = LORAWAN_CONFIRMED_MSG_ON;
 
 /*!
  * Defines the application data transmission duty cycle
