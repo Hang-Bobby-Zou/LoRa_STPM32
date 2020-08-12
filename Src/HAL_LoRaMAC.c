@@ -68,6 +68,7 @@ extern int LoRa_DL_Flag;
  * \remark Please note that when ADR is enabled the end-device should be static
  */
 #define LORAWAN_ADR_ON                              0
+bool Is_LORAWAN_ADR_ON	= LORAWAN_ADR_ON;
 
 #if defined( REGION_EU868 )
 

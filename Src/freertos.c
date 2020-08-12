@@ -69,8 +69,9 @@ uint8_t	 	HAL_RxBuffer[5] = {0};
 uint8_t 	i[1] 						= {0x2E};
 int 			count 					= 0;
 uint16_t 	FlashPointer 		= 0x00;
-#define STPM32_Block_Time	90000
+int STPM32_Task_Count = 0;
 
+#define STPM32_Block_Time	90000
 //Raw data from STPM32 defines
 extern uint8_t PH_Period								[5];
 extern uint8_t CH1_RMS									[5];
@@ -109,18 +110,22 @@ extern uint8_t IsTxConfirmed;
 
 uint8_t UL_Command = 0;
 
+extern bool Is_LORAWAN_ADR_ON;
 
+bool Is_OTAA = OVER_THE_AIR_ACTIVATION;
 
 /* SPI2(LoRa) Variables */
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
 uint8_t loramac_send_retry_count = 0;
-#define LoRa_Block_Time 120000;
+#define LoRa_Block_Time 120000
 int LoRa_DL_Flag = 0;
 extern uint8_t *LoRa_RxBuf;
-uint8_t LoRa_Sendtype = 0x10;
+uint8_t LoRa_Sendtype = 0;
 char LoRa_UL_Buffer[8];
 uint32_t LoRa_UL_Addr = 0x00;
 
+bool LoRa_Restart_Flag = false;
+int LoRa_Task_Count = 0;
 /* SYSTEM Variables */
 static int USART3_RxFlag = 0;
 static int USART3_TxFlag = 0;
@@ -147,6 +152,21 @@ void strcpy_n(char dest[], char src[], uint8_t start, uint8_t end);
 void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[]);
 void ProcessBool(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[]);
 void ProcessNum(char* NumName, char InputBuffer[], uint8_t OutputBuffer[]);
+
+void SystemReset(void);
+void ProcessAT_NJM(char Input[], uint8_t Output[]);
+void ProcessAT_DEUI(char Input[], uint8_t Output[]);
+void ProcessAT_APPEUI(char Input[], uint8_t Output[]);
+void ProcessAT_APPKEY(char Input[], uint8_t Output[]);
+void ProcessAT_NWKSKEY(char Input[], uint8_t Output[]);
+void ProcessAT_APPSKEY(char Input[], uint8_t Output[]);
+void ProcessAT_DADDR(char Input[], uint32_t Output[]);
+void ProcessAT_ADR(char Input[], uint8_t Output[]);
+void ProcessAT_CFM(char Input[], uint8_t Output[]);
+void ProcessAT_STATE(void);
+void ProcessAT_ULSET(char Input[], uint8_t Output[]);
+void ProcessAT_ERASEFLASH(char Input[]);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -288,6 +308,7 @@ void StartUSART1(void const * argument)
 			i[0] = 0x2E;
 			
 			FlashPointer += 0x08;
+			STPM32_Task_Count++;
 			INFO("Blocking STPM32 for %d miliseconds",STPM32_Block_Time);
 			
 			vTaskDelay (pdMS_TO_TICKS( STPM32_Block_Time ));	//If walks around for 1 term, then block itself
@@ -424,108 +445,105 @@ void StartUSART3(void const * argument)
 			strncpy(ProcessBuffer,(char*) aRxBuffer, RxCounter1);
 							
 			if (strncmp(ProcessBuffer,"ATZ",3) == 0){	
-				INFO("Resetting SYSTEM");
-				DelayMsPoll(1000);
-					
-				__set_FAULTMASK(1);//close all interrupt
-				NVIC_SystemReset();//reset
+				SystemReset();
 				
 			} else if (strncmp(ProcessBuffer,"AT+",3) == 0){
 				if (strcmp_n(ProcessBuffer, "NJM", 4)){
-					//AT+NJM : Set ABP or OTAA
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("NJM") + 1)){
-						INFO("NJM Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("NJM") + 1)){
-						INFO("NJM = %x", OVER_THE_AIR_ACTIVATION);
-					} else {
-						uint8_t OutputBuffer[1];
-						ProcessBool("NJM", ProcessBuffer, OutputBuffer);
-					}
+					//AT+NJM : ABP/OTAA
+					uint8_t OutputBuffer[1];
+					ProcessAT_NJM(ProcessBuffer, OutputBuffer);
+					/*
+					Is_OTAA = OutputBuffer[0];
+					LoRa_Restart_Flag = true;
+					*/
 					
 				} else if (strcmp_n(ProcessBuffer, "DEUI", 4)){
 					//AT+DEUI : Device EUI
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("DEUI") + 1)){
-						INFO("DEUI Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("DEUI") + 1)){
-						INFO("DEUI = %x:%x:%x:%x:%x:%x:%x:%x", DevEui[0], DevEui[1], DevEui[2], DevEui[3], DevEui[4], DevEui[5], DevEui[6], DevEui[7]);
-					} else {
-						uint8_t OutputBuffer[8];
-						ProcessAddress("DEUI", ProcessBuffer, OutputBuffer);	
+					uint8_t OutputBuffer[8];
+					ProcessAT_DEUI(ProcessBuffer, OutputBuffer);
+					/*
+					for (int i = 0 ; i < 8; i++){
+						DevEui[i] = OutputBuffer[i];
 					}
+					LoRa_Restart_Flag = true;
+					*/
 					
 				} else if (strcmp_n(ProcessBuffer, "APPEUI", 4)){
 					//AT+APPEUI : AppEUI
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("APPEUI") + 1)){
-						INFO("APPEUI Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("APPEUI") + 1)){
-						INFO("APPEUI = %x:%x:%x:%x:%x:%x:%x:%x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
-					} else {
-						uint8_t OutputBuffer[8];
-						ProcessAddress("APPEUI", ProcessBuffer, OutputBuffer);	
+					uint8_t OutputBuffer[8];
+					ProcessAT_APPEUI(ProcessBuffer, OutputBuffer);
+					/*
+					for (int i = 0 ; i < 8; i++){
+						AppEui[i] = OutputBuffer[i];
 					}
+					LoRa_Restart_Flag = true;
+					*/
 					
 				} else if (strcmp_n(ProcessBuffer, "APPKEY", 4)){
 					//AT+APPKEY : AppKey
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("APPKEY") + 1)){
-						INFO("APPKEY Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("APPKEY") + 1)){
-						INFO("APPKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7], AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
-					} else {
-						uint8_t OutputBuffer[16];
-						ProcessAddress("APPKEY", ProcessBuffer, OutputBuffer);	
+					uint8_t OutputBuffer[16];
+					ProcessAT_APPKEY(ProcessBuffer, OutputBuffer);
+					/*
+					for (int i = 0 ; i < 8; i++){
+						AppKey[i] = OutputBuffer[i];
 					}
+					LoRa_Restart_Flag = true;
+					*/
 					
 				} else if (strcmp_n(ProcessBuffer, "NWKSKEY", 4)){
 					//AT+NWKSKEY : NwkSKey
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("NWKSKEY") + 1)){
-						INFO("NWKSKEY Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("NWKSKEY") + 1)){
-						INFO("NWKSKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", NwkSKey[0], NwkSKey[1], NwkSKey[2], NwkSKey[3], NwkSKey[4], NwkSKey[5], NwkSKey[6], NwkSKey[7], NwkSKey[8], NwkSKey[9], NwkSKey[10], NwkSKey[11], NwkSKey[12], NwkSKey[13], NwkSKey[14], NwkSKey[15]);
-					} else {
-						uint8_t OutputBuffer[16];
-						ProcessAddress("NWKSKEY", ProcessBuffer, OutputBuffer);	
+					uint8_t OutputBuffer[16];
+					ProcessAT_NWKSKEY(ProcessBuffer, OutputBuffer);
+					/*
+					for (int i = 0 ; i < 8; i++){
+						NwkSKey[i] = OutputBuffer[i];
 					}
+					LoRa_Restart_Flag = true;
+					*/
 					
 				} else if (strcmp_n(ProcessBuffer, "APPSKEY", 4)){
 					//AT+APPSKEY : AppSKey
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("APPSKEY") + 1)){
-						INFO("APPSKEY Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("APPSKEY") + 1)){
-						INFO("APPSKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", AppSKey[0], AppSKey[1], AppSKey[2], AppSKey[3], AppSKey[4], AppSKey[5], AppSKey[6], AppSKey[7], AppSKey[8], AppSKey[9], AppSKey[10], AppSKey[11], AppSKey[12], AppSKey[13], AppSKey[14], AppSKey[15]);
-					} else {
-						uint8_t OutputBuffer[16];
-						ProcessAddress("APPSKEY", ProcessBuffer, OutputBuffer);	
+					uint8_t OutputBuffer[16];
+					ProcessAT_APPSKEY(ProcessBuffer, OutputBuffer);
+					/*
+					for (int i = 0 ; i < 8; i++){
+						AppSKey[i] = OutputBuffer[i];
 					}
+					LoRa_Restart_Flag = true;
+					*/
 					
 				} else if (strcmp_n(ProcessBuffer, "DADDR", 4)){
 					//AT+DADDR : DevAddr
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("DADDR") + 1)){
-						INFO("DADDR Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("DADDR") + 1)){
-						INFO("DADDR = %x", DevAddr);
-					} else {
-						uint8_t OutputBuffer[4];
-						ProcessAddress("DADDR", ProcessBuffer, OutputBuffer);	
-					}
+					uint32_t OutputBuffer[1];
+					ProcessAT_DADDR(ProcessBuffer, OutputBuffer);
+					/*
+					DevAddr = OutputBuffer[0];
+					LoRa_Restart_Flag = true;
+					*/
 					
 				} else if (strcmp_n(ProcessBuffer, "ADR", 4)){
-					//AT+ADR
-					INFO("ADR Command not yet implemented");
-					
+					//AT+ADR : Adaptive Data Rate
+					uint8_t OutputBuffer[1];
+					ProcessAT_ADR(ProcessBuffer, OutputBuffer);
+					/*
+					Is_LORAWAN_ADR_ON = OutputBuffer[0];
+					LoRa_Restart_Flag = true;
+					*/
 					
 				} else if (strcmp_n(ProcessBuffer, "CFM", 4)){
 					//AT+CFM : Confirmed/Unconfirmed UL
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("CFM") + 1)){
-						INFO("CFM Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("CFM") + 1)){
-						INFO("CFM = %x", IsTxConfirmed);
-					} else {
-						uint8_t OutputBuffer[1];
-						ProcessBool("CFM", ProcessBuffer, OutputBuffer);
-					}
+					uint8_t OutputBuffer[1];
+					ProcessAT_CFM(ProcessBuffer, OutputBuffer);
+					/*
+					IsTxConfirmed = OutputBuffer[0];
+					LoRa_Restart_Flag = true;
+					*/
 					
 				} else if (strcmp_n(ProcessBuffer, "HBTPD", 4)){
 					INFO("HBTPD Command not yet implemented");
+					//Impulse UL, do it every hr.
+					
+					
 					
 				} else if (strcmp_n(ProcessBuffer, "AITHRED", 4)){
 					INFO("AITHRED Command not supported");
@@ -534,98 +552,31 @@ void StartUSART3(void const * argument)
 					INFO("SAVAPARA Command not supported");
 					//Not supported
 				} else if (strcmp_n(ProcessBuffer, "VER", 4)){
-					INFO("VER Command not yet implemented");
-					
+					INFO("VER Command not supported");
+					//Not supported
 				} else if (strcmp_n(ProcessBuffer, "TIMESTAMP", 4)){
 					INFO("TOMESTAMP Command not supported");
-					// ??
+					// Not supported
 				} else if (strcmp_n(ProcessBuffer, "MOVEEDATA", 4)){
 					INFO("MOVEEDATA Command not supported");
 					// Not supported
 				} else if (strcmp_n(ProcessBuffer, "STATE", 4)){
-					INFO("STATE Command not yet implemented");
-					
-					
-					
-					
+					//AT+STATE : Check system state
+					ProcessAT_STATE();
 				}	else if (strcmp_n(ProcessBuffer, "ULSET", 4)){
 					//AT+ULROTATE : Set UL auto rotate mode
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("ULSET") + 1)){
-						INFO("ULSET Help String");
-					} else if (strcmp_n(ProcessBuffer, "=?", 3 + strlen("ULSET") + 1)){
-						INFO("ULSET = %x", UL_Command);
-					} else {
-						uint8_t OutputBuffer[1];
-						ProcessNum("ULSET", ProcessBuffer, OutputBuffer);
-					}
+					uint8_t OutputBuffer[1];
+					ProcessAT_ULSET(ProcessBuffer, OutputBuffer);
+					
+					LoRa_Sendtype = OutputBuffer[0];
 					
 				} else if (strcmp_n(ProcessBuffer, "ERASEFLASH", 4)){
 					//AT_ERASEFLASH = Erase the specific part of flash.
-					if(strcmp_n(ProcessBuffer, "?", 3 + strlen("ERASEFLASH") + 1)){
-						INFO("ERASEFLASH Help String");
-					} else {
-						char ReceiveBuffer[16] = {0};
-
-						strcpy_n(ReceiveBuffer, ProcessBuffer, 15, 24);
-						
-						if(strlen(ReceiveBuffer) != 10){
-							ERROR("! ! ! %s Length Incorrect ! ! !", "ERASEFLASH");
-							
-						} else {
-							INFO("Process %s", "ERASEFLASH");
-							if (strcmp_n(ReceiveBuffer, ":", 2) && (strcmp_n(ReceiveBuffer, "0x", 3) || strcmp_n(ReceiveBuffer, "0X", 3))){
-									
-								uint32_t EraseFlashAddr = 0x00000;
-								uint32_t Temp = 0;
-							
-								for (int i = 0; i < 6; i++){
-									if (ReceiveBuffer[ i+4 ] >= 0x30 && ReceiveBuffer[ i+4 ] <= 0x39){	//If its a number
-										Temp = 1;
-										for (int j = 5; j > i; j--){
-											Temp = Temp * 16;
-										}
-										EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x30);
-									} else if (ReceiveBuffer[ i+4 ] >= 0x41 && ReceiveBuffer[ i+4 ] <= 0x46){	//If its a lower case
-										Temp = 1;
-										for (int j = 5; j > i; j--){
-											Temp = Temp * 16;
-										}
-										EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x37);
-									} else if (ReceiveBuffer[ i+4 ] >= 0x61 && ReceiveBuffer[ i+4 ] <= 0x66){	//If its a upper case
-										Temp = 1;
-										for (int j = 5; j > i; j--){
-											Temp = Temp * 16;
-										}
-										EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x57);
-									} else {
-										ERROR("! ! ! Incorrect Address ! ! !");
-										break;
-									}
-								}
-									
-									if (strcmp_n(ReceiveBuffer,"0", 1)){
-										INFO("Erasing address : %x", EraseFlashAddr);
-									} else if (strcmp_n(ReceiveBuffer,"1", 1)){
-										INFO("Erasing sector address : %x", EraseFlashAddr);
-									} else if (strcmp_n(ReceiveBuffer,"2", 1)){
-										INFO("Erasing block address : %x", EraseFlashAddr);
-									} else {
-										WARN("Erase type invalid");
-									}
-							} else {
-									WARN("! ! ! Incorrect Input ! ! !");
-							}
-						}
-					}
+					ProcessAT_ERASEFLASH(ProcessBuffer);
+					
 				} else{
 					WARN("Invalid Command");
 				}
-				
-				
-				
-				
-				
-				
 			} else {
 				WARN("Not a valid AT instruction");
 			}
@@ -832,7 +783,16 @@ void StartSPI2(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
-		/*
+		
+		if(LoRa_Restart_Flag == true){
+			LoRa_Restart_Flag = false;
+			//If changed any address, then reinit and join LoRaWAN
+			LoRaMAC_Init();
+			LoRaMAC_Join();
+		}
+		
+		LoRa_Task_Count++;
+		
 		HAL_NVIC_EnableIRQ(TIM7_IRQn);	//Enable TIM7 Irq since it is disabled while other task is running
 		
 		INFO("\r\nEntering LoRa Task\r\n");
@@ -840,7 +800,7 @@ void StartSPI2(void const * argument)
 		DelayMsPoll(1000);
 		
 				//Check LoRa Upload Mode
-				if (LoRa_Sendtype == 0x10){						//Auto Rotate Raw
+				if (LoRa_Sendtype == 0){						//Auto Rotate Raw
 					INFO("LoRa: Auto Rotate Raw");
 					
 					LoRa_UL_Addr = 0x000000;
@@ -879,7 +839,7 @@ void StartSPI2(void const * argument)
 					HAL_NVIC_DisableIRQ(TIM7_IRQn);
 					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 					
-				} else if (LoRa_Sendtype == 0x11){		//Auto Rotate Real
+				} else if (LoRa_Sendtype == 1){		//Auto Rotate Real
 					INFO("LoRa: Auto Rotate Real");
 					
 					LoRa_UL_Addr = 0x100000;
@@ -918,7 +878,9 @@ void StartSPI2(void const * argument)
 					HAL_NVIC_DisableIRQ(TIM7_IRQn);
 					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 					
-				} else if (LoRa_Sendtype == 0x12 || LoRa_Sendtype == 0x13){		//Specific UL
+				} 
+				/*
+				else if (LoRa_Sendtype == 0x12 || LoRa_Sendtype == 0x13){		//Specific UL
 					INFO("LoRa: Specific upload");
 					ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);
 					
@@ -950,10 +912,11 @@ void StartSPI2(void const * argument)
 					HAL_NVIC_DisableIRQ(TIM7_IRQn);
 					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 					
-				} else {															//Sendtype Invalid
+				}*/ 
+				else {															//Sendtype Invalid
 					WARN("Sendtype Invalid");
 				}
-				*/
+				
 				/*
 				//LoRa Send Code
 				if (LoRa_CheckStateIDLE() == true){
@@ -1095,17 +1058,24 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
 }
 
 /**
-* @brief Copy the src string into dest string
-* @param Pointer: dest[], src[] 
-* @param Parameter: size of string
-* @retval None
-*/
+	* @brief Copy the src string into dest string
+	* @param Pointer: dest[], src[] 
+	* @param Parameter: size of string
+	* @retval None
+	*/
 void uint8_cpy(uint8_t dest[], uint8_t src[], uint8_t size){
 	for (int i = 0; i < size; i++){
 		dest[i] = src[i];
 	}
 }
 
+/**
+	* @brief Compare the src string with dest string from the start position
+	*					and end as src[] ends. 
+	* @param Pointer: dest[], src[]
+	* @param Parameter: The start position of comparision
+	* @retval True/False
+*/
 bool strcmp_n(char dest[], char src[], uint8_t start){
 	uint8_t end = strlen(src) + start - 1;
 	
@@ -1114,18 +1084,288 @@ bool strcmp_n(char dest[], char src[], uint8_t start){
 			return false;
 		}
 	}
-	
 	return true;
-	
 }
+
+/**
+	* @brief Copy the src string into dest string from start pos to end pos
+	* @param Pointer: dest[], src[], the start pos of src[] to end pos of scr[]
+	* @param Parameter: The start pos of src[] to end pos of scr[]
+	* @retval None
+	*/
 void strcpy_n(char dest[], char src[], uint8_t start, uint8_t end){
-	
 	for (int i = start; i <= end; i++){
-		dest[i-start] = src [ i - 1];
+		dest[ i - start ] = src [ i - 1 ];
 	}
+}
+
+void SystemReset(void){
+	INFO("Resetting SYSTEM");
+	DelayMsPoll(1000);
+					
+	__set_FAULTMASK(1);//close all interrupt
+	NVIC_SystemReset();//reset
+}
+
+
+void ProcessAT_NJM(char Input[], uint8_t Output[]){
+	//AT+NJM : Set ABP or OTAA
+	if(strcmp_n(Input, "?", 3 + strlen("NJM") + 1)){
+		INFO("NJM Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("NJM") + 1)){
+		INFO("NJM = %x", Is_OTAA);
+	} else {
+		ProcessBool("NJM", Input, Output);
+	}
+}
+
+void ProcessAT_DEUI(char Input[], uint8_t Output[]){
+	if(strcmp_n(Input, "?", 3 + strlen("DEUI") + 1)){
+		INFO("DEUI Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("DEUI") + 1)){
+		INFO("DEUI = %x:%x:%x:%x:%x:%x:%x:%x", DevEui[0], DevEui[1], DevEui[2], DevEui[3], DevEui[4], DevEui[5], DevEui[6], DevEui[7]);
+	} else {
+		ProcessAddress("DEUI", Input, Output);
+	}
+}
+
+void ProcessAT_APPEUI(char Input[], uint8_t Output[]){
+	if(strcmp_n(Input, "?", 3 + strlen("APPEUI") + 1)){
+		INFO("APPEUI Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("APPEUI") + 1)){
+		INFO("APPEUI = %x:%x:%x:%x:%x:%x:%x:%x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
+	} else {
+		ProcessAddress("APPEUI", Input, Output);
+	}
+}
+
+void ProcessAT_APPKEY(char Input[], uint8_t Output[]){
+	if(strcmp_n(Input, "?", 3 + strlen("APPKEY") + 1)){
+		INFO("APPKEY Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("APPKEY") + 1)){
+		INFO("APPKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7], AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
+	} else {
+		ProcessAddress("APPKEY", Input, Output);
+	}
+}
+
+void ProcessAT_NWKSKEY(char Input[], uint8_t Output[]){
+	if(strcmp_n(Input, "?", 3 + strlen("NWKSKEY") + 1)){
+		INFO("NWKSKEY Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("NWKSKEY") + 1)){
+		INFO("NWKSKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", NwkSKey[0], NwkSKey[1], NwkSKey[2], NwkSKey[3], NwkSKey[4], NwkSKey[5], NwkSKey[6], NwkSKey[7], NwkSKey[8], NwkSKey[9], NwkSKey[10], NwkSKey[11], NwkSKey[12], NwkSKey[13], NwkSKey[14], NwkSKey[15]);
+	} else {
+		ProcessAddress("NWKSKEY", Input, Output);
+	}
+}
+
+void ProcessAT_APPSKEY(char Input[], uint8_t Output[]){
+	if(strcmp_n(Input, "?", 3 + strlen("APPSKEY") + 1)){
+		INFO("APPSKEY Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("APPSKEY") + 1)){
+		INFO("APPSKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", AppSKey[0], AppSKey[1], AppSKey[2], AppSKey[3], AppSKey[4], AppSKey[5], AppSKey[6], AppSKey[7], AppSKey[8], AppSKey[9], AppSKey[10], AppSKey[11], AppSKey[12], AppSKey[13], AppSKey[14], AppSKey[15]);
+	} else {
+		ProcessAddress("APPSKEY", Input, Output);
+	}
+}
+
+void ProcessAT_DADDR(char Input[], uint32_t Output[]){
+	uint8_t OutputBuffer[4] = {0};
+	
+	if(strcmp_n(Input, "?", 3 + strlen("DADDR") + 1)){
+		INFO("DADDR Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("DADDR") + 1)){
+		INFO("DADDR = %x", DevAddr);
+	} else {
+		ProcessAddress("DADDR", Input, OutputBuffer);
+	}
+	
+	Output[0] = 0;
+	
+	Output[0] += OutputBuffer[0] * 0x01000000;
+	Output[0] += OutputBuffer[1] * 0x00010000;
+	Output[0] += OutputBuffer[2] * 0x00000100;
+	Output[0] += OutputBuffer[3] * 0x00000001;
 	
 }
 
+void ProcessAT_ADR(char Input[], uint8_t Output[]){
+	if(strcmp_n(Input, "?", 3 + strlen("ADR") + 1)){
+		INFO("ADR Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("ADR") + 1)){
+		INFO("ADR = %x", Is_LORAWAN_ADR_ON);
+	} else {
+		ProcessBool("ADR", Input, Output);
+	}
+}
+
+void ProcessAT_CFM(char Input[], uint8_t Output[]){
+	if(strcmp_n(Input, "?", 3 + strlen("CFM") + 1)){
+		INFO("CFM Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("CFM") + 1)){
+		INFO("CFM = %x", IsTxConfirmed);
+	} else {
+		ProcessBool("CFM", Input, Output);
+	}
+}
+
+void ProcessAT_STATE(void){
+	//0. SYSTEM Status
+	//Each FreeRTOS task run count.
+	INFO("Checking SYSTEM Status");
+	INFO("Task LoRa Run Count: %x", LoRa_Task_Count);
+	INFO("Task STPM32 Run Count: %x", STPM32_Task_Count);
+	
+	//1. STPM32 Status
+	//STPM32 status
+	INFO("Checking STPM32 Status");
+
+	//2. LoRa Status
+	INFO("Checking LoRa Status");
+	uint32_t LoRa_Status = LoRaMacGetState();
+					
+	if (LoRa_Status == 0x00000000){
+		INFO("LoRa IDLE");
+	} else if (LoRa_Status == 0x00000001){
+	INFO("LoRa Tx Running");
+	} else if (LoRa_Status == 0x00000002){
+		INFO("LoRa Rx");
+	} else if (LoRa_Status == 0x00000004){
+		INFO("LoRa ACK Req");
+	} else if (LoRa_Status == 0x00000008){
+		INFO("LoRa ACK Retry");
+	} else if (LoRa_Status == 0x00000010){
+		INFO("LoRa Tx Delayed");
+	} else if (LoRa_Status == 0x00000020){
+		INFO("LoRa Tx Config");
+	} else if (LoRa_Status == 0x00000040){
+		INFO("LoRa Rx Abort");
+	} else {
+		INFO("State Unknown");
+	}
+	
+	//3. Ext flash Status
+	INFO("Checking external flash Status");
+	if (ext_flash_is_detected()){
+		INFO("Flash OK");
+	} else {
+		INFO("Flash Not detected");
+	}
+}
+
+
+void ProcessAT_ULSET(char Input[], uint8_t Output[]){
+	if(strcmp_n(Input, "?", 3 + strlen("ULSET") + 1)){
+		INFO("ULSET Help String");
+	} else if (strcmp_n(Input, "=?", 3 + strlen("ULSET") + 1)){
+		INFO("ULSET = %x", UL_Command);
+	} else {
+		ProcessNum("ULSET", Input, Output);
+	}
+}
+
+void ProcessAT_ERASEFLASH(char Input[]){
+	if(strcmp_n(Input, "?", 3 + strlen("ERASEFLASH") + 1)){
+		INFO("ERASEFLASH Help String");
+	} else {
+		char ReceiveBuffer[16] = {0};
+		
+		strcpy_n(ReceiveBuffer, Input, 15, 24);
+
+		if(strlen(ReceiveBuffer) != 10){
+			ERROR("! ! ! %s Length Incorrect ! ! !", "ERASEFLASH");		
+		} else {
+			INFO("Process %s", "ERASEFLASH");
+			if (strcmp_n(ReceiveBuffer, ":", 2) && (strcmp_n(ReceiveBuffer, "0x", 3) || strcmp_n(ReceiveBuffer, "0X", 3))){
+
+				uint32_t EraseFlashAddr = 0x00000;
+				uint32_t Temp = 0;
+
+				for (int i = 0; i < 6; i++){
+					if (ReceiveBuffer[ i+4 ] >= 0x30 && ReceiveBuffer[ i+4 ] <= 0x39){	//If its a number
+						Temp = 1;
+						for (int j = 5; j > i; j--){
+							Temp = Temp * 16;
+						}
+						EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x30);
+					} else if (ReceiveBuffer[ i+4 ] >= 0x41 && ReceiveBuffer[ i+4 ] <= 0x46){	//If its a lower case
+							Temp = 1;
+						for (int j = 5; j > i; j--){
+							Temp = Temp * 16;
+						}
+						EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x37);
+					} else if (ReceiveBuffer[ i+4 ] >= 0x61 && ReceiveBuffer[ i+4 ] <= 0x66){	//If its a upper case
+						Temp = 1;
+						for (int j = 5; j > i; j--){
+							Temp = Temp * 16;
+						}
+						EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x57);
+					} else {
+						ERROR("! ! ! Incorrect Address ! ! !");
+						break;
+					}
+				}
+					
+				if (strcmp_n(ReceiveBuffer,"0", 1)){
+					INFO("Erasing address : %x", EraseFlashAddr);
+					
+					char EraseFF[8];
+					EraseFF[0] = 0xFF; EraseFF[1] = 0xFF; EraseFF[2] = 0xFF; EraseFF[3] = 0xFF;
+					EraseFF[4] = 0xFF; EraseFF[5] = 0xFF; EraseFF[6] = 0xFF; EraseFF[7] = 0xFF;
+					ext_flash_write(EraseFlashAddr, EraseFF, 8);
+					ext_flash_last_write_or_erase_done();
+					
+					//Check erase
+					char flash_data[8] = {0};
+					
+					ext_flash_read(EraseFlashAddr, flash_data, 8);
+					
+					if (strcmp(flash_data, EraseFF) == 0) {
+						INFO("Erase address %x done",EraseFlashAddr);  
+					} else {
+						WARN("Erase address %x error", EraseFlashAddr);
+					}
+					
+					
+				} else if (strcmp_n(ReceiveBuffer,"1", 1)){
+					INFO("Erasing sector address : %x", EraseFlashAddr);
+					
+					//Erase sector
+					ext_flash_erase_sector( EraseFlashAddr );
+					ext_flash_last_write_or_erase_done();
+					
+					INFO("Erase sector %d done", EraseFlashAddr);
+
+					
+				} else if (strcmp_n(ReceiveBuffer,"2", 1)){
+					INFO("Erasing block address : %x", EraseFlashAddr);
+					
+					//Erase block
+					ext_flash_erase_block( EraseFlashAddr );
+					ext_flash_last_write_or_erase_done();
+					
+					INFO("Erase block %d done", EraseFlashAddr);
+					
+					
+				} else {
+					WARN("Erase type invalid");
+				}
+			} else {
+				WARN("! ! ! Incorrect Input ! ! !");
+			}
+		}
+	}
+}
+
+
+
+
+/**
+	* @brief Process the address and convert it from ASCII to HEX
+	* @param Pointer: InputBuffer[] (ASCII), OutputBuffer[] (Hex)
+	* @param Ppinter: The address name, to identify length of address
+	* @retval None
+	*/
 void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[]){
 	int AddressLength;
 	
@@ -1143,7 +1383,6 @@ void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[
 	char ReceiveBuffer[48] = {0};
 	uint8_t ProcessBuffer[16] = {0};
 
-	//strcpy_n(ReceiveBuffer, InputBuffer, 9, 31);
 	strcpy_n(ReceiveBuffer, InputBuffer, 3 + strlen(AddressName) + 2, 3 + strlen(AddressName) + 2 + 3 * AddressLength - 2);
 	
 	if(strlen(ReceiveBuffer) != (3 * AddressLength - 1)){
@@ -1204,10 +1443,17 @@ void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[
 	
 }
 
+/**
+	* @brief Process the bool logic and convert it from ASCII to Hex
+	* @param Pointer: InputBuffer[] (ASCII), OutputBuffer[] (Hex)
+	* @param Ppinter: The bool name, to identify if its actually boolean type
+	* @retval None
+	*/
 void ProcessBool(char* BoolName, char InputBuffer[], uint8_t OutputBuffer[]){
 	int AddressLength;
+	UNUSED(AddressLength);
 	
-	if (!strcmp(BoolName,"CFM") || !strcmp(BoolName,"NJM")){
+	if (!strcmp(BoolName,"CFM") || !strcmp(BoolName,"NJM") || !strcmp(BoolName,"ADR")){
 		AddressLength = 1;
 	} else {
 		WARN("Not a valid AddressName");
@@ -1237,8 +1483,15 @@ void ProcessBool(char* BoolName, char InputBuffer[], uint8_t OutputBuffer[]){
 	}
 }
 
+/**
+	* @brief Process a number and convert it from ASCII to Hex
+	* @param Pointer: InputBuffer[] (ASCII), OutputBuffer[] (Hex)
+	* @param Ppinter: The Num name, to see it its actually a num type
+	* @retval None
+	*/
 void ProcessNum(char* NumName, char InputBuffer[], uint8_t OutputBuffer[]){
 	int AddressLength;
+	UNUSED(AddressLength);
 	
 	if (!strcmp(NumName,"ULSET")){
 		AddressLength = 1;

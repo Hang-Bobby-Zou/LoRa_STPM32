@@ -23,6 +23,8 @@
 #ifndef __LORA_COMMISSIONING_H__
 #define __LORA_COMMISSIONING_H__
 
+#include <stdbool.h>
+
 /*!
  * When set to 1 the application uses the Over-the-Air activation procedure
  * When set to 0 the application uses the Personalization activation procedure
