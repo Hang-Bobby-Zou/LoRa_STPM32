@@ -92,6 +92,11 @@ extern uint8_t Total_Fundamental_Energy	[5];
 extern uint8_t Total_Reactive_Energy		[5];
 extern uint8_t Total_Apparent_Energy		[5];
 
+extern double RT_V1_RMS;
+extern double RT_C1_RMS;
+extern double RT_Active_Pwr;
+extern double RT_Tot_Active_Energy;
+
 /* USART3(RS485) Variables */
 uint8_t aRxBuffer[128] = {0};
 uint8_t RxCounter1 = 0;
@@ -162,7 +167,7 @@ void ProcessAT_DADDR(char Input[], uint32_t Output[]);
 void ProcessAT_ADR(char Input[], uint8_t Output[]);
 void ProcessAT_CFM(char Input[], uint8_t Output[]);
 void ProcessAT_STATE(void);
-void ProcessAT_ULSET(char Input[], uint8_t Output[]);
+void ProcessAT_ULSET(char Input[], uint32_t Output[]);
 void ProcessAT_ERASEFLASH(char Input[]);
 
 /* USER CODE END FunctionPrototypes */
@@ -232,7 +237,7 @@ void MX_FREERTOS_Init(void) {
   IDLEHandle = osThreadCreate(osThread(IDLE), NULL);
 
   /* definition and creation of USART1 */
-  osThreadDef(USART1, StartUSART1, osPriorityAboveNormal, 0, 256); //STPM32
+  osThreadDef(USART1, StartUSART1, osPriorityNormal, 0, 256); //STPM32
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
@@ -300,14 +305,13 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
-		
 		//To cycle the register address pointer
 		if (i[0] > 0x8A){
 			i[0] = 0x2E;
 			
 			FlashPointer += 0x08;
 			STPM32_Task_Count++;
-			INFO("Blocking STPM32 for %d miliseconds",STPM32_Block_Time);
+			INFO("Blocking STPM32 for %d miliseconds", STPM32_Block_Time);
 			
 			vTaskDelay (pdMS_TO_TICKS( STPM32_Block_Time ));	//If walks around for 1 term, then block itself
 		}
@@ -315,10 +319,15 @@ void StartUSART1(void const * argument)
 		if (FlashPointer > 0x00FFFF){
 			FlashPointer = 0x000000;
 			
-			USART3_PINSET_TX();
-			INFO("!!!Flash Full!!!");
-			INFO("...Overwriting Previous Info...\r\n");
-			USART3_PINSET_RX();
+			WARN("!!!Flash Full!!!");
+			WARN("...Overwriting Previous Info...\r\n");
+			
+			WARN("Erasing all block from flash...");
+			for (int i = 0; i < 32; i++){
+				ext_flash_erase_block(i * 65536);
+				ext_flash_last_write_or_erase_done();
+				INFO("Erase block # %d done.", i);
+			}
 		}
 
 		if (USART1_RxFlag == 1){
@@ -333,80 +342,74 @@ void StartUSART1(void const * argument)
 					if (i[0] == dsp_reg1){
 						uint8_cpy(PH_Period, HAL_RxBuffer, 5);
 						CalcPrint_Freq();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH_Period[0], PH_Period[1], PH_Period[2], PH_Period[3], PH_Period[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH_Period[0], PH_Period[1], PH_Period[2], PH_Period[3], PH_Period[4]);
 					} else if (i[0] == dsp_reg17){
 						uint8_cpy(C1_PHA, HAL_RxBuffer, 5);
 						CalcPrint_Phase();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], C1_PHA[0], C1_PHA[1], C1_PHA[2], C1_PHA[3], C1_PHA[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], C1_PHA[0], C1_PHA[1], C1_PHA[2], C1_PHA[3], C1_PHA[4]);
 					} else if (i[0] == dsp_reg14){
 						uint8_cpy(CH1_RMS,HAL_RxBuffer,5);
 						CalcPrint_V1_RMS();
 						CalcPrint_C1_RMS();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], CH1_RMS[0], CH1_RMS[1], CH1_RMS[2], CH1_RMS[3], CH1_RMS[4]);
 					} else if (i[0] == ph1_reg1){
 						uint8_cpy(PH1_Active_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Active_Energy();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Active_Energy[0], PH1_Active_Energy[1], PH1_Active_Energy[2], PH1_Active_Energy[3], PH1_Active_Energy[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Active_Energy[0], PH1_Active_Energy[1], PH1_Active_Energy[2], PH1_Active_Energy[3], PH1_Active_Energy[4]);
 					} else if (i[0] == ph1_reg2){
 						uint8_cpy(PH1_Fundamental_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Funda_Energy();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Fundamental_Energy[0], PH1_Fundamental_Energy[1], PH1_Fundamental_Energy[2], PH1_Fundamental_Energy[3], PH1_Fundamental_Energy[4]);
 					} else if (i[0] == ph1_reg3){
 						uint8_cpy(PH1_Reactive_Energy, HAL_RxBuffer, 5);
 						CalcPrint_React_Energy();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Reactive_Energy[0], PH1_Reactive_Energy[1], PH1_Reactive_Energy[2], PH1_Reactive_Energy[3], PH1_Reactive_Energy[4]);
 					} else if (i[0] == ph1_reg4){
 						uint8_cpy(PH1_Apparent_Energy, HAL_RxBuffer,5);
 						CalcPrint_App_Energy();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Apparent_Energy[0], PH1_Apparent_Energy[1], PH1_Apparent_Energy[2], PH1_Apparent_Energy[3], PH1_Apparent_Energy[4]);
 					} else if (i[0] == ph1_reg5){
 						uint8_cpy(PH1_Active_Power, HAL_RxBuffer, 5);
 						CalcPrint_Active_Pwr();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Active_Power[0], PH1_Active_Power[1], PH1_Active_Power[2], PH1_Active_Power[3], PH1_Active_Power[4]);
 					} else if (i[0] == ph1_reg6){
 						uint8_cpy(PH1_Fundamental_Power, HAL_RxBuffer, 5);
 						CalcPrint_Funda_Pwr();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Fundamental_Power[0], PH1_Fundamental_Power[1], PH1_Fundamental_Power[2], PH1_Fundamental_Power[3], PH1_Fundamental_Power[4]);
 					} else if (i[0] == ph1_reg7){
 						uint8_cpy(PH1_Reactive_Power, HAL_RxBuffer, 5);
 						CalcPrint_React_Pwr();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Reactive_Power[0], PH1_Reactive_Power[1], PH1_Reactive_Power[2], PH1_Reactive_Power[3], PH1_Reactive_Power[4]);
 					} else if (i[0] == ph1_reg8){
 						uint8_cpy(PH1_Apparent_RMS_Power, HAL_RxBuffer, 5);
 						CalcPrint_App_RMS_Pwr();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], PH1_Apparent_RMS_Power[0], PH1_Apparent_RMS_Power[1], PH1_Apparent_RMS_Power[2], PH1_Apparent_RMS_Power[3], PH1_Apparent_RMS_Power[4]);
 					} else if (i[0] == tot_reg1){
 						uint8_cpy(Total_Active_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Tot_Active_Energy();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], Total_Active_Energy[0], Total_Active_Energy[1], Total_Active_Energy[2], Total_Active_Energy[3], Total_Active_Energy[4]);
 					} else if (i[0] == tot_reg2){
 						uint8_cpy(Total_Fundamental_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Tot_Funda_Energy();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], Total_Fundamental_Energy[0], Total_Fundamental_Energy[1], Total_Fundamental_Energy[2], Total_Fundamental_Energy[3], Total_Fundamental_Energy[4]);
 					} else if (i[0] == tot_reg3){
 						uint8_cpy(Total_Reactive_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Tot_React_Energy();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], Total_Reactive_Energy[0], Total_Reactive_Energy[1], Total_Reactive_Energy[2], Total_Reactive_Energy[3], Total_Reactive_Energy[4]);
 					} else if (i[0] == tot_reg4){
 						uint8_cpy(Total_Apparent_Energy, HAL_RxBuffer, 5);
 						CalcPrint_Tot_App_Energy();
-						INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
+						//INFO("Address : %x Data: %x | %x | %x | %x | %x \r\n\r\n", i[0], Total_Apparent_Energy[0], Total_Apparent_Energy[1], Total_Apparent_Energy[2], Total_Apparent_Energy[3], Total_Apparent_Energy[4]);
 					}
 				
 				i[0] += 0x02;
-				
 				count = 0;
 			}
-
 			count++;
-
 		 	USART1_RxFlag = 0;
 		}
-		
 		ReadMsgOnly(i[0],ReadBuffer);
 		vTaskDelay (pdMS_TO_TICKS( 100 ));
-		//osDelay(1);
-		
   }
   /* USER CODE END StartUSART1 */
 }
@@ -537,10 +540,8 @@ void StartUSART3(void const * argument)
 #endif
 					
 				} else if (strcmp_n(ProcessBuffer, "HBTPD", 4)){
-					INFO("HBTPD Command not yet implemented");
+					INFO("HBTPD Command not needed");
 					//Impulse UL, do it every hr.
-					
-					
 					
 				} else if (strcmp_n(ProcessBuffer, "AITHRED", 4)){
 					INFO("AITHRED Command not supported");
@@ -562,10 +563,10 @@ void StartUSART3(void const * argument)
 					ProcessAT_STATE();
 				}	else if (strcmp_n(ProcessBuffer, "ULSET", 4)){
 					//AT+ULROTATE : Set UL auto rotate mode
-					uint8_t OutputBuffer[1];
+					uint32_t OutputBuffer[1];
 					ProcessAT_ULSET(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable				
-					LoRa_Sendtype = OutputBuffer[0];
+#ifdef RS485_Control_Enable
+					LoRa_UL_Addr = OutputBuffer[0];
 #endif
 				} else if (strcmp_n(ProcessBuffer, "ERASEFLASH", 4)){
 					//AT_ERASEFLASH = Erase the specific part of flash.
@@ -577,181 +578,8 @@ void StartUSART3(void const * argument)
 			} else {
 				WARN("Not a valid AT instruction");
 			}
-			
-			
-			
 			RxCounter1 = 0;
 		}
-		
-		
-		
-		/*
-		if (USART3_RxFlag == 1){
-			
-			
-			//Get all aRxBuffer values into local values
-			uint8_t CommandByte 	= aRxBuffer[0];
-			uint8_t Message1			=	aRxBuffer[1];
-			uint8_t Message2			=	aRxBuffer[2];
-			uint8_t Message3			=	aRxBuffer[3];
-			uint8_t Message4			=	aRxBuffer[4];
-			uint8_t Message5			=	aRxBuffer[5];
-			uint8_t Message6			=	aRxBuffer[6];
-			uint8_t EndByte 			= aRxBuffer[7];
-			
-			
-			if (EndByte == 0xAA){
-				
-				DEBUG("RS485 Receive: %x %x %x %x %x %x %x %x\r\n", CommandByte, Message1, Message2, Message3, Message4, Message5, Message6, EndByte);
-				INFO("RS485 Receive:");
-				INFO("Command: %x", CommandByte);
-				INFO("Message: %x %x %x %x %x %x", Message1, Message2, Message3, Message4, Message5, Message6);
-				
-				//Command Porcess
-				if( CommandByte == 0x00 ){
-					INFO("SYSTEM Status");
-					
-				} else if ( CommandByte == 0x01 ){
-					INFO("STPM32 Status");
-					
-				} else if ( CommandByte == 0x02 ){
-					INFO("Flash Status");
-					
-				} else if ( CommandByte == 0x03 ){
-					INFO("LoRa Status");
-					
-				} else if ( CommandByte	== 0x10 ){
-					INFO("Auto Rotate Raw Data Upload");
-					
-					LoRa_Sendtype = CommandByte;
-					
-				} else if ( CommandByte == 0x11 ){
-					INFO("Auto Rotate Real Data Upload");
-					
-					LoRa_Sendtype = CommandByte;
-					
-				} else if ( CommandByte == 0x12 ){
-					INFO("Raw Data Upload from a specific address");
-					
-					LoRa_UL_Addr = LoRa_UL_Addr | Message1 << 24;
-					LoRa_UL_Addr = LoRa_UL_Addr | Message2 << 16;
-					LoRa_UL_Addr = LoRa_UL_Addr | Message3 << 8;
-					LoRa_UL_Addr = LoRa_UL_Addr | Message4;
-					
-					LoRa_Sendtype = CommandByte;
-					
-				} else if ( CommandByte == 0x13 ){
-					INFO("Real Data Upload from a specific address");
-					
-					LoRa_UL_Addr = LoRa_UL_Addr | Message1 << 24;
-					LoRa_UL_Addr = LoRa_UL_Addr | Message2 << 16;
-					LoRa_UL_Addr = LoRa_UL_Addr | Message3 << 8;
-					LoRa_UL_Addr = LoRa_UL_Addr | Message4;
-					
-					LoRa_Sendtype = CommandByte;
-					
-				} else if ( CommandByte == 0x14 ){
-					INFO("Return specific content from flash");
-					
-					//Process address
-					uint32_t addr = 0x000000;
-			
-					addr = addr | Message1 << 24;
-					addr = addr | Message2 << 16;
-					addr = addr | Message3 << 8;
-					addr = addr | Message4;
-					
-					//Read data
-					char flash_data[8] = {0};
-					ext_flash_read(addr, flash_data, 8);
-
-					INFO("Reading addr: %x ",addr);
-					INFO("Data: %x %x %x %x %x %x %x %x", flash_data[0], flash_data[1], flash_data[2], flash_data[3], flash_data[4], flash_data[5], flash_data[6], flash_data[7]);
-					
-				} else if ( CommandByte == 0x15 ){
-					INFO("Erase specific content from flash");
-					
-					//Process address
-					uint32_t addr = 0x000000;
-					
-					addr = addr | Message1 << 24;
-					addr = addr | Message2 << 16;
-					addr = addr | Message3 << 8;
-					addr = addr | Message4;
-					
-					//Do erase
-					char EraseFF[8];
-					EraseFF[0] = 0xFF; EraseFF[1] = 0xFF; EraseFF[2] = 0xFF; EraseFF[3] = 0xFF;
-					EraseFF[4] = 0xFF; EraseFF[5] = 0xFF; EraseFF[6] = 0xFF; EraseFF[7] = 0xFF;
-					ext_flash_write(addr, EraseFF, 8);
-					ext_flash_last_write_or_erase_done();
-					
-					//Check erase
-					char flash_data[8] = {0};
-					
-					ext_flash_read(addr, flash_data, 8);
-					
-					if (strcmp(flash_data, EraseFF) == 0) {
-						INFO("Erase address %x done",addr);  
-					} else {
-						WARN("Erase address %x error", addr);
-					}
-					
-				} else if (CommandByte == 0x16){ 
-					INFO("Erase specific sector");
-					
-					//Process address
-					uint32_t addr = 0x000000;
-					
-					addr = addr | Message1 << 8;
-					addr = addr | Message2;
-					
-					if(addr <= 0x01FF){
-						//Erase sector
-						ext_flash_erase_sector( addr );
-						ext_flash_last_write_or_erase_done();
-					
-						INFO("Erase sector %d done", addr);
-					} else {
-						WARN("Sector address %d invalid", addr);
-					}
-					
-				} else if (CommandByte == 0x17){ 
-					INFO("Erase specific block");
-					
-					//Process address
-					uint32_t addr = Message1;
-					
-					//Erase block
-					if (addr <= 0x1F){	
-						ext_flash_erase_block( addr );
-						ext_flash_last_write_or_erase_done();
-					
-						INFO("Erase block %d done", addr);
-					} else {
-						WARN("Block address %d invalid", addr);
-					}
-					
-				} else if ( CommandByte == 0xFF ){
-					INFO("Emergency Stop");
-				}
-				
-				
-			} else {
-				WARN("RS485 End Byte Error");
-			}
-			
-
-			USART3_RxFlag = 0;
-			HAL_UART_Receive_IT(&huart3, aRxBuffer, 128); 
-		}
-		//osDelay(1); //This delay is in ms
-		*/
-		
-		
-		
-		
-		
   }
   /* USER CODE END StartUSART3 */
 }
@@ -777,12 +605,11 @@ void StartSPI2(void const * argument)
 	DEBUG("LoRaMAC Join Done");
 	
 	LoRa_UL_Addr = 0x000000;
-	
-	////
+	/*
 	INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
 	HAL_NVIC_DisableIRQ(TIM7_IRQn);
 	vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
-	
+	*/
 	/* Infinite loop */
   for(;;)
   {
@@ -794,7 +621,7 @@ void StartSPI2(void const * argument)
 			LoRaMAC_Join();
 		}
 		
-		LoRa_Task_Count++;
+		LoRa_Task_Count++;							//Increment task count of LoRa
 		
 		HAL_NVIC_EnableIRQ(TIM7_IRQn);	//Enable TIM7 Irq since it is disabled while other task is running
 		
@@ -802,126 +629,93 @@ void StartSPI2(void const * argument)
 		
 		DelayMsPoll(1000);
 		
-				//Check LoRa Upload Mode
-				if (LoRa_Sendtype == 0){						//Auto Rotate Raw
-					INFO("LoRa: Auto Rotate Raw");
-					
-					LoRa_UL_Addr = 0x000000;
-					
-					while(LoRa_UL_Addr <= 0x0E0000){
-						ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
-						
-						INFO("Auto Rotate Raw, LoRa_UL_Addr = %x, LoRa_UL_Buffer: %x %x %x %x %x %x %x %x", LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
-						
-						//LoRa Send Code
-						if (LoRa_CheckStateIDLE() == true){
-							if(LoRaMAC_Send() == -1){ //If send was not successful
-								if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
-									loramac_send_retry_count ++;
-									WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
-								}			
-							} else {
-								INFO("LoRaMAC Send Succeed!");
-								loramac_send_retry_count = 0;
-							}
-						}
-						DelayMsPoll(10000);
-						
-						if (LoRa_DL_Flag == 1){
-							INFO("LoRa DownLink received!");
-							INFO("LoRa DownLink buffer: %x %x %x %x",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
-							LoRa_DL_Flag = 0;
-						} else if (LoRa_DL_Flag == 0){
-							INFO("LoRa DownLink no new message");
-						}
-						
-						LoRa_UL_Addr += 0x010000;
-					}
-					
-					INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
-					HAL_NVIC_DisableIRQ(TIM7_IRQn);
-					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
-					
-				} else if (LoRa_Sendtype == 1){		//Auto Rotate Real
-					INFO("LoRa: Auto Rotate Real");
-					
-					LoRa_UL_Addr = 0x100000;
-					
-					while(LoRa_UL_Addr <= 0x1F0000){
-						ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
-						
-						INFO("Auto Rotate Raw, LoRa_UL_Addr = %x, LoRa_UL_Buffer: %x %x %x %x %x %x %x %x", LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
-						
-						//LoRa Send Code
-						if (LoRa_CheckStateIDLE() == true){
-							if(LoRaMAC_Send() == -1){ //If send was not successful
-								if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
-									loramac_send_retry_count ++;
-									WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
-								}			
-							} else {
-								INFO("LoRaMAC Send Succeed!");
-								loramac_send_retry_count = 0;
-							}
-						}
-						DelayMsPoll(10000);
-						
-						if (LoRa_DL_Flag == 1){
-							INFO("LoRa DownLink received!");
-							INFO("LoRa DownLink buffer: %x %x %x %x",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
-							LoRa_DL_Flag = 0;
-						} else if (LoRa_DL_Flag == 0){
-							INFO("LoRa DownLink no new message");
-						}
-						
-						LoRa_UL_Addr += 0x010000;
-					}
-					
-					INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
-					HAL_NVIC_DisableIRQ(TIM7_IRQn);
-					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
-					
-				} 
-				/*
-				else if (LoRa_Sendtype == 0x12 || LoRa_Sendtype == 0x13){		//Specific UL
-					INFO("LoRa: Specific upload");
-					ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);
-					
-					INFO("Specific UL, LoRa_UL_Addr = %x, LoRa_UL_Buffer: %x %x %x %x %x %x %x %x", LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
-					
-					//LoRa Send Code
-					if (LoRa_CheckStateIDLE() == true){
-						if(LoRaMAC_Send() == -1){ //If send was not successful
-							if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
-								loramac_send_retry_count ++;
-								WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
-							}			
-						} else {
-							INFO("LoRaMAC Send Succeed!");
-							loramac_send_retry_count = 0;
-						}
-					}
-					DelayMsPoll(10000);
-						
-					if (LoRa_DL_Flag == 1){
-						INFO("LoRa DownLink received!");
-						INFO("LoRa DownLink buffer: %x %x %x %x",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
-						LoRa_DL_Flag = 0;
-					} else if (LoRa_DL_Flag == 0){
-						INFO("LoRa DownLink no new message");
-					}
-						
-					INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
-					HAL_NVIC_DisableIRQ(TIM7_IRQn);
-					vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
-					
-				}*/ 
-				else {															//Sendtype Invalid
-					WARN("Sendtype Invalid");
+		//Check LoRa Upload Mode
+		
+		if(LoRa_Sendtype == 0){										//Real time upload
+			INFO("LoRa: Real time upload");
+			
+			//
+			ReadMsgOnly(dsp_reg14,ReadBuffer);
+			
+			//while (USART1_RxFlag == 0);
+
+			HAL_RxBuffer[0] = ReadBuffer[0];
+		 	HAL_RxBuffer[1] = ReadBuffer[1];
+		 	HAL_RxBuffer[2] = ReadBuffer[2];
+		 	HAL_RxBuffer[3] = ReadBuffer[3];
+			HAL_RxBuffer[4] = ReadBuffer[4];
+			
+			uint8_cpy(CH1_RMS,HAL_RxBuffer,5);
+			RT_CalcPrint_V1_RMS();
+			RT_CalcPrint_C1_RMS();
+			
+			//
+			ReadMsgOnly(ph1_reg5,ReadBuffer);
+			
+			//while (USART1_RxFlag == 0);
+
+			HAL_RxBuffer[0] = ReadBuffer[0];
+		 	HAL_RxBuffer[1] = ReadBuffer[1];
+		 	HAL_RxBuffer[2] = ReadBuffer[2];
+		 	HAL_RxBuffer[3] = ReadBuffer[3];
+			HAL_RxBuffer[4] = ReadBuffer[4];
+			
+			uint8_cpy(PH1_Active_Power, HAL_RxBuffer, 5);
+			RT_CalcPrint_Active_Pwr();
+			
+			//
+			ReadMsgOnly(tot_reg1,ReadBuffer);
+			
+			//while (USART1_RxFlag == 0);
+			
+			HAL_RxBuffer[0] = ReadBuffer[0];
+		 	HAL_RxBuffer[1] = ReadBuffer[1];
+		 	HAL_RxBuffer[2] = ReadBuffer[2];
+		 	HAL_RxBuffer[3] = ReadBuffer[3];
+			HAL_RxBuffer[4] = ReadBuffer[4];
+			
+			uint8_cpy(Total_Active_Energy, HAL_RxBuffer, 5);
+			RT_CalcPrint_Tot_Active_Energy();
+			
+			//LoRa Send
+			if (LoRa_CheckStateIDLE() == true){
+				if(LoRaMAC_Send() == -1){ //If send was not successful
+					if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
+						loramac_send_retry_count ++;
+						WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
+					}			
+				} else {
+					INFO("LoRaMAC Send Succeed!");
+					loramac_send_retry_count = 0;
 				}
+			}
+			DelayMsPoll(10000);
+			
+			if (LoRa_DL_Flag == 1){
+				INFO("LoRa DownLink received!");
+				INFO("LoRa DownLink buffer: %x %x %x %x",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+				LoRa_DL_Flag = 0;
+			} else if (LoRa_DL_Flag == 0){
+				INFO("LoRa DownLink no new message");
+			}
+			
+			INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+			HAL_NVIC_DisableIRQ(TIM7_IRQn);
+			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
+			
+			
+			
+		} else if (LoRa_Sendtype == 1){						//Auto Rotate Raw
+			INFO("LoRa: Auto Rotate Raw");
+					
+			LoRa_UL_Addr = 0x000000;
+			
+			while(LoRa_UL_Addr <= 0x0E0000){
+				ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
 				
-				/*
-				//Original LoRa Send Code
+				INFO("Auto Rotate Raw, LoRa_UL_Addr = %x, LoRa_UL_Buffer: %x %x %x %x %x %x %x %x", LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
+					
+				//LoRa Send Code
 				if (LoRa_CheckStateIDLE() == true){
 					if(LoRaMAC_Send() == -1){ //If send was not successful
 						if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
@@ -942,8 +736,89 @@ void StartSPI2(void const * argument)
 				} else if (LoRa_DL_Flag == 0){
 					INFO("LoRa DownLink no new message");
 				}
-				*/
-	}
+						
+				LoRa_UL_Addr += 0x010000;
+			}
+					
+			INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+			HAL_NVIC_DisableIRQ(TIM7_IRQn);
+			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
+			
+		} else if (LoRa_Sendtype == 2){		//Auto Rotate Real
+			INFO("LoRa: Auto Rotate Real");
+			
+			LoRa_UL_Addr = 0x100000;
+			
+			while(LoRa_UL_Addr <= 0x1F0000){
+				ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
+				
+				INFO("Auto Rotate Real, LoRa_UL_Addr = %x, LoRa_UL_Buffer: %x %x %x %x %x %x %x %x", LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
+				
+				//LoRa Send Code
+				if (LoRa_CheckStateIDLE() == true){
+					if(LoRaMAC_Send() == -1){ //If send was not successful
+						if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
+							loramac_send_retry_count ++;
+							WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
+						}			
+					} else {
+						INFO("LoRaMAC Send Succeed!");
+						loramac_send_retry_count = 0;
+					}
+				}
+				DelayMsPoll(10000);
+				
+				if (LoRa_DL_Flag == 1){
+					INFO("LoRa DownLink received!");
+					INFO("LoRa DownLink buffer: %x %x %x %x",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+					LoRa_DL_Flag = 0;
+				} else if (LoRa_DL_Flag == 0){
+					INFO("LoRa DownLink no new message");
+				}
+				
+				LoRa_UL_Addr += 0x010000;
+			}
+					
+			INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+			HAL_NVIC_DisableIRQ(TIM7_IRQn);
+			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
+			
+		} else if (LoRa_Sendtype == 3){
+			INFO("LoRa: Specific UL from flash");
+			
+			ext_flash_read(LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
+			
+			INFO("Specific UL, LoRa_UL_Addr = %x, LoRa_UL_Buffer: %x %x %x %x %x %x %x %x", LoRa_UL_Addr + FlashPointer - 0x08, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
+				
+			//LoRa Send Code
+			if (LoRa_CheckStateIDLE() == true){
+				if(LoRaMAC_Send() == -1){ //If send was not successful
+					if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
+						loramac_send_retry_count ++;
+						WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
+					}			
+				} else {
+					INFO("LoRaMAC Send Succeed!");
+					loramac_send_retry_count = 0;
+				}
+			}
+			DelayMsPoll(10000);
+			if (LoRa_DL_Flag == 1){
+				INFO("LoRa DownLink received!");
+				INFO("LoRa DownLink buffer: %x %x %x %x",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+				LoRa_DL_Flag = 0;
+			} else if (LoRa_DL_Flag == 0){
+				INFO("LoRa DownLink no new message");
+			}
+				INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+			HAL_NVIC_DisableIRQ(TIM7_IRQn);
+			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
+		}
+		
+		else {															//Sendtype Invalid
+			WARN("Sendtype Invalid");
+		}
+}
 
 
   /* USER CODE END StartSPI2 */
@@ -1126,7 +1001,7 @@ void ProcessAT_DEUI(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("DEUI") + 1)){
 		INFO("DEUI Help String");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("DEUI") + 1)){
-		INFO("DEUI = %x:%x:%x:%x:%x:%x:%x:%x", DevEui[0], DevEui[1], DevEui[2], DevEui[3], DevEui[4], DevEui[5], DevEui[6], DevEui[7]);
+		INFO("DEUI = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", DevEui[0], DevEui[1], DevEui[2], DevEui[3], DevEui[4], DevEui[5], DevEui[6], DevEui[7]);
 	} else {
 		ProcessAddress("DEUI", Input, Output);
 	}
@@ -1136,7 +1011,7 @@ void ProcessAT_APPEUI(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPEUI") + 1)){
 		INFO("APPEUI Help String");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("APPEUI") + 1)){
-		INFO("APPEUI = %x:%x:%x:%x:%x:%x:%x:%x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
+		INFO("APPEUI = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
 	} else {
 		ProcessAddress("APPEUI", Input, Output);
 	}
@@ -1146,7 +1021,7 @@ void ProcessAT_APPKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPKEY") + 1)){
 		INFO("APPKEY Help String");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("APPKEY") + 1)){
-		INFO("APPKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7], AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
+		INFO("APPKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7], AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
 	} else {
 		ProcessAddress("APPKEY", Input, Output);
 	}
@@ -1156,7 +1031,7 @@ void ProcessAT_NWKSKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("NWKSKEY") + 1)){
 		INFO("NWKSKEY Help String");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("NWKSKEY") + 1)){
-		INFO("NWKSKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", NwkSKey[0], NwkSKey[1], NwkSKey[2], NwkSKey[3], NwkSKey[4], NwkSKey[5], NwkSKey[6], NwkSKey[7], NwkSKey[8], NwkSKey[9], NwkSKey[10], NwkSKey[11], NwkSKey[12], NwkSKey[13], NwkSKey[14], NwkSKey[15]);
+		INFO("NWKSKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", NwkSKey[0], NwkSKey[1], NwkSKey[2], NwkSKey[3], NwkSKey[4], NwkSKey[5], NwkSKey[6], NwkSKey[7], NwkSKey[8], NwkSKey[9], NwkSKey[10], NwkSKey[11], NwkSKey[12], NwkSKey[13], NwkSKey[14], NwkSKey[15]);
 	} else {
 		ProcessAddress("NWKSKEY", Input, Output);
 	}
@@ -1166,7 +1041,7 @@ void ProcessAT_APPSKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPSKEY") + 1)){
 		INFO("APPSKEY Help String");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("APPSKEY") + 1)){
-		INFO("APPSKEY = %x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x", AppSKey[0], AppSKey[1], AppSKey[2], AppSKey[3], AppSKey[4], AppSKey[5], AppSKey[6], AppSKey[7], AppSKey[8], AppSKey[9], AppSKey[10], AppSKey[11], AppSKey[12], AppSKey[13], AppSKey[14], AppSKey[15]);
+		INFO("APPSKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppSKey[0], AppSKey[1], AppSKey[2], AppSKey[3], AppSKey[4], AppSKey[5], AppSKey[6], AppSKey[7], AppSKey[8], AppSKey[9], AppSKey[10], AppSKey[11], AppSKey[12], AppSKey[13], AppSKey[14], AppSKey[15]);
 	} else {
 		ProcessAddress("APPSKEY", Input, Output);
 	}
@@ -1178,7 +1053,7 @@ void ProcessAT_DADDR(char Input[], uint32_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("DADDR") + 1)){
 		INFO("DADDR Help String");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("DADDR") + 1)){
-		INFO("DADDR = %x", DevAddr);
+		INFO("DADDR = %.8x", DevAddr);
 	} else {
 		ProcessAddress("DADDR", Input, OutputBuffer);
 	}
@@ -1256,14 +1131,72 @@ void ProcessAT_STATE(void){
 	}
 }
 
-
-void ProcessAT_ULSET(char Input[], uint8_t Output[]){
+void ProcessAT_ULSET(char Input[], uint32_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("ULSET") + 1)){
 		INFO("ULSET Help String");
-	} else if (strcmp_n(Input, "=?", 3 + strlen("ULSET") + 1)){
-		INFO("ULSET = %x", LoRa_Sendtype);
+	} else if ( strcmp_n(Input, "=?", 3 + strlen("ULSET") + 1 )){
+		INFO("ULSET = %x:0x%.6x", LoRa_Sendtype, LoRa_UL_Addr);
 	} else {
-		ProcessNum("ULSET", Input, Output);
+		char ReceiveBuffer[16] = {0};
+		
+		strcpy_n(ReceiveBuffer, Input, 10, 20);
+
+		if(strlen(ReceiveBuffer) != 10){
+			ERROR("! ! ! %s Length Incorrect ! ! !", "ULSET");		
+		} else {
+			INFO("Process %s", "ULSET");
+			if (strcmp_n(ReceiveBuffer, ":", 2) && (strcmp_n(ReceiveBuffer, "0x", 3) || strcmp_n(ReceiveBuffer, "0X", 3))){
+
+				Output[0] = 0x000000;
+				uint32_t Temp = 0;
+
+				for (int i = 0; i < 6; i++){
+					if (ReceiveBuffer[ i+4 ] >= 0x30 && ReceiveBuffer[ i+4 ] <= 0x39){	//If its a number
+						Temp = 1;
+						for (int j = 5; j > i; j--){
+							Temp = Temp * 16;
+						}
+						Output[0] += Temp * (ReceiveBuffer[ i+4 ] - 0x30);
+					} else if (ReceiveBuffer[ i+4 ] >= 0x41 && ReceiveBuffer[ i+4 ] <= 0x46){	//If its a lower case
+							Temp = 1;
+						for (int j = 5; j > i; j--){
+							Temp = Temp * 16;
+						}
+						Output[0] += Temp * (ReceiveBuffer[ i+4 ] - 0x37);
+					} else if (ReceiveBuffer[ i+4 ] >= 0x61 && ReceiveBuffer[ i+4 ] <= 0x66){	//If its a upper case
+						Temp = 1;
+						for (int j = 5; j > i; j--){
+							Temp = Temp * 16;
+						}
+						Output[0] += Temp * (ReceiveBuffer[ i+4 ] - 0x57);
+					} else {
+						ERROR("! ! ! Incorrect Address ! ! !");
+						break;
+					}
+				}
+				
+				if (strcmp_n(ReceiveBuffer,"0", 1)){
+					LoRa_Sendtype = 0;
+					Output[0] = 0x000000;
+					INFO("LoRa Sendtype : %d", LoRa_Sendtype);
+				} else if (strcmp_n(ReceiveBuffer,"1", 1)){
+					LoRa_Sendtype = 1;
+					Output[0] = 0x000000;
+					INFO("LoRa Sendtype : %d", LoRa_Sendtype);
+				} else if (strcmp_n(ReceiveBuffer,"2", 1)){
+						if(Output[0] > 0x1FFFFF){
+							INFO("Not a valid flash address");
+						} else {
+							LoRa_Sendtype = 2;
+							INFO("LoRa Sendtype : %d | Address: 0x%.6x", LoRa_Sendtype, Output[0]);
+						}
+				} else {
+					WARN("UL Command invalid");
+				}
+			} else {
+				WARN("! ! ! Incorrect Input ! ! !");
+			}
+		}
 	}
 }
 
@@ -1310,7 +1243,7 @@ void ProcessAT_ERASEFLASH(char Input[]){
 				}
 					
 				if (strcmp_n(ReceiveBuffer,"0", 1)){
-					INFO("Erasing address : %x", EraseFlashAddr);
+					INFO("Erasing address : %.6x", EraseFlashAddr);
 					
 					char EraseFF[8];
 					EraseFF[0] = 0xFF; EraseFF[1] = 0xFF; EraseFF[2] = 0xFF; EraseFF[3] = 0xFF;
@@ -1323,10 +1256,10 @@ void ProcessAT_ERASEFLASH(char Input[]){
 					
 					ext_flash_read(EraseFlashAddr, flash_data, 8);
 					
-					INFO("Erased Address : %x",EraseFlashAddr);
+					INFO("Erased Address : %.6x",EraseFlashAddr);
 					
 				} else if (strcmp_n(ReceiveBuffer,"1", 1)){
-					INFO("Erasing sector address : %x", EraseFlashAddr);
+					INFO("Erasing sector address : %,6x", EraseFlashAddr);
 					
 					//Erase sector
 					ext_flash_erase_sector( EraseFlashAddr );
@@ -1335,7 +1268,7 @@ void ProcessAT_ERASEFLASH(char Input[]){
 					INFO("Erased sector %d done", EraseFlashAddr);
 
 				} else if (strcmp_n(ReceiveBuffer,"2", 1)){
-					INFO("Erasing block address : %x", EraseFlashAddr);
+					INFO("Erasing block address : %.6x", EraseFlashAddr);
 					
 					//Erase block
 					ext_flash_erase_block( EraseFlashAddr );
@@ -1424,13 +1357,13 @@ void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[
 			
 			myprintf(">>INFO: Processed %s: ", AddressName);
 			for (int i = 0; i < AddressLength - 1; i++)
-			myprintf("%x:",ProcessBuffer[i]);
-			myprintf("%x\r\n",ProcessBuffer[AddressLength-1]);
+			myprintf("%.2x:",ProcessBuffer[i]);
+			myprintf("%.2x\r\n",ProcessBuffer[AddressLength-1]);
 		} else {
 			myprintf(">>INFO: Processed %s: ", AddressName);
 			for (int i = 0; i < AddressLength - 1; i++)
-			myprintf("%x:",ProcessBuffer[i]);
-			myprintf("%x\r\n",ProcessBuffer[AddressLength-1]);
+			myprintf("%.2x:",ProcessBuffer[i]);
+			myprintf("%.2x\r\n",ProcessBuffer[AddressLength-1]);
 		}
 	}
 	

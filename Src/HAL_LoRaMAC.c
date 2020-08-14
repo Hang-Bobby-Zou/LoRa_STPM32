@@ -32,6 +32,12 @@ uint8_t LoRa_RxBuf_Size;
 uint8_t *LoRa_RxBuf;
 uint8_t LoRa_RxPort;
 extern int LoRa_DL_Flag;
+extern uint8_t LoRa_Sendtype;
+
+extern double RT_V1_RMS;
+extern double RT_C1_RMS;
+extern double RT_Active_Pwr;
+extern double RT_Tot_Active_Energy;
 
 #ifndef ACTIVE_REGION
 
@@ -804,23 +810,85 @@ int LoRaMAC_Send(void){
 	
 	if( NextTx == true )
   {
-		
-		//PrepareTxFrame( AppPort );
-		
-		AppData[0] = 0xFF;							//Default: 0xFF
-		AppData[1] = 0x01;							//Default: 0x00
-		AppData[2] = 0x10;							//Default: 0x00
-		AppData[3] = LoRa_UL_Buffer[0];	
-		AppData[4] = LoRa_UL_Buffer[1];
-		AppData[5] = LoRa_UL_Buffer[2];
-		AppData[6] = LoRa_UL_Buffer[3];
-		AppData[7] = LoRa_UL_Buffer[4];
-		AppData[8] = LoRa_UL_Buffer[5];
-		AppData[9] = LoRa_UL_Buffer[6];
-		AppData[10] = LoRa_UL_Buffer[7];
-		AppData[11]	= 0xAA;
-		
-		AppDataSize = 12;
+		if(LoRa_Sendtype == 0){
+			char RT_V1_RMS_Transfer[8] = {0};
+			char RT_C1_RMS_Transfer[8] = {0};
+			char RT_Active_Pwr_Transfer[8] = {0};
+			char RT_Tot_Active_Energy_Transfer[8] = {0};
+			
+			//DEBUG
+			RT_V1_RMS = 223.234;
+			RT_C1_RMS = 0.00135;
+			RT_Active_Pwr = 14.1523;
+			RT_Tot_Active_Energy = 2000.3141;
+			
+			strcpy(RT_V1_RMS_Transfer, (char*) &RT_V1_RMS);
+			strcpy(RT_C1_RMS_Transfer, (char*) &RT_C1_RMS);
+			strcpy(RT_Active_Pwr_Transfer, (char*) &RT_Active_Pwr);
+			strcpy(RT_Tot_Active_Energy_Transfer, (char*) &RT_Tot_Active_Energy);
+			
+			AppData[0] = 0xFF;							//Default: 0xFF
+			AppData[1] = 0x01;							//Default: 0x00
+			AppData[2] = 0x10;							//Default: 0x00
+			//V RMS
+			AppData[3] = RT_V1_RMS_Transfer[7];
+			AppData[4] = RT_V1_RMS_Transfer[6];
+			AppData[5] = RT_V1_RMS_Transfer[5];
+			AppData[6] = RT_V1_RMS_Transfer[4];
+			AppData[7] = RT_V1_RMS_Transfer[3];
+			AppData[8] = RT_V1_RMS_Transfer[2];
+			AppData[9] = RT_V1_RMS_Transfer[1];
+			AppData[10] = RT_V1_RMS_Transfer[0];
+			
+			//C RMS
+			AppData[11] = RT_C1_RMS_Transfer[7];
+			AppData[12] = RT_C1_RMS_Transfer[6];
+			AppData[13] = RT_C1_RMS_Transfer[5];
+			AppData[14] = RT_C1_RMS_Transfer[4];
+			AppData[15] = RT_C1_RMS_Transfer[3];
+			AppData[16] = RT_C1_RMS_Transfer[2];
+			AppData[17] = RT_C1_RMS_Transfer[1];
+			AppData[18] = RT_C1_RMS_Transfer[0];
+			
+			//Active Pwr
+			AppData[19] = RT_Active_Pwr_Transfer[7];
+			AppData[20] = RT_Active_Pwr_Transfer[6];
+			AppData[21] = RT_Active_Pwr_Transfer[5];
+			AppData[22] = RT_Active_Pwr_Transfer[4];
+			AppData[23] = RT_Active_Pwr_Transfer[3];
+			AppData[24] = RT_Active_Pwr_Transfer[2];
+			AppData[25] = RT_Active_Pwr_Transfer[1];
+			AppData[26] = RT_Active_Pwr_Transfer[0];
+			
+			//Tot Active Energy
+			AppData[27] = RT_Tot_Active_Energy_Transfer[7];
+			AppData[28] = RT_Tot_Active_Energy_Transfer[6];
+			AppData[29] = RT_Tot_Active_Energy_Transfer[5];
+			AppData[30] = RT_Tot_Active_Energy_Transfer[4];
+			AppData[31] = RT_Tot_Active_Energy_Transfer[3];
+			AppData[32] = RT_Tot_Active_Energy_Transfer[2];
+			AppData[33] = RT_Tot_Active_Energy_Transfer[1];
+			AppData[34] = RT_Tot_Active_Energy_Transfer[0];
+			
+			AppData[35] = 0xAA;
+			
+			AppDataSize = 36;
+		} else {
+			AppData[0] = 0xFF;							//Default: 0xFF
+			AppData[1] = 0x01;							//Default: 0x00
+			AppData[2] = 0x10;							//Default: 0x00
+			AppData[3] = LoRa_UL_Buffer[0];	
+			AppData[4] = LoRa_UL_Buffer[1];
+			AppData[5] = LoRa_UL_Buffer[2];
+			AppData[6] = LoRa_UL_Buffer[3];
+			AppData[7] = LoRa_UL_Buffer[4];
+			AppData[8] = LoRa_UL_Buffer[5];
+			AppData[9] = LoRa_UL_Buffer[6];
+			AppData[10] = LoRa_UL_Buffer[7];
+			AppData[11]	= 0xAA;
+			
+			AppDataSize = 12;
+		}
 		
 		if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
     {

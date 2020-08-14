@@ -75,6 +75,11 @@ uint8_t Total_Fundamental_Energy[5] = {0};
 uint8_t Total_Reactive_Energy		[5] = {0};
 uint8_t Total_Apparent_Energy		[5] = {0};
 
+double RT_V1_RMS;
+double RT_C1_RMS;
+double RT_Active_Pwr;
+double RT_Tot_Active_Energy;
+
 /*============================================================================*/
 /*                   STPM32 Calculation functions		                          */
 /*============================================================================*/
@@ -167,10 +172,19 @@ void CalcPrint_V1_RMS(void){
 	ext_flash_read(FlashPointer + FlashAddr_V1_RMS_Real, (char*) FlashBuffer, 8);
 	STPM32_INFO("Reading V1 RMS Real from Flash, Address:%x  Data:%x %x %x %x %x %x %x %x", FlashPointer + FlashAddr_V1_RMS_Real, FlashBuffer [0], FlashBuffer [1], FlashBuffer [2], FlashBuffer [3], FlashBuffer [4], FlashBuffer [5], FlashBuffer [6], FlashBuffer [7]);
 	
-	
-	
 	INFO("V1= %lf Volts\r\n",V1_RMS);
 }
+
+void RT_CalcPrint_V1_RMS( void ){
+	//Do calculation and save the value to flash and check
+	uint16_t V1_RMS_raw = 0x0000;
+	V1_RMS_raw = V1_RMS_raw | ((uint16_t) CH1_RMS[1] << 8);
+	V1_RMS_raw = V1_RMS_raw | (uint16_t) CH1_RMS[0];
+	V1_RMS_raw = V1_RMS_raw & 0x7FFF; 				//Mask the most significant bit.
+	
+	RT_V1_RMS = (double) V1_RMS_raw * (double) V_ref * (1.0 + (double) R1/ (double) R2) / ( (double) cal_v * (double) A_v * 32768.0);
+}
+
 
 /**
 * @brief Calculate and Print the RMS current
@@ -197,6 +211,17 @@ void CalcPrint_C1_RMS(void){
 	
 	INFO("C1= %lf Amps\r\n",C1_RMS);
 }
+
+void RT_CalcPrint_C1_RMS( void ){
+	//Do calculation and save the value to flash and check
+	uint16_t C1_RMS_raw = 0x0000;
+	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[1] >> 7);
+	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[2] << 1);
+	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[3] << 9);
+
+	RT_C1_RMS = (double) C1_RMS_raw * (double) V_ref / ((double) cal_i * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
+}
+
 
 /**
 * @brief Calculate and Print the phase delay of voltage and current
@@ -422,6 +447,7 @@ void CalcPrint_App_Energy(void){
 	
 	INFO("Apparent Energy = %lf Watts\r\n\r\n", App_Energy);
 }
+
 /**
 * @brief Calculate and Print the active power of the power line.
 * @param Parameter: None
@@ -468,6 +494,20 @@ void CalcPrint_Active_Pwr(void){
 	
 	INFO("Active Power = %lf WattHrs\r\n\r\n", Active_Pwr);
 }
+
+void RT_CalcPrint_Active_Pwr(void){
+	//Do calculation and save the value to flash and check
+	uint32_t Active_Pwr_raw = 0x00000000;
+	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[3] << 24;
+	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[2] << 16;
+	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[1] << 8;
+	Active_Pwr_raw = Active_Pwr_raw | (uint16_t) PH1_Active_Power[0];
+
+	Active_Pwr_raw = Active_Pwr_raw & 0x1FFFFFFF;
+
+	RT_Active_Pwr = (double)Active_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / (3600.0 * (double)D_CLK * (double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 131072.0);
+}
+
 /**
 * @brief Calculate and Print the fundamental power of the power line.
 * @param Parameter: None
@@ -651,6 +691,18 @@ void CalcPrint_Tot_Active_Energy(void){
 	
 	INFO("Total Active Energy = %lf Watts\r\n\r\n", Tot_Active_Pwr);
 }
+
+void RT_CalcPrint_Tot_Active_Energy(void){
+	//Do calculation and save the value to flash and check
+	uint32_t Tot_Active_Pwr_raw = 0x00000000;
+	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[3] << 24;
+	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[2] << 16;
+	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[1] << 8;
+	Tot_Active_Pwr_raw = Tot_Active_Pwr_raw | (uint16_t) Total_Active_Energy[0];
+
+	RT_Tot_Active_Energy = (double)Tot_Active_Pwr_raw * ((double)V_ref * (double)V_ref * (1.0 + (double)R1/(double)R2)) / ((double)k_int * (double)A_v * (double)A_i * (double)k_s * (double)cal_v * (double)cal_i * 268435456.0);
+}
+
 /**
 * @brief Calculate and Print the total fundamental energy of the power line.
 * @param Parameter: None

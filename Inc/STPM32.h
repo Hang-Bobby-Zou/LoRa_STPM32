@@ -47,6 +47,13 @@ void CalcPrint_Tot_Funda_Energy(void);
 void CalcPrint_Tot_React_Energy(void);
 void CalcPrint_Tot_App_Energy(void);
 
+void RT_CalcPrint_V1_RMS( void );
+void RT_CalcPrint_C1_RMS( void );
+void RT_CalcPrint_Tot_Active_Energy(void);
+void RT_CalcPrint_Active_Pwr(void);
+
+
+
 bool STPM32_Init(void);
 bool SendMessage(uint32_t ReadAddress, uint8_t* ReceiveMessage ,uint32_t SendAddress, uint8_t* SendMessage);
 bool ReadMsgOnly (uint32_t ReadAddress, uint8_t* ReadMessage);
