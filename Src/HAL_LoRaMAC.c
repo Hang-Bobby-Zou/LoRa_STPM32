@@ -93,8 +93,8 @@ uint8_t DevEui[] = LORAWAN_DEVICE_EUI;
 uint8_t AppEui[] = LORAWAN_APPLICATION_EUI;
 uint8_t AppKey[] = LORAWAN_APPLICATION_KEY;
 
-#if( OVER_THE_AIR_ACTIVATION == 0 )
-
+//#if( OVER_THE_AIR_ACTIVATION == 0 )
+#if( Is_OTAA == 0 )
 uint8_t NwkSKey[] = LORAWAN_NWKSKEY;
 uint8_t AppSKey[] = LORAWAN_APPSKEY;
 
@@ -465,7 +465,8 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 
                     MibRequestConfirm_t mibReq;
                     mibReq.Type = MIB_ADR;
-                    mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
+                    //mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
+										mibReq.Param.AdrEnable = Is_LORAWAN_ADR_ON;
                     LoRaMacMibSetRequestConfirm( &mibReq );
 										#if defined( REGION_EU868 )
                     LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
@@ -511,7 +512,8 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 
                         MibRequestConfirm_t mibReq;
                         mibReq.Type = MIB_ADR;
-                        mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
+                        //mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
+												mibReq.Param.AdrEnable = Is_LORAWAN_ADR_ON;
                         LoRaMacMibSetRequestConfirm( &mibReq );
 												#if defined( REGION_EU868 )
                         LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
@@ -669,7 +671,8 @@ void LoRaMAC_Init(void){
   //TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );	//Not added in Mei
 	
 	mibReq.Type = MIB_ADR;
-	mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
+	//mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
+	mibReq.Param.AdrEnable = Is_LORAWAN_ADR_ON;
 	status = LoRaMacMibSetRequestConfirm( &mibReq );
 
 	mibReq.Type = MIB_PUBLIC_NETWORK;
@@ -708,7 +711,8 @@ void LoRaMAC_Init(void){
 
 
 void LoRaMAC_Join(void){
-#if( OVER_THE_AIR_ACTIVATION != 0 )
+//#if( OVER_THE_AIR_ACTIVATION != 0 )
+#if( Is_OTAA != 0 )
   MlmeReq_t mlmeReq;
 
   // Initialize LoRaMac device unique ID

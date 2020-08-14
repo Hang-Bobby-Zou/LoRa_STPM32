@@ -166,28 +166,30 @@ int main(void)
 		
 	ext_flash_init();
 	ext_flash_power_on();
-			
-	//if (ext_flash_tb() == false){
-	//	Error_Handler();
-	//}
-	
+
+	/*
+	if (ext_flash_tb() == false){
+		Error_Handler();
+	}
+	*/
+
 	if (ext_flash_is_detected() != 1)	
 		Error_Handler();
-	/*
+	
 	INFO("Erasing all block from flash...");
 	for (int i = 0; i < 32; i++){
 			ext_flash_erase_block(i * 65536);
 			ext_flash_last_write_or_erase_done();
 			INFO("Erase block # %d done.", i);
 	}
-	*/
+
 	INFO("External Flash Initialization Done!\r\n");
 
 	//Finishing up by printing "Starting FreeRTOS System..."
 	INFO("Starting FreeRTOC System...\r\n");
 	DelayMsPoll(1000);
 	HAL_NVIC_EnableIRQ(TIM7_IRQn);
-	
+
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -280,14 +282,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
- /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM1 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */

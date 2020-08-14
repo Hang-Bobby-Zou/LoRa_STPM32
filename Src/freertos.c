@@ -108,8 +108,6 @@ extern uint32_t DevAddr;
 
 extern uint8_t IsTxConfirmed;
 
-uint8_t UL_Command = 0;
-
 extern bool Is_LORAWAN_ADR_ON;
 
 bool Is_OTAA = OVER_THE_AIR_ACTIVATION;
@@ -234,15 +232,15 @@ void MX_FREERTOS_Init(void) {
   IDLEHandle = osThreadCreate(osThread(IDLE), NULL);
 
   /* definition and creation of USART1 */
-  osThreadDef(USART1, StartUSART1, osPriorityNormal, 0, 256);
+  osThreadDef(USART1, StartUSART1, osPriorityAboveNormal, 0, 256); //STPM32
   USART1Handle = osThreadCreate(osThread(USART1), NULL);
 
   /* definition and creation of USART3 */
-  osThreadDef(USART3, StartUSART3, osPriorityHigh, 0, 256);
+  osThreadDef(USART3, StartUSART3, osPriorityNormal, 0, 256); //RS485
   USART3Handle = osThreadCreate(osThread(USART3), NULL);
 
   /* definition and creation of SPI2 */
-  osThreadDef(SPI2, StartSPI2, osPriorityNormal, 0, 256);
+  osThreadDef(SPI2, StartSPI2, osPriorityHigh, 0, 256); //LoRa
   SPI2Handle = osThreadCreate(osThread(SPI2), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -302,7 +300,7 @@ void StartUSART1(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
-		/*
+		
 		//To cycle the register address pointer
 		if (i[0] > 0x8A){
 			i[0] = 0x2E;
@@ -324,9 +322,7 @@ void StartUSART1(void const * argument)
 		}
 
 		if (USART1_RxFlag == 1){
-		 	
-			//INFO("FlashPointer: %x", FlashPointer);
-			
+
 			HAL_RxBuffer[0] = ReadBuffer[0];
 		 	HAL_RxBuffer[1] = ReadBuffer[1];
 		 	HAL_RxBuffer[2] = ReadBuffer[2];
@@ -410,7 +406,7 @@ void StartUSART1(void const * argument)
 		ReadMsgOnly(i[0],ReadBuffer);
 		vTaskDelay (pdMS_TO_TICKS( 100 ));
 		//osDelay(1);
-	*/
+		
   }
   /* USER CODE END StartUSART1 */
 }
@@ -452,92 +448,93 @@ void StartUSART3(void const * argument)
 					//AT+NJM : ABP/OTAA
 					uint8_t OutputBuffer[1];
 					ProcessAT_NJM(ProcessBuffer, OutputBuffer);
-					/*
+					
+#ifdef RS485_Control_Enable
 					Is_OTAA = OutputBuffer[0];
 					LoRa_Restart_Flag = true;
-					*/
+#endif
 					
 				} else if (strcmp_n(ProcessBuffer, "DEUI", 4)){
 					//AT+DEUI : Device EUI
 					uint8_t OutputBuffer[8];
 					ProcessAT_DEUI(ProcessBuffer, OutputBuffer);
-					/*
+#ifdef RS485_Control_Enable
 					for (int i = 0 ; i < 8; i++){
 						DevEui[i] = OutputBuffer[i];
 					}
 					LoRa_Restart_Flag = true;
-					*/
+#endif
 					
 				} else if (strcmp_n(ProcessBuffer, "APPEUI", 4)){
 					//AT+APPEUI : AppEUI
 					uint8_t OutputBuffer[8];
 					ProcessAT_APPEUI(ProcessBuffer, OutputBuffer);
-					/*
+#ifdef RS485_Control_Enable
 					for (int i = 0 ; i < 8; i++){
 						AppEui[i] = OutputBuffer[i];
 					}
 					LoRa_Restart_Flag = true;
-					*/
+#endif
 					
 				} else if (strcmp_n(ProcessBuffer, "APPKEY", 4)){
 					//AT+APPKEY : AppKey
 					uint8_t OutputBuffer[16];
 					ProcessAT_APPKEY(ProcessBuffer, OutputBuffer);
-					/*
+#ifdef RS485_Control_Enable
 					for (int i = 0 ; i < 8; i++){
 						AppKey[i] = OutputBuffer[i];
 					}
 					LoRa_Restart_Flag = true;
-					*/
+#endif
 					
 				} else if (strcmp_n(ProcessBuffer, "NWKSKEY", 4)){
 					//AT+NWKSKEY : NwkSKey
 					uint8_t OutputBuffer[16];
 					ProcessAT_NWKSKEY(ProcessBuffer, OutputBuffer);
-					/*
+#ifdef RS485_Control_Enable
 					for (int i = 0 ; i < 8; i++){
 						NwkSKey[i] = OutputBuffer[i];
 					}
 					LoRa_Restart_Flag = true;
-					*/
+#endif
 					
 				} else if (strcmp_n(ProcessBuffer, "APPSKEY", 4)){
 					//AT+APPSKEY : AppSKey
 					uint8_t OutputBuffer[16];
 					ProcessAT_APPSKEY(ProcessBuffer, OutputBuffer);
-					/*
+#ifdef RS485_Control_Enable
 					for (int i = 0 ; i < 8; i++){
 						AppSKey[i] = OutputBuffer[i];
 					}
 					LoRa_Restart_Flag = true;
-					*/
+#endif
 					
 				} else if (strcmp_n(ProcessBuffer, "DADDR", 4)){
 					//AT+DADDR : DevAddr
 					uint32_t OutputBuffer[1];
 					ProcessAT_DADDR(ProcessBuffer, OutputBuffer);
-					/*
+#ifdef RS485_Control_Enable
 					DevAddr = OutputBuffer[0];
 					LoRa_Restart_Flag = true;
-					*/
+#endif
 					
 				} else if (strcmp_n(ProcessBuffer, "ADR", 4)){
 					//AT+ADR : Adaptive Data Rate
 					uint8_t OutputBuffer[1];
 					ProcessAT_ADR(ProcessBuffer, OutputBuffer);
-					/*
+#ifdef RS485_Control_Enable
 					Is_LORAWAN_ADR_ON = OutputBuffer[0];
 					LoRa_Restart_Flag = true;
-					*/
+#endif
 					
 				} else if (strcmp_n(ProcessBuffer, "CFM", 4)){
 					//AT+CFM : Confirmed/Unconfirmed UL
 					uint8_t OutputBuffer[1];
 					ProcessAT_CFM(ProcessBuffer, OutputBuffer);
-					/*
+#ifdef RS485_Control_Enable
 					IsTxConfirmed = OutputBuffer[0];
 					LoRa_Restart_Flag = true;
-					*/
+#endif
 					
 				} else if (strcmp_n(ProcessBuffer, "HBTPD", 4)){
 					INFO("HBTPD Command not yet implemented");
@@ -567,13 +564,13 @@ void StartUSART3(void const * argument)
 					//AT+ULROTATE : Set UL auto rotate mode
 					uint8_t OutputBuffer[1];
 					ProcessAT_ULSET(ProcessBuffer, OutputBuffer);
-					
+#ifdef RS485_Control_Enable				
 					LoRa_Sendtype = OutputBuffer[0];
-					
+#endif
 				} else if (strcmp_n(ProcessBuffer, "ERASEFLASH", 4)){
 					//AT_ERASEFLASH = Erase the specific part of flash.
 					ProcessAT_ERASEFLASH(ProcessBuffer);
-					
+
 				} else{
 					WARN("Invalid Command");
 				}
@@ -780,6 +777,12 @@ void StartSPI2(void const * argument)
 	DEBUG("LoRaMAC Join Done");
 	
 	LoRa_UL_Addr = 0x000000;
+	
+	////
+	INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+	HAL_NVIC_DisableIRQ(TIM7_IRQn);
+	vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
+	
 	/* Infinite loop */
   for(;;)
   {
@@ -918,7 +921,7 @@ void StartSPI2(void const * argument)
 				}
 				
 				/*
-				//LoRa Send Code
+				//Original LoRa Send Code
 				if (LoRa_CheckStateIDLE() == true){
 					if(LoRaMAC_Send() == -1){ //If send was not successful
 						if (loramac_send_retry_count < LORAMAC_SEND_RETRY_COUNT_MAX){
@@ -1258,7 +1261,7 @@ void ProcessAT_ULSET(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("ULSET") + 1)){
 		INFO("ULSET Help String");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("ULSET") + 1)){
-		INFO("ULSET = %x", UL_Command);
+		INFO("ULSET = %x", LoRa_Sendtype);
 	} else {
 		ProcessNum("ULSET", Input, Output);
 	}
@@ -1320,12 +1323,7 @@ void ProcessAT_ERASEFLASH(char Input[]){
 					
 					ext_flash_read(EraseFlashAddr, flash_data, 8);
 					
-					if (strcmp(flash_data, EraseFF) == 0) {
-						INFO("Erase address %x done",EraseFlashAddr);  
-					} else {
-						WARN("Erase address %x error", EraseFlashAddr);
-					}
-					
+					INFO("Erased Address : %x",EraseFlashAddr);
 					
 				} else if (strcmp_n(ReceiveBuffer,"1", 1)){
 					INFO("Erasing sector address : %x", EraseFlashAddr);
@@ -1334,9 +1332,8 @@ void ProcessAT_ERASEFLASH(char Input[]){
 					ext_flash_erase_sector( EraseFlashAddr );
 					ext_flash_last_write_or_erase_done();
 					
-					INFO("Erase sector %d done", EraseFlashAddr);
+					INFO("Erased sector %d done", EraseFlashAddr);
 
-					
 				} else if (strcmp_n(ReceiveBuffer,"2", 1)){
 					INFO("Erasing block address : %x", EraseFlashAddr);
 					
@@ -1344,7 +1341,7 @@ void ProcessAT_ERASEFLASH(char Input[]){
 					ext_flash_erase_block( EraseFlashAddr );
 					ext_flash_last_write_or_erase_done();
 					
-					INFO("Erase block %d done", EraseFlashAddr);
+					INFO("Erased block %d done", EraseFlashAddr);
 					
 					
 				} else {
