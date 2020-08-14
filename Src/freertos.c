@@ -557,7 +557,7 @@ void StartUSART3(void const * argument)
 				} else if (strcmp_n(ProcessBuffer, "STATE", 4)){
 					//AT+STATE : Check system state
 					ProcessAT_STATE();
-				}	else if (strcmp_n(ProcessBuffer, "ULSET", 4)){
+				}	else if (strcmp_n(ProcessBuffer, "LORAULSET", 4)){
 					//AT+ULROTATE : Set UL auto rotate mode
 					uint32_t OutputBuffer[1];
 					ProcessAT_ULSET(ProcessBuffer, OutputBuffer);
@@ -636,7 +636,7 @@ void StartSPI2(void const * argument)
 			//First & Second value : Voltage RMS (Voltes) & Current RMS (Amps)
 			ReadMsgOnly(dsp_reg14,ReadBuffer);
 			
-			while (USART1_RxFlag == 0){}
+			//while (USART1_RxFlag == 0){}
 			USART1_RxFlag = 0;
 			
 			strcpy((char*) HAL_RxBuffer, (char*) ReadBuffer);
@@ -648,7 +648,7 @@ void StartSPI2(void const * argument)
 			//Third value : Active Power (Watts)
 			ReadMsgOnly(ph1_reg5,ReadBuffer);
 			
-			while (USART1_RxFlag == 0){}
+			//while (USART1_RxFlag == 0){}
 			USART1_RxFlag = 0;
 
 			strcpy((char*) HAL_RxBuffer, (char*) ReadBuffer);
@@ -659,7 +659,7 @@ void StartSPI2(void const * argument)
 			//Fourth value : Total Active energy (KiloWattHr)
 			ReadMsgOnly(tot_reg1,ReadBuffer);
 			
-			while (USART1_RxFlag == 0){}
+			//while (USART1_RxFlag == 0){}
 			USART1_RxFlag = 0;
 			
 			strcpy((char*) HAL_RxBuffer, (char*) ReadBuffer);
@@ -976,6 +976,57 @@ void SystemReset(void){
 	NVIC_SystemReset();//reset
 }
 
+void AT_HelpString(char* Name){
+	if (!strcmp(Name,"NJM")){
+		myprintf("=========================NJM Help String========================\r\n");
+		INFO("NJM command sets the joining method of the LoRa node");
+		INFO("Two types of method is avaliable: ABP(Activation by Personalization) / OTAA (Over the air Activation)");
+		INFO("Query current NJM setting by inputting : AT+NJM=?");
+		INFO("Set NJM by inputting : AT+NJM=x , where x = 0 : ABP | 1 : OTAA");
+		myprintf("==============================================================\r\n");
+	} else if (!strcmp(Name,"DEUI")){
+		myprintf("========================DEUI Help String========================\r\n");
+		INFO("DEUI command sets the Device EUI for the LoRa node");
+		INFO("The DEUI consist 8 bytes (MSB) that forms an address");
+		INFO("Query current Device EUI by inputting : AT+DEUI=?");
+		INFO("Set DEUI by inputting : AT+DEUI=xx:xx:xx:xx:xx:xx:xx:xx , where xx is the address in HEX");
+		INFO("For example: AT+DEUI=AB:cd:Ef:00:11:22:33:44  (capital & non-capital both supported)");
+		myprintf("==============================================================\r\n");
+	} else if (!strcmp(Name,"APPEUI")){
+		myprintf("=======================APPEUI Help String=======================\r\n");
+		INFO("APPEUI command sets the App EUI for the LoRa node");
+		INFO("The APPEUI consist 8 bytes (MSB) that forms an address");
+		INFO("Query current App EUI by inputting : AT+APPEUI=?");
+		INFO("Set APPEUI by inputting : AT+APPEUI=xx:xx:xx:xx:xx:xx:xx:xx , where xx is the address in HEX");
+		INFO("For example: AT+APPEUI=AB:cd:Ef:00:11:22:33:44  (capital & non-capital both supported)");
+		myprintf("==============================================================\r\n");
+	} else if (!strcmp(Name,"APPKEY")){
+		myprintf("=======================APPKEY Help String=======================\r\n");
+		INFO("APPKEY command sets the App Key for the LoRa node");
+		INFO("The APPEUI consist 16 bytes (MSB) that forms an address");
+		INFO("Query current App KEY by inputting : AT+APPKEY=?");
+		INFO("Set APPEUI by inputting : AT+APPKEY=xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx , where xx is the address in HEX");
+		INFO("For example: AT+APPEUI=AA:BB:CC:DD:EE:FF:Aa:Bb:Cc:Ee:Ff:0a:1b:2c:3d:4e  (capital & non-capital both supported)");
+		myprintf("==============================================================\r\n");
+	} else if (!strcmp(Name,"NWKSKEY")){
+		
+	} else if (!strcmp(Name,"APPSKEY")){
+		
+	} else if (!strcmp(Name,"DADDR")){
+		
+	} else if (!strcmp(Name,"ADR")){
+		
+	} else if (!strcmp(Name,"CFM")){
+		
+	} else if (!strcmp(Name,"LORAULSET")){
+		
+	} else if (!strcmp(Name,"ERASEFLASH")){
+		
+	} else {
+		WARN("No help string availiable for %s", Name);
+	}
+}
+
 /**
 	* @brief Upper function to process NJM command of the AT command series
 	* @param Input: char type array of ASCII charaters from RS485
@@ -985,7 +1036,8 @@ void SystemReset(void){
 void ProcessAT_NJM(char Input[], uint8_t Output[]){
 	//AT+NJM : Set ABP or OTAA
 	if(strcmp_n(Input, "?", 3 + strlen("NJM") + 1)){
-		INFO("NJM Help String");
+		//INFO("NJM Help String");
+		AT_HelpString("NJM");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("NJM") + 1)){
 		INFO("NJM = %x", Is_OTAA);
 	} else {
@@ -1001,7 +1053,8 @@ void ProcessAT_NJM(char Input[], uint8_t Output[]){
 	*/
 void ProcessAT_DEUI(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("DEUI") + 1)){
-		INFO("DEUI Help String");
+		//INFO("DEUI Help String");
+		AT_HelpString("DEUI");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("DEUI") + 1)){
 		INFO("DEUI = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", DevEui[0], DevEui[1], DevEui[2], DevEui[3], DevEui[4], DevEui[5], DevEui[6], DevEui[7]);
 	} else {
@@ -1017,7 +1070,8 @@ void ProcessAT_DEUI(char Input[], uint8_t Output[]){
 	*/
 void ProcessAT_APPEUI(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPEUI") + 1)){
-		INFO("APPEUI Help String");
+		//INFO("APPEUI Help String");
+		AT_HelpString("APPEUI");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("APPEUI") + 1)){
 		INFO("APPEUI = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
 	} else {
@@ -1033,7 +1087,8 @@ void ProcessAT_APPEUI(char Input[], uint8_t Output[]){
 	*/
 void ProcessAT_APPKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPKEY") + 1)){
-		INFO("APPKEY Help String");
+		//INFO("APPKEY Help String");
+		AT_HelpString("APPKEY");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("APPKEY") + 1)){
 		INFO("APPKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7], AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
 	} else {
@@ -1185,19 +1240,19 @@ void ProcessAT_STATE(void){
 	* @retval None
 	*/
 void ProcessAT_ULSET(char Input[], uint32_t Output[]){
-	if(strcmp_n(Input, "?", 3 + strlen("ULSET") + 1)){
-		INFO("ULSET Help String");
-	} else if ( strcmp_n(Input, "=?", 3 + strlen("ULSET") + 1 )){
-		INFO("ULSET = %x:0x%.6x", LoRa_Sendtype, LoRa_UL_Addr);
+	if(strcmp_n(Input, "?", 3 + strlen("LORAULSET") + 1)){
+		INFO("LORAULSET Help String");
+	} else if ( strcmp_n(Input, "=?", 3 + strlen("LORAULSET") + 1 )){
+		INFO("LORAULSET = %x:0x%.6x", LoRa_Sendtype, LoRa_UL_Addr);
 	} else {
 		char ReceiveBuffer[16] = {0};
 		
-		strcpy_n(ReceiveBuffer, Input, 10, 20);
+		strcpy_n(ReceiveBuffer, Input, 14, 24);
 
 		if(strlen(ReceiveBuffer) != 10){
-			ERROR("! ! ! %s Length Incorrect ! ! !", "ULSET");		
+			ERROR("! ! ! %s Length Incorrect ! ! !", "LORAULSET");		
 		} else {
-			INFO("Process %s", "ULSET");
+			INFO("Process %s", "LORAULSET");
 			if (strcmp_n(ReceiveBuffer, ":", 2) && (strcmp_n(ReceiveBuffer, "0x", 3) || strcmp_n(ReceiveBuffer, "0X", 3))){
 
 				Output[0] = 0x000000;
