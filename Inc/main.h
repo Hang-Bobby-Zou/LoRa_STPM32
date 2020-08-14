@@ -112,7 +112,7 @@ static int SPI1_TxFlag = 0;
 static int SPI2_RxFlag = 0;
 static int SPI2_TxFlag = 0;
 
-#define RS485_Control_Enable
+#define Allow_AT_Command
 
 #define DEBUG_ON				0
 #define LOGLEVEL				6

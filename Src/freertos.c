@@ -105,22 +105,21 @@ uint8_t ReceiveState = 0;
 extern uint8_t DevEui[];
 extern uint8_t AppEui[];
 extern uint8_t AppKey[];
-
 extern uint8_t NwkSKey[];
 extern uint8_t AppSKey[];
-
 extern uint32_t DevAddr;
 
 extern uint8_t IsTxConfirmed;
-
 extern bool Is_LORAWAN_ADR_ON;
-
 bool Is_OTAA = OVER_THE_AIR_ACTIVATION;
 
 /* SPI2(LoRa) Variables */
 #define LORAMAC_SEND_RETRY_COUNT_MAX 48
-uint8_t loramac_send_retry_count = 0;
 #define LoRa_Block_Time 120000
+#define LoRa_Send_Time_Interval 10000
+
+uint8_t loramac_send_retry_count = 0;
+
 int LoRa_DL_Flag = 0;
 extern uint8_t *LoRa_RxBuf;
 uint8_t LoRa_Sendtype = 0;
@@ -129,6 +128,7 @@ uint32_t LoRa_UL_Addr = 0x00;
 
 bool LoRa_Restart_Flag = false;
 int LoRa_Task_Count = 0;
+
 /* SYSTEM Variables */
 static int USART3_RxFlag = 0;
 static int USART3_TxFlag = 0;
@@ -137,7 +137,6 @@ UBaseType_t USART1_Priority;
 UBaseType_t USART3_Priority;
 UBaseType_t SPI1_Priority;
 UBaseType_t SPI2_Priority;
-
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -322,7 +321,6 @@ void StartUSART1(void const * argument)
 			WARN("!!!Flash Full!!!");
 			WARN("...Overwriting Previous Info...\r\n");
 			
-			WARN("Erasing all block from flash...");
 			for (int i = 0; i < 32; i++){
 				ext_flash_erase_block(i * 65536);
 				ext_flash_last_write_or_erase_done();
@@ -436,11 +434,10 @@ void StartUSART3(void const * argument)
 			myprintf(">>INFO: RS485 Recevied:");
 			
 			USART3_PINSET_TX();
-			HAL_UART_Transmit(&huart3, aRxBuffer, RxCounter1,0xFFFF);
+			HAL_UART_Transmit(&huart3, aRxBuffer, RxCounter1, 0xFFFF);
 			USART3_PINSET_RX();
 			myprintf("\r\n");
-				
-			
+
 			strncpy(ProcessBuffer,(char*) aRxBuffer, RxCounter1);
 							
 			if (strncmp(ProcessBuffer,"ATZ",3) == 0){	
@@ -452,7 +449,7 @@ void StartUSART3(void const * argument)
 					uint8_t OutputBuffer[1];
 					ProcessAT_NJM(ProcessBuffer, OutputBuffer);
 					
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					Is_OTAA = OutputBuffer[0];
 					LoRa_Restart_Flag = true;
 #endif
@@ -461,7 +458,7 @@ void StartUSART3(void const * argument)
 					//AT+DEUI : Device EUI
 					uint8_t OutputBuffer[8];
 					ProcessAT_DEUI(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					for (int i = 0 ; i < 8; i++){
 						DevEui[i] = OutputBuffer[i];
 					}
@@ -472,7 +469,7 @@ void StartUSART3(void const * argument)
 					//AT+APPEUI : AppEUI
 					uint8_t OutputBuffer[8];
 					ProcessAT_APPEUI(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					for (int i = 0 ; i < 8; i++){
 						AppEui[i] = OutputBuffer[i];
 					}
@@ -483,7 +480,7 @@ void StartUSART3(void const * argument)
 					//AT+APPKEY : AppKey
 					uint8_t OutputBuffer[16];
 					ProcessAT_APPKEY(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					for (int i = 0 ; i < 8; i++){
 						AppKey[i] = OutputBuffer[i];
 					}
@@ -494,7 +491,7 @@ void StartUSART3(void const * argument)
 					//AT+NWKSKEY : NwkSKey
 					uint8_t OutputBuffer[16];
 					ProcessAT_NWKSKEY(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					for (int i = 0 ; i < 8; i++){
 						NwkSKey[i] = OutputBuffer[i];
 					}
@@ -505,7 +502,7 @@ void StartUSART3(void const * argument)
 					//AT+APPSKEY : AppSKey
 					uint8_t OutputBuffer[16];
 					ProcessAT_APPSKEY(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					for (int i = 0 ; i < 8; i++){
 						AppSKey[i] = OutputBuffer[i];
 					}
@@ -516,7 +513,7 @@ void StartUSART3(void const * argument)
 					//AT+DADDR : DevAddr
 					uint32_t OutputBuffer[1];
 					ProcessAT_DADDR(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					DevAddr = OutputBuffer[0];
 					LoRa_Restart_Flag = true;
 #endif
@@ -525,7 +522,7 @@ void StartUSART3(void const * argument)
 					//AT+ADR : Adaptive Data Rate
 					uint8_t OutputBuffer[1];
 					ProcessAT_ADR(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					Is_LORAWAN_ADR_ON = OutputBuffer[0];
 					LoRa_Restart_Flag = true;
 #endif
@@ -534,15 +531,14 @@ void StartUSART3(void const * argument)
 					//AT+CFM : Confirmed/Unconfirmed UL
 					uint8_t OutputBuffer[1];
 					ProcessAT_CFM(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					IsTxConfirmed = OutputBuffer[0];
 					LoRa_Restart_Flag = true;
 #endif
 					
 				} else if (strcmp_n(ProcessBuffer, "HBTPD", 4)){
 					INFO("HBTPD Command not needed");
-					//Impulse UL, do it every hr.
-					
+					//Not need to support
 				} else if (strcmp_n(ProcessBuffer, "AITHRED", 4)){
 					INFO("AITHRED Command not supported");
 					//Not supported
@@ -565,13 +561,14 @@ void StartUSART3(void const * argument)
 					//AT+ULROTATE : Set UL auto rotate mode
 					uint32_t OutputBuffer[1];
 					ProcessAT_ULSET(ProcessBuffer, OutputBuffer);
-#ifdef RS485_Control_Enable
+#ifdef Allow_AT_Command
 					LoRa_UL_Addr = OutputBuffer[0];
 #endif
 				} else if (strcmp_n(ProcessBuffer, "ERASEFLASH", 4)){
 					//AT_ERASEFLASH = Erase the specific part of flash.
+#ifdef Allow_AT_Command
 					ProcessAT_ERASEFLASH(ProcessBuffer);
-
+#endif
 				} else{
 					WARN("Invalid Command");
 				}
@@ -605,18 +602,20 @@ void StartSPI2(void const * argument)
 	DEBUG("LoRaMAC Join Done");
 	
 	LoRa_UL_Addr = 0x000000;
+	
 	/*
 	INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
 	HAL_NVIC_DisableIRQ(TIM7_IRQn);
 	vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 	*/
+	
 	/* Infinite loop */
   for(;;)
   {
 		
 		if(LoRa_Restart_Flag == true){
 			LoRa_Restart_Flag = false;
-			//If changed any address, then reinit and join LoRaWAN
+			//If changed any LoRa configuration, then reinit and join LoRaWAN
 			LoRaMAC_Init();
 			LoRaMAC_Join();
 		}
@@ -634,45 +633,36 @@ void StartSPI2(void const * argument)
 		if(LoRa_Sendtype == 0){										//Real time upload
 			INFO("LoRa: Real time upload");
 			
-			//
+			//First & Second value : Voltage RMS (Voltes) & Current RMS (Amps)
 			ReadMsgOnly(dsp_reg14,ReadBuffer);
 			
-			//while (USART1_RxFlag == 0);
-
-			HAL_RxBuffer[0] = ReadBuffer[0];
-		 	HAL_RxBuffer[1] = ReadBuffer[1];
-		 	HAL_RxBuffer[2] = ReadBuffer[2];
-		 	HAL_RxBuffer[3] = ReadBuffer[3];
-			HAL_RxBuffer[4] = ReadBuffer[4];
+			while (USART1_RxFlag == 0){}
+			USART1_RxFlag = 0;
+			
+			strcpy((char*) HAL_RxBuffer, (char*) ReadBuffer);
 			
 			uint8_cpy(CH1_RMS,HAL_RxBuffer,5);
 			RT_CalcPrint_V1_RMS();
 			RT_CalcPrint_C1_RMS();
 			
-			//
+			//Third value : Active Power (Watts)
 			ReadMsgOnly(ph1_reg5,ReadBuffer);
 			
-			//while (USART1_RxFlag == 0);
+			while (USART1_RxFlag == 0){}
+			USART1_RxFlag = 0;
 
-			HAL_RxBuffer[0] = ReadBuffer[0];
-		 	HAL_RxBuffer[1] = ReadBuffer[1];
-		 	HAL_RxBuffer[2] = ReadBuffer[2];
-		 	HAL_RxBuffer[3] = ReadBuffer[3];
-			HAL_RxBuffer[4] = ReadBuffer[4];
+			strcpy((char*) HAL_RxBuffer, (char*) ReadBuffer);
 			
 			uint8_cpy(PH1_Active_Power, HAL_RxBuffer, 5);
 			RT_CalcPrint_Active_Pwr();
 			
-			//
+			//Fourth value : Total Active energy (KiloWattHr)
 			ReadMsgOnly(tot_reg1,ReadBuffer);
 			
-			//while (USART1_RxFlag == 0);
+			while (USART1_RxFlag == 0){}
+			USART1_RxFlag = 0;
 			
-			HAL_RxBuffer[0] = ReadBuffer[0];
-		 	HAL_RxBuffer[1] = ReadBuffer[1];
-		 	HAL_RxBuffer[2] = ReadBuffer[2];
-		 	HAL_RxBuffer[3] = ReadBuffer[3];
-			HAL_RxBuffer[4] = ReadBuffer[4];
+			strcpy((char*) HAL_RxBuffer, (char*) ReadBuffer);
 			
 			uint8_cpy(Total_Active_Energy, HAL_RxBuffer, 5);
 			RT_CalcPrint_Tot_Active_Energy();
@@ -689,7 +679,7 @@ void StartSPI2(void const * argument)
 					loramac_send_retry_count = 0;
 				}
 			}
-			DelayMsPoll(10000);
+			DelayMsPoll(LoRa_Send_Time_Interval);
 			
 			if (LoRa_DL_Flag == 1){
 				INFO("LoRa DownLink received!");
@@ -706,8 +696,6 @@ void StartSPI2(void const * argument)
 			
 			
 		} else if (LoRa_Sendtype == 1){						//Auto Rotate Raw
-			INFO("LoRa: Auto Rotate Raw");
-					
 			LoRa_UL_Addr = 0x000000;
 			
 			while(LoRa_UL_Addr <= 0x0E0000){
@@ -745,8 +733,6 @@ void StartSPI2(void const * argument)
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 			
 		} else if (LoRa_Sendtype == 2){		//Auto Rotate Real
-			INFO("LoRa: Auto Rotate Real");
-			
 			LoRa_UL_Addr = 0x100000;
 			
 			while(LoRa_UL_Addr <= 0x1F0000){
@@ -766,7 +752,7 @@ void StartSPI2(void const * argument)
 						loramac_send_retry_count = 0;
 					}
 				}
-				DelayMsPoll(10000);
+				DelayMsPoll(LoRa_Send_Time_Interval);
 				
 				if (LoRa_DL_Flag == 1){
 					INFO("LoRa DownLink received!");
@@ -778,7 +764,7 @@ void StartSPI2(void const * argument)
 				
 				LoRa_UL_Addr += 0x010000;
 			}
-					
+			
 			INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
 			HAL_NVIC_DisableIRQ(TIM7_IRQn);
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
@@ -802,7 +788,7 @@ void StartSPI2(void const * argument)
 					loramac_send_retry_count = 0;
 				}
 			}
-			DelayMsPoll(10000);
+			DelayMsPoll(LoRa_Send_Time_Interval);
 			if (LoRa_DL_Flag == 1){
 				INFO("LoRa DownLink received!");
 				INFO("LoRa DownLink buffer: %x %x %x %x",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
@@ -810,12 +796,12 @@ void StartSPI2(void const * argument)
 			} else if (LoRa_DL_Flag == 0){
 				INFO("LoRa DownLink no new message");
 			}
-				INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+			
+			INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
 			HAL_NVIC_DisableIRQ(TIM7_IRQn);
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
-		}
-		
-		else {															//Sendtype Invalid
+			
+		} else {															//Sendtype Invalid
 			WARN("Sendtype Invalid");
 		}
 }
@@ -977,15 +963,25 @@ void strcpy_n(char dest[], char src[], uint8_t start, uint8_t end){
 	}
 }
 
+/**
+	* @brief Upper function to do a full system restart
+	* @param None
+	* @retval None
+	*/
 void SystemReset(void){
 	INFO("Resetting SYSTEM");
 	DelayMsPoll(1000);
-					
+
 	__set_FAULTMASK(1);//close all interrupt
 	NVIC_SystemReset();//reset
 }
 
-
+/**
+	* @brief Upper function to process NJM command of the AT command series
+	* @param Input: char type array of ASCII charaters from RS485
+	* @param Output: uint8_t type processed array (OTAA idication)
+	* @retval None
+	*/
 void ProcessAT_NJM(char Input[], uint8_t Output[]){
 	//AT+NJM : Set ABP or OTAA
 	if(strcmp_n(Input, "?", 3 + strlen("NJM") + 1)){
@@ -997,6 +993,12 @@ void ProcessAT_NJM(char Input[], uint8_t Output[]){
 	}
 }
 
+/**
+	* @brief Upper function to process DEUI command of the AT command series
+	* @param Input: char type array of ASCII charaters from RS485
+	* @param Output: uint8_t type processed array (DevEUI in hexdecimal)
+	* @retval None
+	*/
 void ProcessAT_DEUI(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("DEUI") + 1)){
 		INFO("DEUI Help String");
@@ -1007,6 +1009,12 @@ void ProcessAT_DEUI(char Input[], uint8_t Output[]){
 	}
 }
 
+/**
+	* @brief Upper function to process APPEUI command of the AT command series
+  * @param Input: char type array of ASCII charaters from RS485
+  * @param Output: uint8_t type processed array (AppEUI in hexdecimal)
+	* @retval None
+	*/
 void ProcessAT_APPEUI(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPEUI") + 1)){
 		INFO("APPEUI Help String");
@@ -1017,6 +1025,12 @@ void ProcessAT_APPEUI(char Input[], uint8_t Output[]){
 	}
 }
 
+/**
+	* @brief Upper function to process APPKEY command of the AT command series
+  * @param Input: char type array of ASCII charaters from RS485
+  * @param Output: uint8_t type processed array (AppKEY in hexdecimal)
+	* @retval None
+	*/
 void ProcessAT_APPKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPKEY") + 1)){
 		INFO("APPKEY Help String");
@@ -1027,6 +1041,12 @@ void ProcessAT_APPKEY(char Input[], uint8_t Output[]){
 	}
 }
 
+/**
+	* @brief Upper function to process NWKSKEY command of the AT command series
+  * @param Input: char type array of ASCII charaters from RS485
+  * @param Output: uint8_t type processed array (NwkSKey in hexdecimal)
+	* @retval None
+	*/
 void ProcessAT_NWKSKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("NWKSKEY") + 1)){
 		INFO("NWKSKEY Help String");
@@ -1037,6 +1057,12 @@ void ProcessAT_NWKSKEY(char Input[], uint8_t Output[]){
 	}
 }
 
+/**
+	* @brief Upper function to process APPSKEY command of the AT command series
+  * @param Input: char type array of ASCII charaters from RS485
+  * @param Output: uint8_t type processed array (AppSKey in hexdecimal)
+	* @retval None
+	*/
 void ProcessAT_APPSKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPSKEY") + 1)){
 		INFO("APPSKEY Help String");
@@ -1047,6 +1073,12 @@ void ProcessAT_APPSKEY(char Input[], uint8_t Output[]){
 	}
 }
 
+/**
+	* @brief Upper function to process DADDR command of the AT command series
+  * @param Input: char type array of ASCII charaters from RS485
+  * @param Output: uint8_t type processed array (DevAddr in hexdecimal)
+	* @retval None
+	*/
 void ProcessAT_DADDR(char Input[], uint32_t Output[]){
 	uint8_t OutputBuffer[4] = {0};
 	
@@ -1059,14 +1091,18 @@ void ProcessAT_DADDR(char Input[], uint32_t Output[]){
 	}
 	
 	Output[0] = 0;
-	
 	Output[0] += OutputBuffer[0] * 0x01000000;
 	Output[0] += OutputBuffer[1] * 0x00010000;
 	Output[0] += OutputBuffer[2] * 0x00000100;
 	Output[0] += OutputBuffer[3] * 0x00000001;
-	
 }
 
+/**
+	* @brief Upper function to process ADR command of the AT command series
+  * @param Input: char type array of ASCII charaters from RS485
+  * @param Output: uint8_t type processed array (Adaptive Data Rate in boolean)
+	* @retval None
+	*/
 void ProcessAT_ADR(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("ADR") + 1)){
 		INFO("ADR Help String");
@@ -1077,6 +1113,12 @@ void ProcessAT_ADR(char Input[], uint8_t Output[]){
 	}
 }
 
+/**
+	* @brief Upper function to process CFM command of the AT command series
+  * @param Input: char type array of ASCII charaters from RS485
+  * @param Output: uint8_t type processed array (IsTxConfirmed in boolean)
+	* @retval None
+	*/
 void ProcessAT_CFM(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("CFM") + 1)){
 		INFO("CFM Help String");
@@ -1087,6 +1129,11 @@ void ProcessAT_CFM(char Input[], uint8_t Output[]){
 	}
 }
 
+/**
+	* @brief Upper function to return system state
+  * @param None
+	* @retval None
+	*/
 void ProcessAT_STATE(void){
 	//0. SYSTEM Status
 	//Each FreeRTOS task run count.
@@ -1131,6 +1178,12 @@ void ProcessAT_STATE(void){
 	}
 }
 
+/**
+	* @brief Upper function to process ULSET command of the AT command series and set LoRa UL type
+  * @param Input: char type array of ASCII charaters from RS485
+  * @param Output: uint8_t type processed array (flash addr in hexdecimal)
+	* @retval None
+	*/
 void ProcessAT_ULSET(char Input[], uint32_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("ULSET") + 1)){
 		INFO("ULSET Help String");
@@ -1200,6 +1253,12 @@ void ProcessAT_ULSET(char Input[], uint32_t Output[]){
 	}
 }
 
+/**
+	* @brief Upper function to process ERASEFLASH command of the AT command series and erase certain flash addr
+  * @param Input: char type array of ASCII charaters from RS485
+  * @param None
+	* @retval None
+	*/
 void ProcessAT_ERASEFLASH(char Input[]){
 	if(strcmp_n(Input, "?", 3 + strlen("ERASEFLASH") + 1)){
 		INFO("ERASEFLASH Help String");
@@ -1288,10 +1347,8 @@ void ProcessAT_ERASEFLASH(char Input[]){
 }
 
 
-
-
 /**
-	* @brief Process the address and convert it from ASCII to HEX
+	* @brief Lower function: Process the address and convert it from ASCII to HEX
 	* @param Pointer: InputBuffer[] (ASCII), OutputBuffer[] (Hex)
 	* @param Ppinter: The address name, to identify length of address
 	* @retval None
@@ -1374,7 +1431,7 @@ void ProcessAddress(char* AddressName, char InputBuffer[], uint8_t OutputBuffer[
 }
 
 /**
-	* @brief Process the bool logic and convert it from ASCII to Hex
+	* @brief Lower function: Process the bool logic and convert it from ASCII to Hex
 	* @param Pointer: InputBuffer[] (ASCII), OutputBuffer[] (Hex)
 	* @param Ppinter: The bool name, to identify if its actually boolean type
 	* @retval None
@@ -1414,7 +1471,7 @@ void ProcessBool(char* BoolName, char InputBuffer[], uint8_t OutputBuffer[]){
 }
 
 /**
-	* @brief Process a number and convert it from ASCII to Hex
+	* @brief Lower function: Process a number and convert it from ASCII to Hex
 	* @param Pointer: InputBuffer[] (ASCII), OutputBuffer[] (Hex)
 	* @param Ppinter: The Num name, to see it its actually a num type
 	* @retval None
@@ -1455,8 +1512,6 @@ void ProcessNum(char* NumName, char InputBuffer[], uint8_t OutputBuffer[]){
 		}
 	}
 }
-
-
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
