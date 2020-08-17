@@ -109,11 +109,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	
 	/*	---- Connetion Table ----
-			SPI1 	- External Flash				Verified, Flash test is called from main.c
-			SPI2 	- LoRa									Done
-			UART1 - STPM32								Done
-			UART3 - Serial Out Terminal		Verified
-			USB		- USB										NULL
+			SPI1 	- External Flash				
+			SPI2 	- LoRa									
+			UART1 - STPM32								
+			UART3 - Serial Out Terminal		
+			USB		- USB										
 	*/
 
 	/* Initialize SPI */
@@ -137,7 +137,7 @@ int main(void)
 	HAL_UART_MspInit(&huart1);		//UART1 - Connect STPM32
 	HAL_UART_MspInit(&huart3);		//UART3 - Connect Serial Out Terminal
 
-	//HAL_NVIC_DisableIRQ(TIM7_IRQn);
+	HAL_NVIC_DisableIRQ(TIM7_IRQn);
 
 	// Here set UART3 to be in S4 mode, Tx is on
 	DEBUG("Test \r\n\r\n");

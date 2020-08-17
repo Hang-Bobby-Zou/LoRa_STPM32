@@ -39,6 +39,8 @@ extern double RT_C1_RMS;
 extern double RT_Active_Pwr;
 extern double RT_Tot_Active_Energy;
 
+extern bool Is_OTAA;
+
 #ifndef ACTIVE_REGION
 
 #warning "No active region defined, LORAMAC_REGION_EU868 will be used as default."
@@ -99,8 +101,8 @@ uint8_t DevEui[] = LORAWAN_DEVICE_EUI;
 uint8_t AppEui[] = LORAWAN_APPLICATION_EUI;
 uint8_t AppKey[] = LORAWAN_APPLICATION_KEY;
 
-//#if( OVER_THE_AIR_ACTIVATION == 0 )
-#if( Is_OTAA == 0 )
+#if( OVER_THE_AIR_ACTIVATION == 0 )
+//#if( Is_OTAA == 0 )
 uint8_t NwkSKey[] = LORAWAN_NWKSKEY;
 uint8_t AppSKey[] = LORAWAN_APPSKEY;
 
@@ -574,7 +576,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 					}
 				}
     } else {
-			INFO("No new message from LoRaWAN");
+			DEBUG("No new message from LoRaWAN");
 			DEBUG("Buffer Size = %d", mcpsIndication->BufferSize);
 		}
 }
@@ -816,20 +818,21 @@ int LoRaMAC_Send(void){
 			char RT_Active_Pwr_Transfer[8] = {0};
 			char RT_Tot_Active_Energy_Transfer[8] = {0};
 			
-			//DEBUG
-			RT_V1_RMS = 223.234;
-			RT_C1_RMS = 0.00135;
-			RT_Active_Pwr = 14.1523;
-			RT_Tot_Active_Energy = 2000.3141;
+			//Used in DEBUG
+			//RT_V1_RMS = 223.234;
+			//RT_C1_RMS = 0.00135;
+			//RT_Active_Pwr = 14.1523;
+			//RT_Tot_Active_Energy = 2000.3141;
 			
-			strcpy(RT_V1_RMS_Transfer, (char*) &RT_V1_RMS);
-			strcpy(RT_C1_RMS_Transfer, (char*) &RT_C1_RMS);
-			strcpy(RT_Active_Pwr_Transfer, (char*) &RT_Active_Pwr);
-			strcpy(RT_Tot_Active_Energy_Transfer, (char*) &RT_Tot_Active_Energy);
+			strncpy(RT_V1_RMS_Transfer, (char*) &RT_V1_RMS, 8);
+			strncpy(RT_C1_RMS_Transfer, (char*) &RT_C1_RMS, 8);
+			strncpy(RT_Active_Pwr_Transfer, (char*) &RT_Active_Pwr, 8);
+			strncpy(RT_Tot_Active_Energy_Transfer, (char*) &RT_Tot_Active_Energy, 8);			
+			
 			
 			AppData[0] = 0xFF;							//Default: 0xFF
-			AppData[1] = 0x01;							//Default: 0x00
-			AppData[2] = 0x10;							//Default: 0x00
+			AppData[1] = 0x00;							//Default: 0x00
+			AppData[2] = 0x12;							//Default: 0x00
 			//V RMS
 			AppData[3] = RT_V1_RMS_Transfer[7];
 			AppData[4] = RT_V1_RMS_Transfer[6];
@@ -875,8 +878,8 @@ int LoRaMAC_Send(void){
 			AppDataSize = 36;
 		} else {
 			AppData[0] = 0xFF;							//Default: 0xFF
-			AppData[1] = 0x01;							//Default: 0x00
-			AppData[2] = 0x10;							//Default: 0x00
+			AppData[1] = 0x00;							//Default: 0x00
+			AppData[2] = 0x12;							//Default: 0x00
 			AppData[3] = LoRa_UL_Buffer[0];	
 			AppData[4] = LoRa_UL_Buffer[1];
 			AppData[5] = LoRa_UL_Buffer[2];
@@ -925,16 +928,16 @@ int LoRaMAC_Send(void){
 			TimerIrqHandler();
 			
 			frame_count++;
-			INFO("Frame %d Sent Success", UpLinkCounter);
+			DEBUG("Frame %d Sent Success", UpLinkCounter);
 			
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){
-			DEBUG("LoRaMAC Status Busy");
+			WARN("LoRaMAC Status Busy");
 			return -1;
 		}
 		else
 		{
-			DEBUG("Frame ERROR (%d)(/%u)", status, frame_count);
+			WARN("Frame ERROR (%d)(/%u)", status, frame_count);
 			return -1;
 		}
   }

@@ -12,7 +12,7 @@
 
 #define F_CLK								125000
 #define P_CLK								0.000008		//  1 / F_CLK
-#define D_CLK								8712.5 
+#define D_CLK								7812.5 
 
 #define V_ref 							1.18
 
