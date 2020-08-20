@@ -335,6 +335,7 @@ void StartUSART1(void const * argument)
 			HAL_RxBuffer[4] = ReadBuffer[4];
 
 			if (count == 5){		//Wait for the 5 th iteration so the data is stable
+													//Data is often not very stable in the first & second run
 					if (i[0] == dsp_reg1){
 						uint8_cpy(PH_Period, HAL_RxBuffer, 5);
 						CalcPrint_Freq();
@@ -526,7 +527,7 @@ void StartSPI2(void const * argument)
 	LoRaMAC_Join();
 	DEBUG("LoRaMAC Join Done");
 	
-	LoRa_UL_Addr = 0x000000;
+	LoRa_UL_Addr = 0x000000;		//Initialize UL Address to 0 when start
 
 	/* Infinite loop */
   for(;;)
@@ -547,7 +548,7 @@ void StartSPI2(void const * argument)
 		DelayMsPoll(1000);
 		
 		//Check LoRa Upload Mode
-		if(LoRa_Sendtype == 0){										//Real time upload
+		if(LoRa_Sendtype == 0){										//Real time upload mode
 			INFO("LoRa: Real time upload\r\n");
 			
 			//First & Second value : Voltage RMS (Voltes) & Current RMS (Amps)
@@ -555,13 +556,12 @@ void StartSPI2(void const * argument)
 				ReadMsgOnly(dsp_reg14,ReadBuffer);
 			
 				while (USART1_RxFlag == 0){}
-				
 				HAL_RxBuffer[0] = ReadBuffer[0];
 				HAL_RxBuffer[1] = ReadBuffer[1];
 				HAL_RxBuffer[2] = ReadBuffer[2];
 				HAL_RxBuffer[3] = ReadBuffer[3];
 				HAL_RxBuffer[4] = ReadBuffer[4];
-
+				
 				USART1_RxFlag = 0;
 			}
 			
@@ -579,6 +579,7 @@ void StartSPI2(void const * argument)
 				HAL_RxBuffer[2] = ReadBuffer[2];
 				HAL_RxBuffer[3] = ReadBuffer[3];
 				HAL_RxBuffer[4] = ReadBuffer[4];
+				
 				USART1_RxFlag = 0;
 			}
 			
@@ -595,7 +596,7 @@ void StartSPI2(void const * argument)
 				HAL_RxBuffer[2] = ReadBuffer[2];
 				HAL_RxBuffer[3] = ReadBuffer[3];
 				HAL_RxBuffer[4] = ReadBuffer[4];
-					
+				
 				USART1_RxFlag = 0;
 			}
 
@@ -622,8 +623,6 @@ void StartSPI2(void const * argument)
 					INFO("LoRaMAC Send Succeed!");
 					loramac_send_retry_count = 0;
 				}
-			} else {
-				WARN("LoRa Not in IDLE!");
 			}
 			DelayMsPoll(LoRa_Send_Time_Interval);
 			
@@ -640,7 +639,7 @@ void StartSPI2(void const * argument)
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 			
 			
-		} else if (LoRa_Sendtype == 1){						//Auto Rotate Raw
+		} else if (LoRa_Sendtype == 1){						//Auto Rotate Raw mode
 			LoRa_UL_Addr = 0x000000;
 			
 			while(LoRa_UL_Addr <= 0x0E0000){
@@ -679,8 +678,7 @@ void StartSPI2(void const * argument)
 			HAL_NVIC_DisableIRQ(TIM7_IRQn);
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 			
-			
-		} else if (LoRa_Sendtype == 2){		//Auto Rotate Real
+		} else if (LoRa_Sendtype == 2){		//Auto Rotate Real mode
 			LoRa_UL_Addr = 0x100000;
 			
 			while(LoRa_UL_Addr <= 0x1F0000){
@@ -719,7 +717,7 @@ void StartSPI2(void const * argument)
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 
 			
-		} else if (LoRa_Sendtype == 3){			//Specific UL
+		} else if (LoRa_Sendtype == 3){			//Specific UL mode
 			INFO("LoRa: Specific UL from flash");
 			
 			ext_flash_read(LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
@@ -908,7 +906,7 @@ void AT_HelpString(char* Name){
 		INFO("Two types of method is avaliable: ABP(Activation by Personalization) / OTAA (Over the air Activation)");
 		INFO("Query current NJM setting by inputting : AT+NJM=?");
 		INFO("Set NJM by inputting : AT+NJM=x , where x = 0 : ABP | 1 : OTAA");
-		myprintf("==============================================================\r\n");
+		myprintf("================================================================\r\n");
 	} else if (!strcmp(Name,"DEUI")){
 		myprintf("========================DEUI Help String========================\r\n");
 		INFO("DEUI command sets the Device EUI for the LoRa node");
@@ -916,7 +914,7 @@ void AT_HelpString(char* Name){
 		INFO("Query current Device EUI by inputting : AT+DEUI=?");
 		INFO("Set DEUI by inputting : AT+DEUI=xx:xx:xx:xx:xx:xx:xx:xx , where xx is the address in HEX");
 		INFO("For example: AT+DEUI=AB:cd:Ef:00:11:22:33:44  (capital & non-capital both supported)");
-		myprintf("==============================================================\r\n");
+		myprintf("================================================================\r\n");
 	} else if (!strcmp(Name,"APPEUI")){
 		myprintf("=======================APPEUI Help String=======================\r\n");
 		INFO("APPEUI command sets the App EUI for the LoRa node");
@@ -924,7 +922,7 @@ void AT_HelpString(char* Name){
 		INFO("Query current App EUI by inputting : AT+APPEUI=?");
 		INFO("Set APPEUI by inputting : AT+APPEUI=xx:xx:xx:xx:xx:xx:xx:xx , where xx is the address in HEX");
 		INFO("For example: AT+APPEUI=AB:cd:Ef:00:11:22:33:44  (capital & non-capital both supported)");
-		myprintf("==============================================================\r\n");
+		myprintf("================================================================\r\n");
 	} else if (!strcmp(Name,"APPKEY")){
 		myprintf("=======================APPKEY Help String=======================\r\n");
 		INFO("APPKEY command sets the App Key for the LoRa node");
@@ -932,7 +930,7 @@ void AT_HelpString(char* Name){
 		INFO("Query current App KEY by inputting : AT+APPKEY=?");
 		INFO("Set APPKEY by inputting : AT+APPKEY=xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx , where xx is the address in HEX");
 		INFO("For example: AT+APPEUI=AA:BB:CC:DD:EE:FF:Aa:Bb:Cc:Ee:Ff:0a:1b:2c:3d:4e  (capital & non-capital both supported)");
-		myprintf("==============================================================\r\n");
+		myprintf("================================================================\r\n");
 	} else if (!strcmp(Name,"NWKSKEY")){
 		myprintf("======================NWKSKEY Help String=======================\r\n");
 		INFO("NWKSKEY command sets the Nwk SKey for the LoRa node");
@@ -940,7 +938,7 @@ void AT_HelpString(char* Name){
 		INFO("Query current NwkSKey by inputting : AT+NWKSKEY=?");
 		INFO("Set NWKSKEY by inputting : AT+NWKSKEY=xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx , where xx is the address in HEX");
 		INFO("For example: AT+NWKSKEY=AA:BB:CC:DD:EE:FF:Aa:Bb:Cc:Ee:Ff:0a:1b:2c:3d:4e  (capital & non-capital both supported)");
-		myprintf("==============================================================\r\n");
+		myprintf("================================================================\r\n");
 	} else if (!strcmp(Name,"APPSKEY")){
 		myprintf("======================APPSKEY Help String=======================\r\n");
 		INFO("APPSKEY command sets the App SKey for the LoRa node");
@@ -948,7 +946,7 @@ void AT_HelpString(char* Name){
 		INFO("Query current App SKey by inputting : AT+APPSKEY=?");
 		INFO("Set APPSKEY by inputting : AT+NWKSKEY=xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx , where xx is the address in HEX");
 		INFO("For example: AT+APPSKEY=AA:BB:CC:DD:EE:FF:Aa:Bb:Cc:Ee:Ff:0a:1b:2c:3d:4e  (capital & non-capital both supported)");
-		myprintf("==============================================================\r\n");
+		myprintf("================================================================\r\n");
 	} else if (!strcmp(Name,"DADDR")){
 		myprintf("========================DADDR Help String=======================\r\n");
 		INFO("DADDR command sets the device address for the LoRa node");
@@ -956,21 +954,21 @@ void AT_HelpString(char* Name){
 		INFO("Query current Dev add by inputting : AT+DADDR=?");
 		INFO("Sets DADDR by inputting : AT+DADDR=xx:xx:xx:xx , where xx is the address in HEX");
 		INFO("For example: AT+DADDR=Aa:Bc:11:22  (capital & non-capital both supported)");
-		myprintf("==============================================================\r\n");
+		myprintf("================================================================\r\n");
 	} else if (!strcmp(Name,"ADR")){
 		myprintf("=========================ADR Help String========================\r\n");
 		INFO("NJM command sets the adaptive data rate of the LoRa node");
 		INFO("Two types of command is available : ADR On / Off");
 		INFO("Query current ADR setting by inputting : AT+ADR=?");
 		INFO("Set ADR by inputting : AT+ADR=x , where x = 0 : ADR Off | 1 : ADR On");
-		myprintf("==============================================================\r\n");
+		myprintf("================================================================\r\n");
 	} else if (!strcmp(Name,"CFM")){
 		myprintf("=========================CFM Help String========================\r\n");
 		INFO("NJM command sets confirmed uplink of the LoRa node");
 		INFO("Two types of command is available : Unconfirmed / Confirmed");
 		INFO("Query current CFM setting by inputting : AT+CFM=?");
 		INFO("Set CFM by inputting : AT+CFM=x , where x = 0 : Unconfirmed | 1 : Confirmed");
-		myprintf("==============================================================\r\n");
+		myprintf("================================================================\r\n");
 	} else if (!strcmp(Name,"LORAULSET")){
 		myprintf("======================LORAULSET Help String======================\r\n");
 		INFO("LORAULSET command sets the uplink type for the LoRa node");
@@ -980,22 +978,23 @@ void AT_HelpString(char* Name){
 		INFO("Set LORAULSET by inputting AT+LORAULSET=a:0xbbbbbb, where a = 0 : Instance UL | 1 : Raw data UL");
 		INFO(" 2 : Calculated data UL | 3 : Upload specific address from flash.");
 		INFO("bbbbbb = the address inside flash to be uploaded in mode 3");
-		myprintf("==============================================================\r\n");
+		myprintf("=================================================================\r\n");
 	} else if (!strcmp(Name,"ERASEFLASH")){
 		myprintf("=====================ERASEFLASH Help String======================\r\n");
 		INFO("ERASEFLASH command performs a erase of flash by demand");
-		INFO("Three types of command is avaliable : 0. Erase 8 bytes of data starting a specific address");
+		INFO("Three types of command is avaliable : 0. Erase specific address, Not supported in this flash");
 		INFO("1. Erase a flash sector starting a specific address, 2. Erase a flash block starting a specific address");
 		INFO("Erase flash by inputting AT+ERASEFLASH=a:0xbbbbbb, where a = the command available ( 0 - 2 ),");
 		INFO("bbbbbb = the address of data to be erased");
-		myprintf("==============================================================\r\n");
+		myprintf("=================================================================\r\n");
 	} else if (!strcmp(Name,"READFLASH")){
 		myprintf("=====================READFLASH Help String=======================\r\n");
 		INFO("READFLASH command performs a flash read by demand");
 		INFO("The command consist two parameters: a = How many 8-byte data to be read");
 		INFO("bbbbbb = The starting address of the first byte to be read");
-		INFO("Read from flash by inputting AT+READFLASH=a:0xbbbbbb");
-		myprintf("==============================================================\r\n");
+		INFO("Read from flash by inputting AT+READFLASH=aaaa:0xbbbbbb");
+		INFO("For example, read 23 8-byte data from address 0x010000 : AT+READFLASH=0023:0x010000");
+		myprintf("=================================================================\r\n");
 	} else {
 		WARN("No help string availiable for %s", Name);
 	}
@@ -1010,7 +1009,6 @@ void AT_HelpString(char* Name){
 void ProcessAT_NJM(char Input[], uint8_t Output[]){
 	//AT+NJM : Set ABP or OTAA
 	if(strcmp_n(Input, "?", 3 + strlen("NJM") + 1)){
-		//INFO("NJM Help String");
 		AT_HelpString("NJM");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("NJM") + 1)){
 		INFO("NJM = %x", Is_OTAA);
@@ -1031,7 +1029,6 @@ void ProcessAT_NJM(char Input[], uint8_t Output[]){
 	*/
 void ProcessAT_DEUI(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("DEUI") + 1)){
-		//INFO("DEUI Help String");
 		AT_HelpString("DEUI");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("DEUI") + 1)){
 		INFO("DEUI = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", DevEui[0], DevEui[1], DevEui[2], DevEui[3], DevEui[4], DevEui[5], DevEui[6], DevEui[7]);
@@ -1054,7 +1051,6 @@ void ProcessAT_DEUI(char Input[], uint8_t Output[]){
 	*/
 void ProcessAT_APPEUI(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPEUI") + 1)){
-		//INFO("APPEUI Help String");
 		AT_HelpString("APPEUI");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("APPEUI") + 1)){
 		INFO("APPEUI = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
@@ -1077,7 +1073,6 @@ void ProcessAT_APPEUI(char Input[], uint8_t Output[]){
 	*/
 void ProcessAT_APPKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPKEY") + 1)){
-		//INFO("APPKEY Help String");
 		AT_HelpString("APPKEY");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("APPKEY") + 1)){
 		INFO("APPKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7], AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
@@ -1100,7 +1095,6 @@ void ProcessAT_APPKEY(char Input[], uint8_t Output[]){
 	*/
 void ProcessAT_NWKSKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("NWKSKEY") + 1)){
-		//INFO("NWKSKEY Help String");
 		AT_HelpString("NWKSKEY");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("NWKSKEY") + 1)){
 		INFO("NWKSKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", NwkSKey[0], NwkSKey[1], NwkSKey[2], NwkSKey[3], NwkSKey[4], NwkSKey[5], NwkSKey[6], NwkSKey[7], NwkSKey[8], NwkSKey[9], NwkSKey[10], NwkSKey[11], NwkSKey[12], NwkSKey[13], NwkSKey[14], NwkSKey[15]);
@@ -1123,7 +1117,6 @@ void ProcessAT_NWKSKEY(char Input[], uint8_t Output[]){
 	*/
 void ProcessAT_APPSKEY(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("APPSKEY") + 1)){
-		//INFO("APPSKEY Help String");
 		AT_HelpString("APPSKEY");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("APPSKEY") + 1)){
 		INFO("APPSKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppSKey[0], AppSKey[1], AppSKey[2], AppSKey[3], AppSKey[4], AppSKey[5], AppSKey[6], AppSKey[7], AppSKey[8], AppSKey[9], AppSKey[10], AppSKey[11], AppSKey[12], AppSKey[13], AppSKey[14], AppSKey[15]);
@@ -1148,7 +1141,6 @@ void ProcessAT_DADDR(char Input[], uint32_t Output[]){
 	uint8_t OutputBuffer[4] = {0};
 	
 	if(strcmp_n(Input, "?", 3 + strlen("DADDR") + 1)){
-		//INFO("DADDR Help String");
 		AT_HelpString("DADDR");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("DADDR") + 1)){
 		INFO("DADDR = %.8x", DevAddr);
@@ -1176,7 +1168,6 @@ void ProcessAT_DADDR(char Input[], uint32_t Output[]){
 	*/
 void ProcessAT_ADR(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("ADR") + 1)){
-		//INFO("ADR Help String");
 		AT_HelpString("ADR");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("ADR") + 1)){
 		INFO("ADR = %x", Is_LORAWAN_ADR_ON);
@@ -1197,7 +1188,6 @@ void ProcessAT_ADR(char Input[], uint8_t Output[]){
 	*/
 void ProcessAT_CFM(char Input[], uint8_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("CFM") + 1)){
-		//INFO("CFM Help String");
 		AT_HelpString("CFM");
 	} else if (strcmp_n(Input, "=?", 3 + strlen("CFM") + 1)){
 		INFO("CFM = %x", IsTxConfirmed);
@@ -1268,7 +1258,6 @@ void ProcessAT_STATE(void){
 	*/
 void ProcessAT_ULSET(char Input[], uint32_t Output[]){
 	if(strcmp_n(Input, "?", 3 + strlen("LORAULSET") + 1)){
-		//INFO("LORAULSET Help String");
 		AT_HelpString("LORAULSET");
 	} else if ( strcmp_n(Input, "=?", 3 + strlen("LORAULSET") + 1 )){
 		INFO("LORAULSET = %x:0x%.6x", LoRa_Sendtype, LoRa_UL_Addr);
@@ -1287,7 +1276,7 @@ void ProcessAT_ULSET(char Input[], uint32_t Output[]){
 				uint32_t Temp = 0;
 
 				for (int i = 0; i < 6; i++){
-					if (ReceiveBuffer[ i+4 ] >= 0x30 && ReceiveBuffer[ i+4 ] <= 0x39){	//If its a number
+					if (ReceiveBuffer[ i+4 ] >= 0x30 && ReceiveBuffer[ i+4 ] <= 0x39){				//If its a number
 						Temp = 1;
 						for (int j = 5; j > i; j--){
 							Temp = Temp * 16;
@@ -1324,12 +1313,12 @@ void ProcessAT_ULSET(char Input[], uint32_t Output[]){
 					Output[0] = 0x000000;
 					INFO("LoRa Sendtype : %d", LoRa_Sendtype);
 				} else if (strcmp_n(ReceiveBuffer,"3", 1)){
-						if(Output[0] > 0x1FFFFF){
-							INFO("Not a valid flash address");
-						} else {
-							LoRa_Sendtype = 3;
-							INFO("LoRa Sendtype : %d | Address: 0x%.6x", LoRa_Sendtype, Output[0]);
-						}
+					if(Output[0] > 0x1FFFFF){
+						INFO("Not a valid flash address");
+					} else {
+						LoRa_Sendtype = 3;
+						INFO("LoRa Sendtype : %d | Address: 0x%.6x", LoRa_Sendtype, Output[0]);
+					}
 				} else {
 					WARN("UL Command invalid");
 				}
@@ -1351,7 +1340,6 @@ void ProcessAT_ULSET(char Input[], uint32_t Output[]){
 	*/
 void ProcessAT_ERASEFLASH(char Input[]){
 	if(strcmp_n(Input, "?", 3 + strlen("ERASEFLASH") + 1)){
-		//INFO("ERASEFLASH Help String");
 		AT_HelpString("ERASEFLASH");
 	} else {
 		char ReceiveBuffer[16] = {0};
@@ -1368,14 +1356,14 @@ void ProcessAT_ERASEFLASH(char Input[]){
 				uint32_t Temp = 0;
 
 				for (int i = 0; i < 6; i++){
-					if (ReceiveBuffer[ i+4 ] >= 0x30 && ReceiveBuffer[ i+4 ] <= 0x39){	//If its a number
+					if (ReceiveBuffer[ i+4 ] >= 0x30 && ReceiveBuffer[ i+4 ] <= 0x39){				//If its a number
 						Temp = 1;
 						for (int j = 5; j > i; j--){
 							Temp = Temp * 16;
 						}
 						EraseFlashAddr += Temp * (ReceiveBuffer[ i+4 ] - 0x30);
 					} else if (ReceiveBuffer[ i+4 ] >= 0x41 && ReceiveBuffer[ i+4 ] <= 0x46){	//If its a lower case
-							Temp = 1;
+						Temp = 1;
 						for (int j = 5; j > i; j--){
 							Temp = Temp * 16;
 						}
@@ -1393,6 +1381,7 @@ void ProcessAT_ERASEFLASH(char Input[]){
 				}
 					
 				if (strcmp_n(ReceiveBuffer,"0", 1)){
+					
 					/*
 					char EraseFF[8];
 					EraseFF[0] = 0xFF; EraseFF[1] = 0xFF; EraseFF[2] = 0xFF; EraseFF[3] = 0xFF;
@@ -1408,7 +1397,8 @@ void ProcessAT_ERASEFLASH(char Input[]){
 					
 					INFO("Erased address %.6x done", EraseFlashAddr);
 					*/
-					WARN("Erase certain address not availiable, please use erase sector & block");
+					
+					WARN("Erase certain address not supported, please use erase sector & block");
 				} else if (strcmp_n(ReceiveBuffer,"1", 1)){
 					INFO("Erasing sector address : %.6x", EraseFlashAddr);
 					
@@ -1426,7 +1416,6 @@ void ProcessAT_ERASEFLASH(char Input[]){
 					ext_flash_last_write_or_erase_done();
 					
 					INFO("Erased block %.6x done", EraseFlashAddr);
-					
 					
 				} else {
 					WARN("Erase type invalid");
@@ -1446,7 +1435,6 @@ void ProcessAT_ERASEFLASH(char Input[]){
 	*/
 void ProcessAT_READFLASH(char Input[]){
 	if(strcmp_n(Input, "?", 3 + strlen("READFLASH") + 1)){
-		//INFO("READFLASH Help String");
 		AT_HelpString("READFLASH");
 	} else {
 		char ReceiveBuffer[16] = {0};
@@ -1504,7 +1492,6 @@ void ProcessAT_READFLASH(char Input[]){
 			}
 		}
 	}
-	
 }
 
 

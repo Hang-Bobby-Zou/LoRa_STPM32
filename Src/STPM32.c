@@ -209,7 +209,7 @@ void CalcPrint_C1_RMS(void){
 	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[3] << 9);
 
 	double C1_RMS;
-	C1_RMS = (double) C1_RMS_raw * (double) V_ref / ((double) cal_i * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
+	C1_RMS = (double) C1_RMS_raw * (double) 1.2 / ((double) 0.875 * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
 	
 	ext_flash_write(FlashPointer + FlashAddr_C1_RMS_Real, (char*) &C1_RMS, 8);
 	ext_flash_last_write_or_erase_done();
@@ -234,7 +234,7 @@ void RT_CalcPrint_C1_RMS( void ){
 	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[2] << 1);
 	C1_RMS_raw = C1_RMS_raw | ((uint16_t) CH1_RMS[3] << 9);
 
-	RT_C1_RMS = (double) C1_RMS_raw * (double) V_ref / ((double) cal_i * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
+	RT_C1_RMS = (double) C1_RMS_raw * (double) 1.2 / ((double) 0.875 * (double) A_i * 131072.0 * (double) k_s * (double) k_int);
 	
 	INFO("RT C1= %lf Amps\r\n",RT_C1_RMS);
 }

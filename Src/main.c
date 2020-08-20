@@ -108,7 +108,7 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 	
-	/*	---- Connetion Table ----
+	/*	----- Connetion Table -----
 			SPI1 	- External Flash				
 			SPI2 	- LoRa									
 			UART1 - STPM32								
@@ -184,7 +184,7 @@ int main(void)
 	}
 
 	INFO("External Flash Initialization Done!\r\n");
-
+	
 	//Finishing up by printing "Starting FreeRTOS System..."
 	INFO("Starting FreeRTOC System...\r\n");
 	DelayMsPoll(1000);

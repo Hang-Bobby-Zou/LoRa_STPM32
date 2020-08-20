@@ -41,6 +41,8 @@ extern double RT_Tot_Active_Energy;
 
 extern bool Is_OTAA;
 
+extern uint32_t LoRa_UL_Addr;
+
 #ifndef ACTIVE_REGION
 
 #warning "No active region defined, LORAMAC_REGION_EU868 will be used as default."
@@ -101,8 +103,8 @@ uint8_t DevEui[] = LORAWAN_DEVICE_EUI;
 uint8_t AppEui[] = LORAWAN_APPLICATION_EUI;
 uint8_t AppKey[] = LORAWAN_APPLICATION_KEY;
 
-#if( OVER_THE_AIR_ACTIVATION == 0 )
-//#if( Is_OTAA == 0 )
+//#if( OVER_THE_AIR_ACTIVATION == 0 )
+#if( Is_OTAA == 0 )
 uint8_t NwkSKey[] = LORAWAN_NWKSKEY;
 uint8_t AppSKey[] = LORAWAN_APPSKEY;
 
@@ -662,6 +664,11 @@ static void MlmeIndication( MlmeIndication_t *mlmeIndication )
 /*============================================================================*/
 /*                   PRIVATE FUNCTIONS		                                    */
 /*============================================================================*/
+/**
+	* @brief 	The upper "Initialization" function for sx1276
+	* @param 	None
+	* @retval None
+	*/
 void LoRaMAC_Init(void){
 	LoRaMacStatus_t status;
 	UNUSED(status);
@@ -716,8 +723,11 @@ void LoRaMAC_Init(void){
 #endif
 }
 
-
-
+/**
+	* @brief 	The upper "Join" function for sx1276
+	* @param 	None
+	* @retval None
+	*/
 void LoRaMAC_Join(void){
 //#if( OVER_THE_AIR_ACTIVATION != 0 )
 #if( Is_OTAA != 0 )
@@ -733,21 +743,22 @@ void LoRaMAC_Join(void){
   mlmeReq.Req.Join.AppKey = AppKey;
   mlmeReq.Req.Join.Datarate = LORAWAN_DEFAULT_DATARATE;
 
+	
 	if (NextTx == true){
 		int ret = LoRaMacMlmeRequest( &mlmeReq );
 		if( ret == LORAMAC_STATUS_OK )
 		{
 			// Join request was send successfully
-			DEBUG("OTAA-LoRaMAC join request SUCCESS\r\n");
+			INFO("OTAA-LoRaMAC join request SUCCESS\r\n");
 			//leds_play_sequence(&led_state_JOIN, 1);
 		}
 		else if (ret == LORAMAC_STATUS_BUSY)
 		{
-			DEBUG("OTAA-Join request ERROR : LoRaMAC is BUSY\r\n");
+			INFO("OTAA-Join request ERROR : LoRaMAC is BUSY\r\n");
 		}
 		else
 		{
-			DEBUG("OTAA-Join request ERROR : %d\r\n", ret);
+			INFO("OTAA-Join request ERROR : %d\r\n", ret);
 		}
 	}
 #else
@@ -786,9 +797,11 @@ void LoRaMAC_Join(void){
 #endif
 }
 
-
-
-
+/**
+	* @brief 	The upper "Send" function for sx1276
+	* @param 	None
+	* @retval None
+	*/
 int LoRaMAC_Send(void){
 	
 	McpsReq_t mcpsReq;
@@ -812,13 +825,13 @@ int LoRaMAC_Send(void){
 	
 	if( NextTx == true )
   {
-		if(LoRa_Sendtype == 0){
+		if(LoRa_Sendtype == 0) {
 			char RT_V1_RMS_Transfer[8] = {0};
 			char RT_C1_RMS_Transfer[8] = {0};
 			char RT_Active_Pwr_Transfer[8] = {0};
 			char RT_Tot_Active_Energy_Transfer[8] = {0};
 			
-			//Used in DEBUG
+			//Used in DEBUG (sample data)
 			//RT_V1_RMS = 223.234;
 			//RT_C1_RMS = 0.00135;
 			//RT_Active_Pwr = 14.1523;
@@ -829,10 +842,9 @@ int LoRaMAC_Send(void){
 			strncpy(RT_Active_Pwr_Transfer, (char*) &RT_Active_Pwr, 8);
 			strncpy(RT_Tot_Active_Energy_Transfer, (char*) &RT_Tot_Active_Energy, 8);			
 			
-			
-			AppData[0] = 0xFF;							//Default: 0xFF
-			AppData[1] = 0x00;							//Default: 0x00
-			AppData[2] = 0x12;							//Default: 0x00
+			AppData[0] = 0xFF;
+			AppData[1] = 0x00;
+			AppData[2] = 0x13;
 			//V RMS
 			AppData[3] = RT_V1_RMS_Transfer[7];
 			AppData[4] = RT_V1_RMS_Transfer[6];
@@ -873,24 +885,61 @@ int LoRaMAC_Send(void){
 			AppData[33] = RT_Tot_Active_Energy_Transfer[1];
 			AppData[34] = RT_Tot_Active_Energy_Transfer[0];
 			
-			AppData[35] = 0xAA;
+			AppData[35] = 0xAA;								//End byte
 			
 			AppDataSize = 36;
-		} else {
-			AppData[0] = 0xFF;							//Default: 0xFF
-			AppData[1] = 0x00;							//Default: 0x00
-			AppData[2] = 0x12;							//Default: 0x00
-			AppData[3] = LoRa_UL_Buffer[0];	
-			AppData[4] = LoRa_UL_Buffer[1];
-			AppData[5] = LoRa_UL_Buffer[2];
-			AppData[6] = LoRa_UL_Buffer[3];
-			AppData[7] = LoRa_UL_Buffer[4];
-			AppData[8] = LoRa_UL_Buffer[5];
-			AppData[9] = LoRa_UL_Buffer[6];
-			AppData[10] = LoRa_UL_Buffer[7];
-			AppData[11]	= 0xAA;
 			
-			AppDataSize = 12;
+			DEBUG("Uploading message: %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x", AppData[0], AppData[1], AppData[2], AppData[3], AppData[4], AppData[5], AppData[6], AppData[7], AppData[8], AppData[9], AppData[10], AppData[11], AppData[12], AppData[13], AppData[14], AppData[15], AppData[16], AppData[17], AppData[18], AppData[19], AppData[20], AppData[21], AppData[22], AppData[23], AppData[24], AppData[25], AppData[26], AppData[27], AppData[28], AppData[29], AppData[30], AppData[31], AppData[32], AppData[33], AppData[34], AppData[35]);
+			DEBUG("Upload size: %d", AppDataSize);
+			
+		} else if (LoRa_Sendtype == 1 || LoRa_Sendtype == 3) {		 //Auto Rotate raw
+			AppData[0] = 0xFF;								
+			AppData[1] = 0x00;
+			AppData[2] = 0x14;
+			
+			AppData[3] = LoRa_UL_Addr >> 24; 	//Data starting address in flash
+			AppData[4] = LoRa_UL_Addr >> 16;
+			AppData[5] = LoRa_UL_Addr >> 8;
+			AppData[6] = LoRa_UL_Addr;
+			
+			AppData[7] = LoRa_UL_Buffer[0];		//Register address in STPM32
+			AppData[8] = LoRa_UL_Buffer[1];		//Flash pointer lower 8 bits
+			AppData[9] = LoRa_UL_Buffer[2];		//Flash pointer upper 8 bits
+			AppData[10] = LoRa_UL_Buffer[3];	//RAW data from register MSB
+			AppData[11] = LoRa_UL_Buffer[4];	
+			AppData[12] = LoRa_UL_Buffer[5];
+			AppData[13] = LoRa_UL_Buffer[6];
+			AppData[14] = LoRa_UL_Buffer[7];	//CRC
+			
+			AppData[15]	= 0xAA;								//End byte
+			
+			AppDataSize = 16;
+			
+			DEBUG("Uploading message: %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x", AppData[0], AppData[1], AppData[2], AppData[3], AppData[4], AppData[5], AppData[6], AppData[7], AppData[8], AppData[9], AppData[10], AppData[11], AppData[12], AppData[13], AppData[14], AppData[15]);
+			DEBUG("Upload size: %d", AppDataSize);
+			
+		} else if (LoRa_Sendtype == 2) {
+			AppData[0] = 0xFF;
+			AppData[1] = 0x00;
+			AppData[2] = 0x15;
+			
+			AppData[3] = LoRa_UL_Addr >> 24;	//Data starting address in flash
+			AppData[4] = LoRa_UL_Addr >> 16;
+			AppData[5] = LoRa_UL_Addr >> 8;
+			AppData[6] = LoRa_UL_Addr;
+			
+			AppData[7] = LoRa_UL_Buffer[7];		//Calculated double type data MSB
+			AppData[8] = LoRa_UL_Buffer[6];		
+			AppData[9] = LoRa_UL_Buffer[5];		
+			AppData[10] = LoRa_UL_Buffer[4];	
+			AppData[11] = LoRa_UL_Buffer[3];	
+			AppData[12] = LoRa_UL_Buffer[2];
+			AppData[13] = LoRa_UL_Buffer[1];
+			AppData[14] = LoRa_UL_Buffer[0];	//Calculated double type data LSB
+			
+			AppData[15]	= 0xAA;								//End byte
+			
+			AppDataSize = 16;
 		}
 		
 		if( LoRaMacQueryTxPossible( AppDataSize, &txInfo ) != LORAMAC_STATUS_OK )
@@ -929,7 +978,6 @@ int LoRaMAC_Send(void){
 			
 			frame_count++;
 			DEBUG("Frame %d Sent Success", UpLinkCounter);
-			
 			return 0;
 		} else if (status == LORAMAC_STATUS_BUSY){
 			WARN("LoRaMAC Status Busy");
