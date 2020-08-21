@@ -495,7 +495,12 @@ void StartUSART3(void const * argument)
 				} else if (strcmp_n(ProcessBuffer, "READFLASH", 4)){
 					//AT+READFLASH = Read chunk of data from flash
 					ProcessAT_READFLASH(ProcessBuffer);
-				} else{
+				} else if (strcmp_n(ProcessBuffer, "RESUMESPI2", 4)){
+					//AT+RESUMESPI2 = End LoRa block immediately, and do a send, this is only used in debug
+					INFO("Resume SPI2 Immediately");
+					vTaskSuspend(SPI2Handle);
+					vTaskResume(SPI2Handle);
+				} else {	
 					WARN("Invalid Command");
 				}
 			} else {
@@ -532,6 +537,11 @@ void StartSPI2(void const * argument)
 	/* Infinite loop */
   for(;;)
   {
+		LoRa_Task_Count++;							//Increment task count of LoRa
+		
+		INFO("Entering LoRa Task\r\n");
+		
+		DelayMsPoll_CD(5000);
 		
 		if(LoRa_Restart_Flag == true){
 			LoRa_Restart_Flag = false;
@@ -541,20 +551,16 @@ void StartSPI2(void const * argument)
 			LoRaMAC_Join();
 		}
 		
-		LoRa_Task_Count++;							//Increment task count of LoRa
-		
-		INFO("\r\nEntering LoRa Task\r\n");
-		
-		DelayMsPoll(1000);
+
 		
 		//Check LoRa Upload Mode
 		if(LoRa_Sendtype == 0){										//Real time upload mode
-			INFO("LoRa: Real time upload\r\n");
+			INFO("LoRa Mode: Real time upload\r\n");
 			
 			//First & Second value : Voltage RMS (Voltes) & Current RMS (Amps)
 			for (int i = 0; i < 3; i++){
 				ReadMsgOnly(dsp_reg14,ReadBuffer);
-			
+		
 				while (USART1_RxFlag == 0){}
 				HAL_RxBuffer[0] = ReadBuffer[0];
 				HAL_RxBuffer[1] = ReadBuffer[1];
@@ -604,11 +610,15 @@ void StartSPI2(void const * argument)
 			RT_CalcPrint_Tot_Active_Energy();
 			
 			//Used in DEBUG
-			INFO("DEUI = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", DevEui[0], DevEui[1], DevEui[2], DevEui[3], DevEui[4], DevEui[5], DevEui[6], DevEui[7]);
-			INFO("APPEUI = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
-			INFO("APPKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7], AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
-			INFO("APPSKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", AppSKey[0], AppSKey[1], AppSKey[2], AppSKey[3], AppSKey[4], AppSKey[5], AppSKey[6], AppSKey[7], AppSKey[8], AppSKey[9], AppSKey[10], AppSKey[11], AppSKey[12], AppSKey[13], AppSKey[14], AppSKey[15]);
-			INFO("NWKSKEY = %.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", NwkSKey[0], NwkSKey[1], NwkSKey[2], NwkSKey[3], NwkSKey[4], NwkSKey[5], NwkSKey[6], NwkSKey[7], NwkSKey[8], NwkSKey[9], NwkSKey[10], NwkSKey[11], NwkSKey[12], NwkSKey[13], NwkSKey[14], NwkSKey[15]);
+			if (Is_OTAA == true){
+				INFO("DEUI = %.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X", DevEui[0], DevEui[1], DevEui[2], DevEui[3], DevEui[4], DevEui[5], DevEui[6], DevEui[7]);
+				INFO("APPEUI = %.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X", AppEui[0], AppEui[1], AppEui[2], AppEui[3], AppEui[4], AppEui[5], AppEui[6], AppEui[7]);
+				INFO("APPKEY = %.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X", AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7], AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
+			}
+			INFO("DevAddr = %#.8X", DevAddr);
+			INFO("NWKSKEY = %.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X", NwkSKey[0], NwkSKey[1], NwkSKey[2], NwkSKey[3], NwkSKey[4], NwkSKey[5], NwkSKey[6], NwkSKey[7], NwkSKey[8], NwkSKey[9], NwkSKey[10], NwkSKey[11], NwkSKey[12], NwkSKey[13], NwkSKey[14], NwkSKey[15]);
+			INFO("APPSKEY = %.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X:%.2X", AppSKey[0], AppSKey[1], AppSKey[2], AppSKey[3], AppSKey[4], AppSKey[5], AppSKey[6], AppSKey[7], AppSKey[8], AppSKey[9], AppSKey[10], AppSKey[11], AppSKey[12], AppSKey[13], AppSKey[14], AppSKey[15]);
+			myprintf("\r\n");
 			
 			HAL_NVIC_EnableIRQ(TIM7_IRQn);	//Enable TIM7 Irq since it is disabled while other task is running
 			
@@ -620,7 +630,7 @@ void StartSPI2(void const * argument)
 						WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
 					}			
 				} else {
-					INFO("LoRaMAC Send Succeed!");
+					INFO("LoRaMAC Send Succeed! Waiting for DL message.");
 					loramac_send_retry_count = 0;
 				}
 			}
@@ -628,24 +638,25 @@ void StartSPI2(void const * argument)
 			
 			if (LoRa_DL_Flag == 1){
 				INFO("LoRa DownLink received!");
-				INFO("LoRa DownLink buffer: %x %x %x %x",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
+				INFO("LoRa DownLink buffer: %.2X %.2X %.2X %.2X",LoRa_RxBuf[0], LoRa_RxBuf[1], LoRa_RxBuf[2], LoRa_RxBuf[3]);
 				LoRa_DL_Flag = 0;
 			} else if (LoRa_DL_Flag == 0){
 				INFO("LoRa DownLink no new message");
 			}
 			
-			INFO("\r\nBlocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+			INFO("Blocking LoRa Task for %.1f seconds.\r\n", LoRa_Block_Time/1000.0);
 			HAL_NVIC_DisableIRQ(TIM7_IRQn);
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 			
 			
 		} else if (LoRa_Sendtype == 1){						//Auto Rotate Raw mode
+			INFO("LoRa Mode: Auto Rotate Raw upload\r\n");
 			LoRa_UL_Addr = 0x000000;
 			
 			while(LoRa_UL_Addr <= 0x0E0000){
 				ext_flash_read(LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
 				
-				INFO("Auto Rotate Raw, LoRa_UL_Addr = %.6x, LoRa_UL_Buffer: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x", LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
+				INFO("LoRa_UL_Addr = %.6x, LoRa_UL_Buffer: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x", LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
 				
 				HAL_NVIC_EnableIRQ(TIM7_IRQn);	//Enable TIM7 Irq since it is disabled while other task is running
 				//LoRa Send Code
@@ -656,7 +667,7 @@ void StartSPI2(void const * argument)
 							WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
 						}			
 					} else {
-						INFO("LoRaMAC Send Succeed!");
+						INFO("LoRaMAC Send Succeed! Waiting for DL message.");
 						loramac_send_retry_count = 0;
 					}
 				}
@@ -674,17 +685,18 @@ void StartSPI2(void const * argument)
 				LoRa_UL_Addr += 0x010000;
 			}
 			AutoRotate_FlashPointer += 0x08;
-			INFO("Blocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+			INFO("Blocking LoRa Task for %.1f seconds.\r\n", LoRa_Block_Time/1000.0);
 			HAL_NVIC_DisableIRQ(TIM7_IRQn);
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 			
 		} else if (LoRa_Sendtype == 2){		//Auto Rotate Real mode
+			INFO("LoRa Mode: Auto Rotate Real upload\r\n");
 			LoRa_UL_Addr = 0x100000;
 			
 			while(LoRa_UL_Addr <= 0x1F0000){
 				ext_flash_read(LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
 				
-				INFO("Auto Rotate Real, LoRa_UL_Addr = %.2x, LoRa_UL_Buffer: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x", LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
+				INFO("LoRa_UL_Addr = %.2x, LoRa_UL_Buffer: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x", LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
 				
 				HAL_NVIC_EnableIRQ(TIM7_IRQn);	//Enable TIM7 Irq since it is disabled while other task is running
 				//LoRa Send Code
@@ -695,7 +707,7 @@ void StartSPI2(void const * argument)
 							WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
 						}			
 					} else {
-						INFO("LoRaMAC Send Succeed!");
+						INFO("LoRaMAC Send Succeed! Waiting for DL message.");
 						loramac_send_retry_count = 0;
 					}
 				}
@@ -712,17 +724,17 @@ void StartSPI2(void const * argument)
 				LoRa_UL_Addr += 0x010000;
 			}
 			AutoRotate_FlashPointer += 0x08;
-			INFO("\r\nBlocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+			INFO("Blocking LoRa Task for %.1f seconds.\r\n", LoRa_Block_Time/1000.0);
 			HAL_NVIC_DisableIRQ(TIM7_IRQn);
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 
 			
 		} else if (LoRa_Sendtype == 3){			//Specific UL mode
-			INFO("LoRa: Specific UL from flash");
+			INFO("LoRa Mode: Specific UL from flash\r\n");
 			
 			ext_flash_read(LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer, 8);		//Here to avoid flash pointer advance before read
 			
-			INFO("Specific UL, LoRa_UL_Addr = %.2x, LoRa_UL_Buffer: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x", LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
+			INFO("LoRa_UL_Addr = %.2x, LoRa_UL_Buffer: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x", LoRa_UL_Addr + AutoRotate_FlashPointer, LoRa_UL_Buffer[0], LoRa_UL_Buffer[1], LoRa_UL_Buffer[2], LoRa_UL_Buffer[3], LoRa_UL_Buffer[4], LoRa_UL_Buffer[5], LoRa_UL_Buffer[6], LoRa_UL_Buffer[7]);
 			
 			HAL_NVIC_EnableIRQ(TIM7_IRQn);	//Enable TIM7 Irq since it is disabled while other task is running
 			//LoRa Send Code
@@ -733,7 +745,7 @@ void StartSPI2(void const * argument)
 						WARN("LoRaMAC Send Failed, retrying for %d time...", loramac_send_retry_count);
 					}			
 				} else {
-					INFO("LoRaMAC Send Succeed!");
+					INFO("LoRaMAC Send Succeed! Waiting for DL message.");
 					loramac_send_retry_count = 0;
 				}
 			}
@@ -747,7 +759,7 @@ void StartSPI2(void const * argument)
 			}
 			
 			AutoRotate_FlashPointer += 0x08;
-			INFO("\r\nBlocking LoRa Task for %d miliseconds.", LoRa_Block_Time);
+			INFO("Blocking LoRa Task for %.1f seconds.\r\n", LoRa_Block_Time/1000.0);
 			HAL_NVIC_DisableIRQ(TIM7_IRQn);
 			vTaskDelay(pdMS_TO_TICKS( LoRa_Block_Time));
 			
@@ -1015,8 +1027,9 @@ void ProcessAT_NJM(char Input[], uint8_t Output[]){
 	} else {
 		ProcessBool("NJM", Input, Output);
 #ifdef Allow_AT_Command
-		Is_OTAA = Output[0];
-		LoRa_Restart_Flag = true;
+		//Commented as did not test OTAA
+		//Is_OTAA = Output[0];
+		//LoRa_Restart_Flag = true;
 #endif
 	}
 }

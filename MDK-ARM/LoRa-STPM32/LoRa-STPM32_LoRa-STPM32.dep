@@ -60,7 +60,7 @@ I (D:\Software\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x5CEB79E4)
 I (../Inc/HAL_spi.h)(0x5F16593B)
 I (../Inc/ext_flash_tb.h)(0x5F115366)
-I (../Inc/tim.h)(0x5F2B9888)
+I (../Inc/tim.h)(0x5F3F3250)
 F (..\Src\ext_flash_tb.c)(0x5F115315)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/LoRaMAC/boards -I ../Drivers/LoRaMAC/mac -I ../Drivers/LoRaMAC/radio -I ../Drivers/LoRaMAC/system -I ../Drivers/LoRaMAC/system/crypto -I ../Drivers/LoRaMAC/peripherals -I ../Drivers/LoRaMAC/radio/sx1276-I.\RTE\_LoRa-STPM32-ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include-ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include-D__UVISION_VERSION="528" -D_RTE_ -DSTM32L433xx -DUSE_HAL_DRIVER -DSTM32L433xx -DLORA_KIWI_MODE-o lora-stpm32\ext_flash_tb.o --omf_browse lora-stpm32\ext_flash_tb.crf --depend lora-stpm32\ext_flash_tb.d)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5CEB79E2)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\string.h)(0x5CEB79E2)
@@ -249,7 +249,7 @@ I (../Drivers/LoRaMAC/system/spi.h)(0x5AA007DB)
 I (../Drivers/LoRaMAC/radio/radio.h)(0x5AA007DB)
 I (../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-Fsk.h)(0x5AA007DB)
 I (../Drivers/LoRaMAC/radio/sx1276/sx1276Regs-LoRa.h)(0x5AA007DB)
-F (..\Src\HAL_LoRaMAC.c)(0x5F3E3CC3)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/LoRaMAC/boards -I ../Drivers/LoRaMAC/mac -I ../Drivers/LoRaMAC/radio -I ../Drivers/LoRaMAC/system -I ../Drivers/LoRaMAC/system/crypto -I ../Drivers/LoRaMAC/peripherals -I ../Drivers/LoRaMAC/radio/sx1276-I.\RTE\_LoRa-STPM32-ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include-ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include-D__UVISION_VERSION="528" -D_RTE_ -DSTM32L433xx -DUSE_HAL_DRIVER -DSTM32L433xx -DLORA_KIWI_MODE-o lora-stpm32\hal_loramac.o --omf_browse lora-stpm32\hal_loramac.crf --depend lora-stpm32\hal_loramac.d)
+F (..\Src\HAL_LoRaMAC.c)(0x5F3F2704)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/LoRaMAC/boards -I ../Drivers/LoRaMAC/mac -I ../Drivers/LoRaMAC/radio -I ../Drivers/LoRaMAC/system -I ../Drivers/LoRaMAC/system/crypto -I ../Drivers/LoRaMAC/peripherals -I ../Drivers/LoRaMAC/radio/sx1276-I.\RTE\_LoRa-STPM32-ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include-ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include-D__UVISION_VERSION="528" -D_RTE_ -DSTM32L433xx -DUSE_HAL_DRIVER -DSTM32L433xx -DLORA_KIWI_MODE-o lora-stpm32\hal_loramac.o --omf_browse lora-stpm32\hal_loramac.crf --depend lora-stpm32\hal_loramac.d)
 I (../Drivers/LoRaMAC/boards/utilities.h)(0x5F1638EA)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
 I (../Drivers/LoRaMAC/boards/board.h)(0x5F14FE46)
@@ -264,7 +264,7 @@ I (../Drivers/LoRaMAC/system/timer.h)(0x5F1942F1)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5CEB79E2)
 I (../Drivers/LoRaMAC/radio/radio.h)(0x5AA007DB)
 I (../Drivers/LoRaMAC/mac/region/Region.h)(0x5F1540D6)
-I (../Inc/Commissioning.h)(0x5F39F3E5)
+I (../Inc/Commissioning.h)(0x5F3F2F77)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x5EEC2E06)
 I (../Inc/stm32l4xx_hal_conf.h)(0x5F2773F1)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x5EEC2E06)
@@ -302,7 +302,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd.h)(0x5EEC2E06)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_usb.h)(0x5EEC2E06)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd_ex.h)(0x5EEC2E06)
 I (../Inc/stm32l4xx_it.h)(0x5F2773F1)
-I (../Inc/tim.h)(0x5F2B9888)
+I (../Inc/tim.h)(0x5F3F3250)
 I (../Inc/main.h)(0x5F39F18B)
 I (../Inc/HAL_LoRaMAC.h)(0x5F2E4FA9)
 I (../Inc/usart.h)(0x5F2773F1)
@@ -459,7 +459,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h)(0x5EEC2DCC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h)(0x5EEC2DCC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h)(0x5EEC2DCC)
 I (../Inc/HAL_spi.h)(0x5F16593B)
-I (../Inc/tim.h)(0x5F2B9888)
+I (../Inc/tim.h)(0x5F3F3250)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
 I (../Inc/usart.h)(0x5F2773F1)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\string.h)(0x5CEB79E2)
@@ -475,7 +475,7 @@ I (../Inc/LoRa.h)(0x5F2CA635)
 I (../Inc/HAL_LoRaMAC.h)(0x5F2E4FA9)
 I (../Inc/stm32l4xx_it.h)(0x5F2773F1)
 I (../Drivers/LoRaMAC/system/timer.h)(0x5F1942F1)
-F (../Src/freertos.c)(0x5F3E3A5A)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/LoRaMAC/boards -I ../Drivers/LoRaMAC/mac -I ../Drivers/LoRaMAC/radio -I ../Drivers/LoRaMAC/system -I ../Drivers/LoRaMAC/system/crypto -I ../Drivers/LoRaMAC/peripherals -I ../Drivers/LoRaMAC/radio/sx1276-I.\RTE\_LoRa-STPM32-ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include-ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include-D__UVISION_VERSION="528" -D_RTE_ -DSTM32L433xx -DUSE_HAL_DRIVER -DSTM32L433xx -DLORA_KIWI_MODE-o lora-stpm32\freertos.o --omf_browse lora-stpm32\freertos.crf --depend lora-stpm32\freertos.d)
+F (../Src/freertos.c)(0x5F3F55A2)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/LoRaMAC/boards -I ../Drivers/LoRaMAC/mac -I ../Drivers/LoRaMAC/radio -I ../Drivers/LoRaMAC/system -I ../Drivers/LoRaMAC/system/crypto -I ../Drivers/LoRaMAC/peripherals -I ../Drivers/LoRaMAC/radio/sx1276-I.\RTE\_LoRa-STPM32-ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include-ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include-D__UVISION_VERSION="528" -D_RTE_ -DSTM32L433xx -DUSE_HAL_DRIVER -DSTM32L433xx -DLORA_KIWI_MODE-o lora-stpm32\freertos.o --omf_browse lora-stpm32\freertos.crf --depend lora-stpm32\freertos.d)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x5EEC2DCC)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5CEB79E2)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
@@ -539,17 +539,17 @@ I (../Inc/STPM32.h)(0x5F3A3CAA)
 I (../Inc/LoRa.h)(0x5F2CA635)
 I (../Inc/HAL_LoRaMAC.h)(0x5F2E4FA9)
 I (../Inc/HAL_spi.h)(0x5F16593B)
-I (../Inc/tim.h)(0x5F2B9888)
+I (../Inc/tim.h)(0x5F3F3250)
 I (../Inc/usart.h)(0x5F2773F1)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x5CEB79E4)
 I (../Drivers/LoRaMAC/mac/LoRaMac.h)(0x5F1E8B8E)
 I (../Drivers/LoRaMAC/system/timer.h)(0x5F1942F1)
 I (../Drivers/LoRaMAC/radio/radio.h)(0x5AA007DB)
 I (../Drivers/LoRaMAC/mac/region/Region.h)(0x5F1540D6)
-I (../Inc/Commissioning.h)(0x5F39F3E5)
+I (../Inc/Commissioning.h)(0x5F3F2F77)
 I (../Inc/STPM32_AddressMap.h)(0x5F2CFFFB)
-F (../Src/tim.c)(0x5F30E2FB)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/LoRaMAC/boards -I ../Drivers/LoRaMAC/mac -I ../Drivers/LoRaMAC/radio -I ../Drivers/LoRaMAC/system -I ../Drivers/LoRaMAC/system/crypto -I ../Drivers/LoRaMAC/peripherals -I ../Drivers/LoRaMAC/radio/sx1276-I.\RTE\_LoRa-STPM32-ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include-ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include-D__UVISION_VERSION="528" -D_RTE_ -DSTM32L433xx -DUSE_HAL_DRIVER -DSTM32L433xx -DLORA_KIWI_MODE-o lora-stpm32\tim.o --omf_browse lora-stpm32\tim.crf --depend lora-stpm32\tim.d)
-I (../Inc/tim.h)(0x5F2B9888)
+F (../Src/tim.c)(0x5F3F3242)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/LoRaMAC/boards -I ../Drivers/LoRaMAC/mac -I ../Drivers/LoRaMAC/radio -I ../Drivers/LoRaMAC/system -I ../Drivers/LoRaMAC/system/crypto -I ../Drivers/LoRaMAC/peripherals -I ../Drivers/LoRaMAC/radio/sx1276-I.\RTE\_LoRa-STPM32-ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include-ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include-D__UVISION_VERSION="528" -D_RTE_ -DSTM32L433xx -DUSE_HAL_DRIVER -DSTM32L433xx -DLORA_KIWI_MODE-o lora-stpm32\tim.o --omf_browse lora-stpm32\tim.crf --depend lora-stpm32\tim.d)
+I (../Inc/tim.h)(0x5F3F3250)
 I (../Inc/main.h)(0x5F39F18B)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x5EEC2E06)
 I (../Inc/stm32l4xx_hal_conf.h)(0x5F2773F1)
@@ -590,6 +590,10 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd.h)(0x5EEC2E06)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_usb.h)(0x5EEC2E06)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pcd_ex.h)(0x5EEC2E06)
 I (D:\Software\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (../Inc/usart.h)(0x5F2773F1)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\string.h)(0x5CEB79E2)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x5CEB79E4)
 F (../Src/usart.c)(0x5F33ABAC)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/LoRaMAC/boards -I ../Drivers/LoRaMAC/mac -I ../Drivers/LoRaMAC/radio -I ../Drivers/LoRaMAC/system -I ../Drivers/LoRaMAC/system/crypto -I ../Drivers/LoRaMAC/peripherals -I ../Drivers/LoRaMAC/radio/sx1276-I.\RTE\_LoRa-STPM32-ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include-ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include-D__UVISION_VERSION="528" -D_RTE_ -DSTM32L433xx -DUSE_HAL_DRIVER -DSTM32L433xx -DLORA_KIWI_MODE-o lora-stpm32\usart.o --omf_browse lora-stpm32\usart.crf --depend lora-stpm32\usart.d)
 I (../Inc/usart.h)(0x5F2773F1)
 I (../Inc/main.h)(0x5F39F18B)
@@ -2310,7 +2314,7 @@ I (../Drivers/LoRaMAC/system/gpio.h)(0x5AA007DB)
 I (../Drivers/LoRaMAC/boards/pinName-board.h)(0x5AA007DB)
 I (../Drivers/LoRaMAC/boards/pinName-ioe.h)(0x5AA007DB)
 I (../Drivers/LoRaMAC/boards/rtc-board.h)(0x5AA007DB)
-I (../Inc/tim.h)(0x5F2B9888)
+I (../Inc/tim.h)(0x5F3F3250)
 I (../Inc/main.h)(0x5F39F18B)
 F (..\Drivers\LoRaMAC\boards\LoRaMote\spi-board.c)(0x5F17AFBE)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/LoRaMAC/boards -I ../Drivers/LoRaMAC/mac -I ../Drivers/LoRaMAC/radio -I ../Drivers/LoRaMAC/system -I ../Drivers/LoRaMAC/system/crypto -I ../Drivers/LoRaMAC/peripherals -I ../Drivers/LoRaMAC/radio/sx1276-I.\RTE\_LoRa-STPM32-ID:\Software\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include-ID:\Software\Arm\Packs\Keil\STM32L4xx_DFP\2.2.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include-D__UVISION_VERSION="528" -D_RTE_ -DSTM32L433xx -DUSE_HAL_DRIVER -DSTM32L433xx -DLORA_KIWI_MODE-o lora-stpm32\spi-board.o --omf_browse lora-stpm32\spi-board.crf --depend lora-stpm32\spi-board.d)
 I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x5EEC2E06)

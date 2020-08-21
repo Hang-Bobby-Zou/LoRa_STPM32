@@ -19,6 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "tim.h"
+#include "usart.h"
 
 /* USER CODE BEGIN 0 */
 extern uint32_t TIM7_Irq_Num;
@@ -119,7 +120,17 @@ uint32_t TIM7_GetTimeMs(void)
 void DelayMsPoll(int x) 
 {
 	for (int j = 0; j < x; j++) {
-		for(int i = 0; i < 16666; i++) {		//16666.66667 IDK why this number  
+		for(int i = 0; i < 16666; i++) {		//16666.66667
+		}
+	}
+}
+
+void DelayMsPoll_CD(int x){
+	for (int j = 0; j < x; j++) {
+		for(int i = 0; i < 16666; i++) {		//16666.66667
+		}
+		if (j % 1000 == 0){
+			INFO("%d s", j/1000);
 		}
 	}
 }

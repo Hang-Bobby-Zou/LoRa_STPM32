@@ -43,6 +43,7 @@ static uint32_t TIM7_Point2 = 0;
 #define TIM7_PERIOD           (TIM7_COUNT_CLOCK / TIM7_IRQ_CLOCK);
 
 void DelayMsPoll(int x);
+void DelayMsPoll_CD(int x);
 /* USER CODE END Private defines */
 
 void MX_TIM7_Init(void);

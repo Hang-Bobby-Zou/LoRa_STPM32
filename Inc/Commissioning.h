@@ -49,6 +49,7 @@
  *         BoardGetUniqueId function
  */
 #define LORAWAN_DEVICE_EUI                          { IEEE_OUI, 0x31, 0xC0, 0x00, 0x04, 0x00 }
+//#define LORAWAN_DEVICE_EUI	{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 //70 b3 d5 31 c0 00 04 00
 
